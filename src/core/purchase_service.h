@@ -26,6 +26,7 @@ struct PurchaseRequest {
     Money invoiceTax{};
     QString note;
     QList<PurchaseLine> lines;
+    QString shiftId;
 };
 
 struct PurchaseResult { QString purchaseId; QString invoiceNo; Money total{}; };

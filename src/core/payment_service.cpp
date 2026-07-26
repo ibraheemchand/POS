@@ -1,15 +1,19 @@
 #include "core/payment_service.h"
 #include "core/database.h"
+#include "core/shift_service.h"
 #include <QStringList>
 
 namespace pos {
 PaymentService::PaymentService(std::shared_ptr<Database> database) : db_(std::move(database)) {}
 
-PaymentResult PaymentService::recordCustomerPayment(const QString& customerId, const QList<InvoicePayment>& allocations, const QString& method, const QString& note) {
+PaymentResult PaymentService::recordCustomerPayment(const QString& customerId, const QList<InvoicePayment>& allocations, const QString& method, const QString& note, const QString& requestedShiftId) {
     if(customerId.isEmpty() || allocations.isEmpty()) throw DatabaseError("a customer payment requires an allocation");
     const QStringList methods{"cash","cheque","mobile_wallet","bank"};
     if(!methods.contains(method)) throw DatabaseError("unsupported customer payment method");
+    if(method=="cash" && requestedShiftId.isEmpty()) ensureActiveShift(*db_);
     Transaction tx(db_->handle());
+    QString shiftId=requestedShiftId;
+    if(method=="cash") { if(shiftId.isEmpty()) shiftId=activeShiftId(*db_); if(shiftId.isEmpty()) throw DatabaseError("open a cashier shift before recording cash payments"); }
     auto customer=db_->prepare("SELECT balance_paisa FROM customers WHERE id=? AND is_deleted=0"); customer.bind(1,customerId);
     if(!customer.stepRow()) throw DatabaseError("customer not found or archived");
     Money total{};
@@ -27,7 +31,7 @@ PaymentResult PaymentService::recordCustomerPayment(const QString& customerId, c
     for(const auto& allocation:allocations) { auto link=db_->prepare("INSERT INTO customer_payment_allocations(id,payment_id,sale_id,amount_paisa) VALUES(?,?,?,?)"); link.bind(1,uuid()); link.bind(2,paymentId); link.bind(3,allocation.saleId); link.bind(4,allocation.amount); link.execute(); }
     auto balance=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa-? WHERE id=?"); balance.bind(1,total); balance.bind(2,customerId); balance.execute();
     auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,'Customer payment',0,?,balance_paisa,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,customerId); ledger.bind(3,total); ledger.bind(4,utcNow()); ledger.bind(5,customerId); ledger.execute();
-    if(method=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,"cash_in"); cash.bind(3,total); cash.bind(4,"Customer payment"); cash.bind(5,utcNow()); cash.execute(); }
+    if(method=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,type,amount_paisa,reason,created_at) VALUES(?,?, 'cash_in',?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,total); cash.bind(4,"Customer payment"); cash.bind(5,utcNow()); cash.execute(); }
     tx.commit(); return {paymentId,total};
 }
 } // namespace pos

@@ -1,0 +1,23 @@
+# Release Review Checklist
+
+- [ ] CMake build succeeds with warnings enabled.
+- [ ] All CTest tests pass.
+- [x] Migration upgrade and schema compatibility tests pass.
+- [ ] Sale, purchase, payment, return, shift, cheque, and backup operations prove rollback behavior.
+- [x] Sales and purchase return happy paths, quantity limits, stock changes, and financial effects have regression coverage.
+- [x] Cash sales, purchases, and customer payments attach to a shift; shift close reconciliation has UI and regression coverage.
+- [x] Supplier directory and cheque register screens use SupplierService/ChequeService for all business writes and have service-level regression coverage.
+- [x] Reports and Audit Log screens use ReportService/AuditService and have query regression coverage.
+- [x] Settings screen persists business profile and receipt preferences through SettingsService and has read/write regression coverage.
+- [x] Customer payment allocation UI delegates invoice allocation and cash-shift attachment to PaymentService.
+- [x] Supplier ledger UI delegates ordered ledger reads to SupplierService and has opening-balance coverage.
+- [x] Report CSV export is local-only and reuses the validated ReportService date range.
+- [x] Report PDF export is local-only and uses Qt PrintSupport without network dependencies.
+- [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
+- [ ] No money calculation uses `double`/`float`.
+- [ ] Queries are parameterized and lookup columns indexed.
+- [ ] UI does not write business state outside services.
+- [ ] Backup checksum and integrity checks are verified before restore.
+- [ ] Startup quick-check/schema compatibility handling is tested.
+- [ ] Security review covers file paths, input validation, PIN-protected actions, and sensitive logs.
+- [ ] Documentation reflects only delivered behavior.

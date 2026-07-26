@@ -10,7 +10,7 @@ set(CMAKE_AUTOUIC ON)
 option(POS_BUILD_TESTS "Build business-logic tests" ON)
 option(POS_ENABLE_FBR "Include the isolated FBR queue module" OFF)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Sql Gui)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport)
 
 # Vendored official SQLite amalgamation. The business layer never relies on Qt's
 # SQLite plugin, keeping builds fully offline after the Qt toolchain is installed.
@@ -32,6 +32,8 @@ add_library(pos_core
     src/core/cheque_service.cpp
     src/core/report_service.cpp
     src/core/audit_service.cpp
+    src/core/settings_service.cpp
+    src/core/return_service.cpp
     src/core/database.cpp
     src/core/migrations.cpp
     src/core/inventory_service.cpp
@@ -48,7 +50,7 @@ add_executable(wholesale_pos
     src/ui/main_window.cpp
     src/ui/main_window.h
 )
-target_link_libraries(wholesale_pos PRIVATE pos_core Qt6::Widgets Qt6::Sql)
+target_link_libraries(wholesale_pos PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
 
 if(MSVC)
   target_compile_options(pos_core PRIVATE /W4 /permissive-)

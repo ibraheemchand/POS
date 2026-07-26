@@ -1,5 +1,6 @@
 #include "core/pos_service.h"
 #include "core/database.h"
+#include "core/shift_service.h"
 #include <algorithm>
 #include <QStringList>
 
@@ -52,6 +53,7 @@ QList<PosService::BatchAllocation> PosService::allocateBatches(const SaleLine& l
 
 SaleResult PosService::completeSale(const SaleRequest& request) {
     if (request.lines.isEmpty()) throw DatabaseError("a sale requires at least one item");
+    if(request.paidAmount>0 && request.paymentMethod=="cash" && request.shiftId.isEmpty()) ensureActiveShift(*db_);
     Transaction tx(db_->handle());
     Money subtotal{};
     for (const auto& line: request.lines) {
@@ -67,6 +69,8 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     const QStringList paymentMethods{"cash","credit","cheque","mobile_wallet","mixed"};
     if (!paymentMethods.contains(request.paymentMethod)) throw DatabaseError("unsupported payment method");
     if (due>0 && request.customerId.isEmpty()) throw DatabaseError("an unpaid balance requires a customer");
+    QString shiftId=request.shiftId;
+    if(request.paidAmount>0 && request.paymentMethod=="cash") { if(shiftId.isEmpty()) shiftId=activeShiftId(*db_); if(shiftId.isEmpty()) throw DatabaseError("open a cashier shift before recording cash sales"); }
     if (!request.customerId.isEmpty() && due>0) {
         auto c=db_->prepare("SELECT balance_paisa, credit_limit_paisa FROM customers WHERE id=? AND is_deleted=0"); c.bind(1,request.customerId);
         if(!c.stepRow()) throw DatabaseError("customer not found");
@@ -74,7 +78,7 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     }
     const QString id=uuid(); const QString invoice=QString("INV-%1-%2").arg(QDate::currentDate().toString("yyyyMMdd"), id.left(6).toUpper());
     auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal_paisa,discount_paisa,total_paisa,paid_paisa,due_paisa,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
-    sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(request.shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,request.shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
+    sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
     for (const auto& line: request.lines) {
         const auto allocations=allocateBatches(line,id,"POS");
         Money discountRemaining=line.discount;
@@ -91,7 +95,7 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
         auto balance=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa+? WHERE id=?"); balance.bind(1,due); balance.bind(2,request.customerId); balance.execute();
         auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Credit sale',?,0,balance_paisa,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,request.customerId); ledger.bind(3,id); ledger.bind(4,due); ledger.bind(5,utcNow()); ledger.bind(6,request.customerId); ledger.execute();
     }
-    if (request.paidAmount>0 && request.paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); if(request.shiftId.isEmpty()) cash.bindNull(2); else cash.bind(2,request.shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,request.paidAmount); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
+    if (request.paidAmount>0 && request.paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,request.paidAmount); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
     tx.commit(); return {id,invoice,total};
 }
 

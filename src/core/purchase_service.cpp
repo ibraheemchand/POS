@@ -1,5 +1,6 @@
 #include "core/purchase_service.h"
 #include "core/database.h"
+#include "core/shift_service.h"
 #include <QStringList>
 
 namespace pos {
@@ -20,7 +21,10 @@ PurchaseResult PurchaseService::completePurchase(const PurchaseRequest& request)
     const Money total=subtotal-request.invoiceDiscount+request.invoiceTax;
     if (request.paidAmount<0 || request.paidAmount>total) throw DatabaseError("invalid purchase payment");
 
+    if(request.paidAmount>0 && request.paymentMethod=="cash" && request.shiftId.isEmpty()) ensureActiveShift(*db_);
     Transaction tx(db_->handle());
+    QString cashShift=request.shiftId;
+    if(request.paidAmount>0 && request.paymentMethod=="cash") { if(cashShift.isEmpty()) cashShift=activeShiftId(*db_); if(cashShift.isEmpty()) throw DatabaseError("open a cashier shift before recording cash purchases"); }
     auto supplier=db_->prepare("SELECT balance_paisa FROM suppliers WHERE id=? AND is_archived=0"); supplier.bind(1,request.supplierId);
     if (!supplier.stepRow()) throw DatabaseError("supplier not found or archived");
     const auto id=uuid();
@@ -43,7 +47,7 @@ PurchaseResult PurchaseService::completePurchase(const PurchaseRequest& request)
         auto movement=db_->prepare("INSERT INTO stock_movements(id,product_id,batch_id,type,quantity,original_unit,reference_id,reason,balance_after,performed_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)"); movement.bind(1,uuid()); movement.bind(2,line.productId); if(batchId.isEmpty()) movement.bindNull(3); else movement.bind(3,batchId); movement.bind(4,"purchase"); movement.bind(5,line.quantity); movement.bind(6,line.unitName); movement.bind(7,id); movement.bind(8,"Purchase received"); movement.bind(9,before+line.quantity); movement.bind(10,"Purchasing"); movement.bind(11,utcNow()); movement.execute();
     }
     if(due>0) { auto balance=db_->prepare("UPDATE suppliers SET balance_paisa=balance_paisa+? WHERE id=?"); balance.bind(1,due); balance.bind(2,request.supplierId); balance.execute(); auto ledger=db_->prepare("INSERT INTO supplier_ledger(id,supplier_id,reference_id,entry_type,debit_paisa,credit_paisa,balance_paisa,created_at) SELECT ?,?,?, 'purchase', ?,0,balance_paisa,? FROM suppliers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,request.supplierId); ledger.bind(3,id); ledger.bind(4,due); ledger.bind(5,utcNow()); ledger.bind(6,request.supplierId); ledger.execute(); }
-    if(request.paidAmount>0 && request.paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?, 'cash_out',?,?,?)"); cash.bind(1,uuid()); cash.bindNull(2); cash.bind(3,request.paidAmount); cash.bind(4,"Purchase payment"); cash.bind(5,utcNow()); cash.execute(); }
+    if(request.paidAmount>0 && request.paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?, 'cash_out',?,?,?)"); cash.bind(1,uuid()); cash.bind(2,cashShift); cash.bindNull(3); cash.bind(4,request.paidAmount); cash.bind(5,"Purchase payment"); cash.bind(6,utcNow()); cash.execute(); }
     tx.commit(); return {id,invoice,total};
 }
 } // namespace pos

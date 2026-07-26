@@ -11,7 +11,7 @@ struct PaymentResult { QString paymentId; Money total{}; };
 class PaymentService {
 public:
     explicit PaymentService(std::shared_ptr<Database> database);
-    PaymentResult recordCustomerPayment(const QString& customerId, const QList<InvoicePayment>& allocations, const QString& method, const QString& note);
+    PaymentResult recordCustomerPayment(const QString& customerId, const QList<InvoicePayment>& allocations, const QString& method, const QString& note, const QString& shiftId={});
 private:
     std::shared_ptr<Database> db_;
 };

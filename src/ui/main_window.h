@@ -17,6 +17,13 @@ private:
     QWidget* makeSalesPos();
     QWidget* makePurchases();
     QWidget* makeCustomers();
+    QWidget* makeSuppliers();
+    QWidget* makeCashManagement();
+    QWidget* makeCheques();
+    QWidget* makeReports();
+    QWidget* makeAuditLog();
+    QWidget* makeSettings();
+    QWidget* makeAnalytics();
     QWidget* makeBackupRestore();
     QWidget* makePlaceholder(const QString& title, const QString& description);
     QWidget* makeMetric(const QString& label, const QString& value, const QString& caption, const QString& accent);

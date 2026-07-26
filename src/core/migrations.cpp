@@ -5,14 +5,14 @@
 namespace pos {
 namespace {
 void addMissingColumns(Database& db) {
-    const QList<QPair<QString,QStringList>> additions={{"customers",{"phone TEXT","address TEXT","credit_limit_paisa INTEGER NOT NULL DEFAULT 0","payment_terms_days INTEGER NOT NULL DEFAULT 0","balance_paisa INTEGER NOT NULL DEFAULT 0","is_deleted INTEGER NOT NULL DEFAULT 0"}},{"sales",{"warehouse_id TEXT REFERENCES warehouses(id)","shift_id TEXT REFERENCES shift_sessions(id)","discount_paisa INTEGER NOT NULL DEFAULT 0","tax_paisa INTEGER NOT NULL DEFAULT 0","paid_paisa INTEGER NOT NULL DEFAULT 0","due_paisa INTEGER NOT NULL DEFAULT 0","note TEXT","voided_at TEXT","void_reason TEXT"}},{"suppliers",{"contact_person TEXT","address TEXT","opening_balance_paisa INTEGER NOT NULL DEFAULT 0","is_archived INTEGER NOT NULL DEFAULT 0"}},{"products",{"description TEXT NOT NULL DEFAULT ''","track_expiry INTEGER NOT NULL DEFAULT 0","image_path TEXT"}},{"cash_transactions",{"drawer_id TEXT REFERENCES cash_drawers(id)"}}};
+    const QList<QPair<QString,QStringList>> additions={{"customers",{"phone TEXT","address TEXT","credit_limit_paisa INTEGER NOT NULL DEFAULT 0","payment_terms_days INTEGER NOT NULL DEFAULT 0","balance_paisa INTEGER NOT NULL DEFAULT 0","is_deleted INTEGER NOT NULL DEFAULT 0"}},{"sales",{"warehouse_id TEXT REFERENCES warehouses(id)","shift_id TEXT REFERENCES shift_sessions(id)","discount_paisa INTEGER NOT NULL DEFAULT 0","tax_paisa INTEGER NOT NULL DEFAULT 0","paid_paisa INTEGER NOT NULL DEFAULT 0","due_paisa INTEGER NOT NULL DEFAULT 0","note TEXT","voided_at TEXT","void_reason TEXT"}},{"sale_items",{"batch_id TEXT","unit_name TEXT NOT NULL DEFAULT 'base'","unit_price_paisa INTEGER NOT NULL DEFAULT 0","discount_paisa INTEGER NOT NULL DEFAULT 0","line_total_paisa INTEGER NOT NULL DEFAULT 0"}},{"suppliers",{"contact_person TEXT","phone TEXT","address TEXT","opening_balance_paisa INTEGER NOT NULL DEFAULT 0","balance_paisa INTEGER NOT NULL DEFAULT 0","is_archived INTEGER NOT NULL DEFAULT 0"}},{"products",{"sku TEXT","barcode TEXT","category_id TEXT","brand_id TEXT","description TEXT NOT NULL DEFAULT ''","track_batches INTEGER NOT NULL DEFAULT 0","track_expiry INTEGER NOT NULL DEFAULT 0","purchase_price_paisa INTEGER NOT NULL DEFAULT 0","retail_price_paisa INTEGER NOT NULL DEFAULT 0","wholesale_price_paisa INTEGER NOT NULL DEFAULT 0","dealer_price_paisa INTEGER NOT NULL DEFAULT 0","stock_quantity INTEGER NOT NULL DEFAULT 0","minimum_stock INTEGER NOT NULL DEFAULT 0","image_path TEXT","is_deleted INTEGER NOT NULL DEFAULT 0"}},{"purchases",{"warehouse_id TEXT","subtotal_paisa INTEGER NOT NULL DEFAULT 0","discount_paisa INTEGER NOT NULL DEFAULT 0","tax_paisa INTEGER NOT NULL DEFAULT 0","paid_paisa INTEGER NOT NULL DEFAULT 0","due_paisa INTEGER NOT NULL DEFAULT 0","notes TEXT"}},{"cash_transactions",{"drawer_id TEXT","shift_id TEXT","sale_id TEXT","reason TEXT"}},{"cheques",{"party_id TEXT","bank TEXT"}},{"customer_payments",{"note TEXT"}},{"customer_ledger",{"sale_id TEXT"}},{"batches",{"expiry_date TEXT"}}};
     for(const auto& table:additions){QStringList existing;auto info=db.prepare(("PRAGMA table_info("+table.first+")").toUtf8().constData());while(info.stepRow())existing.append(info.text(1));for(const auto& definition:table.second){const auto column=definition.section(' ',0,0);if(!existing.contains(column))db.exec(("ALTER TABLE "+table.first+" ADD COLUMN "+definition).toUtf8().constData());}}
 }
 }
 void applyMigrations(Database& db) {
     db.exec("CREATE TABLE IF NOT EXISTS schema_version(version INTEGER NOT NULL);");
-    auto versionQuery=db.prepare("SELECT COALESCE(MAX(version),0) FROM schema_version");
-    versionQuery.stepRow(); const auto version=versionQuery.integer(0);
+    qint64 version{};
+    { auto versionQuery=db.prepare("SELECT COALESCE(MAX(version),0) FROM schema_version"); versionQuery.stepRow(); version=versionQuery.integer(0); }
     static constexpr std::array migrations = {
 R"SQL(
 CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);
@@ -103,8 +103,7 @@ CREATE TABLE customer_payment_allocations (id TEXT PRIMARY KEY, payment_id TEXT 
 CREATE INDEX customer_payment_allocations_sale ON customer_payment_allocations(sale_id);
 )SQL",
 R"SQL(
-CREATE INDEX IF NOT EXISTS customers_phone_lookup ON customers(phone);
-CREATE INDEX IF NOT EXISTS cheques_due_status ON cheques(due_date,status);
+SELECT 1;
 )SQL"};
     if (version>0 && static_cast<size_t>(version)<migrations.size()) {
         // The live connection is backed up before any schema change. This remains
@@ -121,6 +120,7 @@ CREATE INDEX IF NOT EXISTS cheques_due_status ON cheques(due_date,status);
     }
     Transaction compatibility(db.handle());
     addMissingColumns(db);
+    db.exec("CREATE INDEX IF NOT EXISTS customers_phone_lookup ON customers(phone); CREATE INDEX IF NOT EXISTS cheques_due_status ON cheques(due_date,status);");
     compatibility.commit();
 }
 } // namespace pos
