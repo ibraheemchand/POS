@@ -1,0 +1,3 @@
+#include "core/audit_service.h"
+#include "core/database.h"
+namespace pos { AuditService::AuditService(std::shared_ptr<Database> db):db_(std::move(db)){} QList<AuditEntry> AuditService::recent(const QString& filter,int limit)const{if(limit<1||limit>1000)throw DatabaseError("invalid audit limit");QList<AuditEntry> out;auto q=db_->prepare(filter.isEmpty()?"SELECT action,entity_type,entity_id,detail,created_at FROM audit_log ORDER BY created_at DESC LIMIT ?":"SELECT action,entity_type,entity_id,detail,created_at FROM audit_log WHERE action=? ORDER BY created_at DESC LIMIT ?");int i=1;if(!filter.isEmpty())q.bind(i++,filter);q.bind(i,limit);while(q.stepRow())out.append({q.text(0),q.text(1),q.text(2),q.text(3),q.text(4)});return out;} }
