@@ -12,8 +12,11 @@
 #include "core/report_service.h"
 #include "core/audit_service.h"
 #include "core/settings_service.h"
+#include "core/excel_export_service.h"
+#include "core/security_service.h"
 #include <filesystem>
 #include <QTemporaryDir>
+#include <QFile>
 
 class PosServiceTest final : public QObject {
     Q_OBJECT
@@ -36,6 +39,9 @@ private slots:
     void chequeRegisterTracksDueAndStatus();
     void reportsAndAuditQueriesReturnPersistedData();
     void settingsPersistAndReadValues();
+    void productImportIsAtomicAndValidated();
+    void excelExportProducesOpenXmlWorkbook();
+    void securityPinStoresOnlySaltedHashAndVerifies();
 };
 
 static void insertProduct(pos::Database& db, const QString& id, qint64 stock) {
@@ -61,5 +67,8 @@ void PosServiceTest::purchaseReturnReducesStockAndPayable(){try{const auto path=
 void PosServiceTest::chequeRegisterTracksDueAndStatus(){try{const auto path=std::filesystem::temp_directory_path()/("cheque-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::ChequeService cheques(db);const auto id=cheques.record({{},"received",{},"CH-001","HBL",{},25000,QDate::currentDate().addDays(2)});QVERIFY(!id.isEmpty());QCOMPARE(cheques.dueBy(QDate::currentDate().addDays(2)).size(),qsizetype(1));cheques.setStatus(id,"deposited");QCOMPARE(cheques.dueBy(QDate::currentDate().addDays(2)).size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::reportsAndAuditQueriesReturnPersistedData(){try{const auto path=std::filesystem::temp_directory_path()/("report-audit-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();auto audit=db->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");audit.bind(1,pos::uuid());audit.bind(2,"test_action");audit.bind(3,"test_entity");audit.bind(4,"entity-1");audit.bind(5,"detail");audit.bind(6,pos::utcNow());audit.execute();const auto rows=pos::AuditService(db).recent("test_action");QCOMPARE(rows.size(),qsizetype(1));QCOMPARE(rows.first().entityId,QString("entity-1"));const auto summary=pos::ReportService(db).summary(QDate::currentDate(),QDate::currentDate());QCOMPARE(summary.sales,qint64(0));QCOMPARE(summary.lowStock,qint64(0));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::settingsPersistAndReadValues(){try{const auto path=std::filesystem::temp_directory_path()/("settings-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SettingsService settings(db);QCOMPARE(settings.value("business.currency","PKR"),QString("PKR"));settings.setValue("business.name","Nexora Wholesale");QCOMPARE(settings.value("business.name"),QString("Nexora Wholesale"));settings.setValue("business.name","Updated Wholesale");QCOMPARE(settings.value("business.name"),QString("Updated Wholesale"));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::productImportIsAtomicAndValidated(){try{const auto path=std::filesystem::temp_directory_path()/("product-import-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);const QList<pos::ProductDefinition> products={{"Imported A","SKU-A","",{}, {},{},"piece",100,150,0,0,0,false,false,{}},{"Imported B","SKU-B","",{}, {},{},"piece",200,250,0,0,0,false,false,{}}};const auto ids=inventory.importProducts(products);QCOMPARE(ids.size(),qsizetype(2));QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,inventory.importProducts({products.first(),{"Broken",{}, {},{}, {},{},"piece",-1,100,0,0,0,false,false,{}}}));auto count=db->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0");QVERIFY(count.stepRow());QCOMPARE(count.integer(0),qint64(2));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::excelExportProducesOpenXmlWorkbook(){try{const auto path=QString::fromStdString((std::filesystem::temp_directory_path()/("report-"+pos::uuid().toStdString()+".xlsx")).string());pos::ExcelExportService::writeWorkbook(path,{"Metric","Value"},{{"Sales","100"}});QFile file(path);QVERIFY(file.open(QIODevice::ReadOnly));QCOMPARE(file.read(2),QByteArray("PK"));const auto package=file.readAll();QVERIFY(package.contains("xl/worksheets/sheet1.xml"));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::securityPinStoresOnlySaltedHashAndVerifies(){try{const auto path=std::filesystem::temp_directory_path()/("security-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SecurityService security(db);QVERIFY(!security.hasPin());QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,security.setPin("12"));security.setPin("1234");QVERIFY(security.hasPin());QVERIFY(security.verifyPin("1234"));QVERIFY(!security.verifyPin("4321"));auto stored=db->prepare("SELECT value FROM settings WHERE key='security.pin_hash'");QVERIFY(stored.stepRow());QVERIFY(!stored.text(0).contains("1234"));security.clearPin();QVERIFY(!security.hasPin());}catch(const std::exception& error){QFAIL(error.what());}}
 QTEST_APPLESS_MAIN(PosServiceTest)
 #include "pos_service_test.moc"

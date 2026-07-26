@@ -8,5 +8,7 @@
 - Validate external/UI input before service/database calls.
 - Keep business logic free of Qt widget dependencies where practical.
 - Add a focused QtTest regression for every financial workflow and rollback path.
+- CSV imports must parse quoted fields, validate all rows before writing, and commit the batch in one transaction.
+- PINs must never be persisted in plaintext; use a per-record salt and a cryptographic digest through SecurityService.
 - Run CMake build and CTest before declaring work complete; do not ignore warnings.
 - Never add FBR code or a network dependency; this product is offline-only.

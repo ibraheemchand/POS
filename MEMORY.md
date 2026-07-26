@@ -10,4 +10,7 @@
 - `ReturnService` validates against previously returned quantities and reverses stock/batches atomically; sales returns reduce customer credit first and optionally refund remaining cash, while purchase returns reduce supplier payable.
 - Customers now expose a service-backed payment allocation action; it selects an outstanding invoice and records the payment through `PaymentService` without direct business writes from the UI.
 - `SupplierService::ledger()` returns ordered supplier ledger entries; the Suppliers page renders the selected supplier's debit, credit, reference, and balance history without writing directly from the UI.
-- Reports can export the selected date range as local CSV or PDF using ReportService and Qt PrintSupport; CSV import and Excel output remain separate backlog items.
+- Reports can export the selected date range as local CSV, PDF, or native offline XLSX. `ExcelExportService` writes a minimal Open XML ZIP package with inline worksheet strings; Inventory CSV import parses quoted fields and delegates an atomic product batch to InventoryService.
+- Reports can also be sent to a selected local A4 printer through Qt PrintSupport; thermal ESC/POS and barcode-label protocols remain separate work.
+- `SecurityService` stores only a salted SHA-256 PIN digest in the local settings table; the Settings screen supports setup/change/clear, and the UI enforces the PIN for shift close, supplier archive, verified backup restore, and PIN removal.
+- Sales POS treats scanner return/Enter as an auto-add command for the first exact search result, preserving the existing quantity control and cart path.

@@ -27,6 +27,7 @@ private:
     QWidget* makeBackupRestore();
     QWidget* makePlaceholder(const QString& title, const QString& description);
     QWidget* makeMetric(const QString& label, const QString& value, const QString& caption, const QString& accent);
+    bool authorizeSensitiveAction(const QString& action);
     void switchTheme();
     std::shared_ptr<pos::Database> database_;
     std::unique_ptr<pos::PosService> pos_;

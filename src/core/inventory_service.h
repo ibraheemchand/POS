@@ -15,6 +15,7 @@ public:
     explicit InventoryService(std::shared_ptr<Database> database);
     QString createProduct(const QString& name, const QString& baseUnit, Money purchasePrice, Money retailPrice, bool trackBatches);
     QString createProduct(const ProductDefinition& product);
+    QList<QString> importProducts(const QList<ProductDefinition>& products);
     void updateProduct(const QString& productId, const ProductDefinition& product);
     void archiveProduct(const QString& productId);
     QString cloneProduct(const QString& productId, const QString& newName, const QString& newSku, const QString& newBarcode);

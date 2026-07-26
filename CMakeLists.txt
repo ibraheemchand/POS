@@ -33,6 +33,8 @@ add_library(pos_core
     src/core/report_service.cpp
     src/core/audit_service.cpp
     src/core/settings_service.cpp
+    src/core/excel_export_service.cpp
+    src/core/security_service.cpp
     src/core/return_service.cpp
     src/core/database.cpp
     src/core/migrations.cpp

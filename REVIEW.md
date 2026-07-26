@@ -13,6 +13,11 @@
 - [x] Supplier ledger UI delegates ordered ledger reads to SupplierService and has opening-balance coverage.
 - [x] Report CSV export is local-only and reuses the validated ReportService date range.
 - [x] Report PDF export is local-only and uses Qt PrintSupport without network dependencies.
+- [x] Product CSV import validates integer money fields and commits the entire batch atomically, with rollback regression coverage.
+- [x] XLSX report export produces a valid Open XML ZIP package without network or external runtime dependencies.
+- [x] A4 report printing uses the local Qt print dialog and does not require network services.
+- [x] Security PIN setup stores a salted digest, has verification/clear regression coverage, and gates destructive UI actions.
+- [x] Sales POS supports scanner return-key auto-add without bypassing the existing cart validation path.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
 - [ ] No money calculation uses `double`/`float`.
 - [ ] Queries are parameterized and lookup columns indexed.

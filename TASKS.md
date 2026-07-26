@@ -14,9 +14,14 @@
 
 - [x] Add supplier ledger screen; customer payment allocation UI is available from Customers.
 - [x] Add report CSV and PDF export.
-- [ ] Add CSV import and Excel report output.
-- [ ] Add ESC/POS/A4/barcode-label printing.
-- [ ] Add scanner timing, suspend/resume sales, discounts, mixed payments, and sensitive-action PIN.
+- [x] Add validated atomic product CSV import.
+- [x] Add native offline `.xlsx` report output.
+- [x] Add A4 report printing through the local Qt print dialog.
+- [ ] Add ESC/POS thermal and barcode-label printing.
+- [x] Add scanner return-key timing and barcode auto-add behavior in Sales POS.
+- [ ] Add suspend/resume sales persistence.
+- [ ] Add discounts and mixed-payment capture.
+- [x] Add salted PIN setup/verification in local settings and enforce it on shift close, supplier archive, backup restore, and PIN removal.
 - [ ] Add notifications and scheduled/retention-based backups.
 
 ## Quality and release

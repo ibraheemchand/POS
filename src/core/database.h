@@ -9,7 +9,9 @@
 namespace pos {
 
 class DatabaseError final : public std::runtime_error {
-public: using std::runtime_error::runtime_error;
+public:
+    using std::runtime_error::runtime_error;
+    explicit DatabaseError(const QString& message):std::runtime_error(message.toStdString()){}
 };
 
 class Statement {
