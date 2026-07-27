@@ -36,6 +36,7 @@ add_library(pos_core
     src/core/excel_export_service.cpp
     src/core/security_service.cpp
     src/core/suspended_sale_service.cpp
+    src/core/notification_service.cpp
     src/core/return_service.cpp
     src/core/database.cpp
     src/core/migrations.cpp

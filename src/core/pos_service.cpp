@@ -53,7 +53,7 @@ QList<PosService::BatchAllocation> PosService::allocateBatches(const SaleLine& l
 
 SaleResult PosService::completeSale(const SaleRequest& request) {
     if (request.lines.isEmpty()) throw DatabaseError("a sale requires at least one item");
-    if(request.paidAmount>0 && request.paymentMethod=="cash" && request.shiftId.isEmpty()) ensureActiveShift(*db_);
+    if(request.paidAmount>0 && (request.paymentMethod=="cash"||request.paymentMethod=="mixed") && request.shiftId.isEmpty()) ensureActiveShift(*db_);
     Transaction tx(db_->handle());
     Money subtotal{};
     for (const auto& line: request.lines) {
@@ -65,12 +65,17 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     if (request.invoiceDiscount<0 || request.invoiceDiscount>subtotal) throw DatabaseError("invalid invoice discount");
     const Money total=subtotal-request.invoiceDiscount;
     if(request.paidAmount<0 || request.paidAmount>total) throw DatabaseError("invalid payment amount");
+    QList<SaleRequest::Tender> tenders=request.tenders;
+    if(request.paymentMethod!="mixed" && request.paidAmount>0 && tenders.isEmpty())tenders.append({request.paymentMethod,request.paidAmount});
+    Money tenderTotal{}; Money cashTender{};
+    for(const auto& tender:tenders){if(!QStringList{"cash","cheque","mobile_wallet","bank"}.contains(tender.method)||tender.amount<=0)throw DatabaseError("invalid sale tender");tenderTotal+=tender.amount;if(tender.method=="cash")cashTender+=tender.amount;}
+    if((request.paymentMethod=="mixed"||!tenders.isEmpty())&&tenderTotal!=request.paidAmount)throw DatabaseError("sale tenders do not match paid amount");
     const auto due=total-request.paidAmount;
     const QStringList paymentMethods{"cash","credit","cheque","mobile_wallet","mixed"};
     if (!paymentMethods.contains(request.paymentMethod)) throw DatabaseError("unsupported payment method");
     if (due>0 && request.customerId.isEmpty()) throw DatabaseError("an unpaid balance requires a customer");
     QString shiftId=request.shiftId;
-    if(request.paidAmount>0 && request.paymentMethod=="cash") { if(shiftId.isEmpty()) shiftId=activeShiftId(*db_); if(shiftId.isEmpty()) throw DatabaseError("open a cashier shift before recording cash sales"); }
+    if(cashTender>0) { if(shiftId.isEmpty()) shiftId=activeShiftId(*db_); if(shiftId.isEmpty()) throw DatabaseError("open a cashier shift before recording cash sales"); }
     if (!request.customerId.isEmpty() && due>0) {
         auto c=db_->prepare("SELECT balance_paisa, credit_limit_paisa FROM customers WHERE id=? AND is_deleted=0"); c.bind(1,request.customerId);
         if(!c.stepRow()) throw DatabaseError("customer not found");
@@ -95,19 +100,20 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
         auto balance=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa+? WHERE id=?"); balance.bind(1,due); balance.bind(2,request.customerId); balance.execute();
         auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Credit sale',?,0,balance_paisa,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,request.customerId); ledger.bind(3,id); ledger.bind(4,due); ledger.bind(5,utcNow()); ledger.bind(6,request.customerId); ledger.execute();
     }
-    if (request.paidAmount>0 && request.paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,request.paidAmount); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
+    for(const auto& tender:tenders){auto payment=db_->prepare("INSERT INTO sale_payments(id,sale_id,method,amount_paisa,created_at) VALUES(?,?,?,?,?)");payment.bind(1,uuid());payment.bind(2,id);payment.bind(3,tender.method);payment.bind(4,tender.amount);payment.bind(5,utcNow());payment.execute();}
+    if (cashTender>0) { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,cashTender); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
     tx.commit(); return {id,invoice,total};
 }
 
 void PosService::voidSale(const QString& saleId, const QString& reason, const QString& performedBy) {
     if(reason.trimmed().isEmpty()) throw DatabaseError("a void reason is required");
-    Transaction tx(db_->handle()); auto sale=db_->prepare("SELECT customer_id,due_paisa,paid_paisa,payment_method,status FROM sales WHERE id=?"); sale.bind(1,saleId); if(!sale.stepRow()) throw DatabaseError("sale not found"); const auto customer=sale.text(0); const auto due=sale.integer(1); const auto paid=sale.integer(2); const auto paymentMethod=sale.text(3); if(sale.text(4)!="completed") throw DatabaseError("only completed, unpaid sales can be voided");
+    Transaction tx(db_->handle()); auto sale=db_->prepare("SELECT customer_id,due_paisa,status FROM sales WHERE id=?"); sale.bind(1,saleId); if(!sale.stepRow()) throw DatabaseError("sale not found"); const auto customer=sale.text(0); const auto due=sale.integer(1); if(sale.text(2)!="completed") throw DatabaseError("only completed, unpaid sales can be voided");
     auto allocations=db_->prepare("SELECT 1 FROM customer_payment_allocations WHERE sale_id=? LIMIT 1"); allocations.bind(1,saleId); if(allocations.stepRow()) throw DatabaseError("a sale with recorded customer payments must be refunded, not voided");
     auto lines=db_->prepare("SELECT product_id,batch_id,quantity FROM sale_items WHERE sale_id=?"); lines.bind(1,saleId);
     while(lines.stepRow()) { const auto product=lines.text(0), batch=lines.text(1); const auto quantity=lines.integer(2); auto p=db_->prepare("UPDATE products SET stock_quantity=stock_quantity+?,updated_at=? WHERE id=?"); p.bind(1,quantity); p.bind(2,utcNow()); p.bind(3,product); p.execute(); if(!batch.isEmpty()){auto b=db_->prepare("UPDATE batches SET quantity_remaining=quantity_remaining+? WHERE id=?");b.bind(1,quantity);b.bind(2,batch);b.execute();} auto m=db_->prepare("INSERT INTO stock_movements(id,product_id,batch_id,type,quantity,reference_id,reason,balance_after,performed_by,created_at) SELECT ?,?,?, 'void_return', ?, ?, ?, stock_quantity, ?, ? FROM products WHERE id=?");m.bind(1,uuid());m.bind(2,product);if(batch.isEmpty())m.bindNull(3);else m.bind(3,batch);m.bind(4,quantity);m.bind(5,saleId);m.bind(6,reason);m.bind(7,performedBy);m.bind(8,utcNow());m.bind(9,product);m.execute(); }
     auto mark=db_->prepare("UPDATE sales SET status='voided',voided_at=?,void_reason=? WHERE id=?"); mark.bind(1,utcNow());mark.bind(2,reason);mark.bind(3,saleId);mark.execute();
     if(!customer.isEmpty() && due>0){auto c=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa-? WHERE id=?");c.bind(1,due);c.bind(2,customer);c.execute();auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Voided sale reversal',0,?,balance_paisa,? FROM customers WHERE id=?");ledger.bind(1,uuid());ledger.bind(2,customer);ledger.bind(3,saleId);ledger.bind(4,due);ledger.bind(5,utcNow());ledger.bind(6,customer);ledger.execute();}
-    if (paid>0 && paymentMethod=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) SELECT ?,shift_id,?,'cash_out',?,'Voided sale reversal',? FROM sales WHERE id=?");cash.bind(1,uuid());cash.bind(2,saleId);cash.bind(3,paid);cash.bind(4,utcNow());cash.bind(5,saleId);cash.execute(); }
+    auto cashPaid=db_->prepare("SELECT COALESCE(SUM(amount_paisa),0) FROM sale_payments WHERE sale_id=? AND method='cash'");cashPaid.bind(1,saleId);cashPaid.stepRow();if(cashPaid.integer(0)>0){auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) SELECT ?,shift_id,?,'cash_out',?,'Voided sale reversal',? FROM sales WHERE id=?");cash.bind(1,uuid());cash.bind(2,saleId);cash.bind(3,cashPaid.integer(0));cash.bind(4,utcNow());cash.bind(5,saleId);cash.execute();}
     auto audit=db_->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");audit.bind(1,uuid());audit.bind(2,"sale_voided");audit.bind(3,"sale");audit.bind(4,saleId);audit.bind(5,reason);audit.bind(6,utcNow());audit.execute();tx.commit();
 }
 } // namespace pos

@@ -104,6 +104,10 @@ CREATE INDEX customer_payment_allocations_sale ON customer_payment_allocations(s
 )SQL",
 R"SQL(
 SELECT 1;
+)SQL",
+R"SQL(
+CREATE TABLE IF NOT EXISTS sale_payments (id TEXT PRIMARY KEY, sale_id TEXT NOT NULL REFERENCES sales(id), method TEXT NOT NULL, amount_paisa INTEGER NOT NULL CHECK(amount_paisa>0), created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS sale_payments_sale ON sale_payments(sale_id);
 )SQL"};
     if (version>0 && static_cast<size_t>(version)<migrations.size()) {
         // The live connection is backed up before any schema change. This remains

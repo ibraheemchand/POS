@@ -18,7 +18,10 @@
 - [x] A4 report printing uses the local Qt print dialog and does not require network services.
 - [x] Security PIN setup stores a salted digest, has verification/clear regression coverage, and gates destructive UI actions.
 - [x] Sales POS supports scanner return-key auto-add without bypassing the existing cart validation path.
-- [x] Suspended-sale persistence validates line data and round-trips through a regression test; UI resume controls remain unchecked.
+- [x] Suspended-sale persistence validates line data and Sales POS suspend/resume revalidates product stock before restoring a cart.
+- [x] Sales POS discounts remain integer-paisa and cannot exceed subtotal before `PosService` validation.
+- [x] Mixed tenders are validated against paid total, persisted transactionally, and cash reversal uses only cash tender rows.
+- [x] Notification persistence validates fields and read-state transitions with regression coverage.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
 - [ ] No money calculation uses `double`/`float`.
 - [ ] Queries are parameterized and lookup columns indexed.

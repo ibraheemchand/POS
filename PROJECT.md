@@ -4,7 +4,7 @@ Nexora POS is an offline-first Windows wholesale POS built with C++20, Qt 6 Widg
 
 ## Architecture
 
-- `src/core`: UI-independent database, migrations, transactional services, backup, reporting, audit, settings, security, suspended-sale persistence, inventory, POS, purchasing, payments, shifts, cheques, Excel export, and catalog services.
+- `src/core`: UI-independent database, migrations, transactional services, backup, reporting, audit, settings, security, suspended-sale persistence, notifications, inventory, POS, purchasing, payments, shifts, cheques, Excel export, and catalog services.
 - `src/ui`: Qt Widgets shell, QSS themes, live Inventory, Sales POS, Purchases, Customers, Suppliers, Cash Management, Cheques, Reports, Analytics, Audit Log, Settings, and Backup/Restore pages.
 - `tests`: QtTest business-logic coverage.
 - `third_party/sqlite`: vendored SQLite amalgamation.
@@ -15,8 +15,8 @@ Schema compatibility is checked at startup. The migration runner repairs missing
 
 ## Current implemented workflows
 
-Product CRUD with atomic CSV import, scanner return-key barcode auto-add, inventory receipts/adjustments, FEFO multi-batch sales, atomic sales and purchase returns, cash sale voids, shift-attached cash sales/purchases/payments, purchase receiving, customer payments with invoice allocation UI, supplier CRUD with ledger display, shift lifecycle and reconciliation UI, cheque register, summary reporting with CSV/PDF/XLSX export and A4 printing, audit querying, persisted business settings, verified online backup/restore, and barcode validation.
+Product CRUD with atomic CSV import, scanner return-key barcode auto-add, suspend/resume sales, invoice discounts, mixed tender persistence/capture, inventory receipts/adjustments, FEFO multi-batch sales, atomic sales and purchase returns, cash sale voids, shift-attached cash sales/purchases/payments, purchase receiving, customer payments with invoice allocation UI, supplier CRUD with ledger display, shift lifecycle and reconciliation UI, cheque register, summary reporting with CSV/PDF/XLSX export and A4 printing, audit querying, persisted business settings, verified online backup/restore, and barcode validation.
 
 ## Known limitations
 
-Complete cheque reversal behavior, Sales POS suspend/resume controls, discounts/mixed payments, ESC/POS/barcode-label printing, notifications, scheduled backups, SQLCipher, and licensing remain backlog work. FBR is intentionally excluded from the product scope.
+Complete cheque reversal behavior, ESC/POS/barcode-label printing, notifications UI/event generation, scheduled backups, SQLCipher, and licensing remain backlog work. FBR is intentionally excluded from the product scope.

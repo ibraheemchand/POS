@@ -20,10 +20,15 @@
 - [ ] Add ESC/POS thermal and barcode-label printing.
 - [x] Add scanner return-key timing and barcode auto-add behavior in Sales POS.
 - [x] Add suspended-sale persistence service with JSON validation and rollback-safe storage.
-- [ ] Add Sales POS suspend/resume controls using SuspendedSaleService.
-- [ ] Add discounts and mixed-payment capture.
+- [x] Add Sales POS suspend/resume controls using SuspendedSaleService.
+- [x] Add invoice discount capture and validation in Sales POS.
+- [x] Add split-tender payment persistence and mixed-payment capture.
 - [x] Add salted PIN setup/verification in local settings and enforce it on shift close, supplier archive, backup restore, and PIN removal.
-- [ ] Add notifications and scheduled/retention-based backups.
+- [x] Add notification persistence, unread retrieval, and read-state service.
+- [ ] Add notifications UI and operational event generation.
+- [ ] The items in inventory once logged can be editable and can be deleteable.
+- [ ] When you click on backup it show all the availiable usb drives , user select the one , then save the backup init and when it is time to restore i also tell from where you want to restore , user select that usb drive it will load the sata from there  .
+- [ ] Add scheduled/retention-based backups.
 
 ## Quality and release
 

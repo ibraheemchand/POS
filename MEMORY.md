@@ -14,4 +14,7 @@
 - Reports can also be sent to a selected local A4 printer through Qt PrintSupport; thermal ESC/POS and barcode-label protocols remain separate work.
 - `SecurityService` stores only a salted SHA-256 PIN digest in the local settings table; the Settings screen supports setup/change/clear, and the UI enforces the PIN for shift close, supplier archive, verified backup restore, and PIN removal.
 - Sales POS treats scanner return/Enter as an auto-add command for the first exact search result, preserving the existing quantity control and cart path.
-- `SuspendedSaleService` stores cart lines as validated JSON in the existing `suspended_sales` table; the UI controls are intentionally tracked separately until they are wired to the service.
+- `SuspendedSaleService` stores cart lines as validated JSON in the existing `suspended_sales` table; Sales POS suspend/resume clears/restores carts and revalidates product existence and stock before resuming.
+- Sales POS invoice discounts are captured as integer paisa, bounded by the cart subtotal, and delegated to the existing transactional `SaleRequest` path; mixed tender remains dependent on split-payment persistence.
+- Mixed sales now persist each tender in `sale_payments`; cash tenders alone affect the shift cash book, and voids reverse only persisted cash tender amounts.
+- `NotificationService` provides validated local notification creation, unread listing, and read-state transitions over the existing notifications table; UI/event generation remains separate.

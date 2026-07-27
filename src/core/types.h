@@ -20,6 +20,7 @@ struct SaleLine {
 };
 
 struct SaleRequest {
+    struct Tender { QString method; Money amount{}; };
     QString customerId;
     QString shiftId;
     QString paymentMethod; // cash, credit, cheque, mobile_wallet, mixed
@@ -27,6 +28,7 @@ struct SaleRequest {
     Money invoiceDiscount{};
     QString note;
     QList<SaleLine> lines;
+    QList<Tender> tenders;
 };
 
 struct SaleResult { QString saleId; QString invoiceNo; Money total{}; };
