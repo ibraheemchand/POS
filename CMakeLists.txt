@@ -9,6 +9,7 @@ set(CMAKE_AUTOUIC ON)
 
 option(POS_BUILD_TESTS "Build business-logic tests" ON)
 option(POS_ENABLE_FBR "Include the isolated FBR queue module" OFF)
+option(POS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 
 find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport)
 
@@ -44,10 +45,16 @@ add_library(pos_core
     src/core/barcode_service.cpp
     src/core/pos_service.cpp
     src/core/backup_service.cpp
+    src/core/thermal_print_service.cpp
+    src/core/seed_service.cpp
 )
 target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
 target_compile_definitions(pos_core PUBLIC $<$<BOOL:${POS_ENABLE_FBR}>:POS_ENABLE_FBR=1>)
+if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(pos_core PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+  target_link_options(pos_core PUBLIC -fsanitize=address,undefined)
+endif()
 
 add_executable(wholesale_pos
     src/main.cpp
@@ -68,6 +75,10 @@ if(POS_BUILD_TESTS)
     find_package(Qt6 6.4 REQUIRED COMPONENTS Test)
     add_executable(pos_core_tests tests/pos_service_test.cpp)
     target_link_libraries(pos_core_tests PRIVATE pos_core Qt6::Test)
+    if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+      target_compile_options(pos_core_tests PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+      target_link_options(pos_core_tests PRIVATE -fsanitize=address,undefined)
+    endif()
     add_test(NAME pos_core_tests COMMAND pos_core_tests)
   endif()
 endif()

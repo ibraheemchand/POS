@@ -4,7 +4,7 @@ An offline-first Windows wholesale POS foundation written in C++20, Qt 6 Widgets
 
 ## Current scope
 
-This repository is an intentionally buildable foundation. It includes a polished Qt desktop shell, a working backup/restore screen, and the transaction-critical workflows below. Several advanced UI modules (reports, printing, barcode labels, cheque UI, FBR transport, and charting) remain planned rather than being misrepresented as complete.
+This repository is an intentionally buildable offline POS application. It includes a Qt desktop shell, transaction-critical workflows, verified backup/restore, scheduled backups, local reporting, ESC/POS output, and barcode labels. FBR transport remains intentionally excluded.
 
 Implemented core guarantees:
 
@@ -32,6 +32,8 @@ ctest --test-dir build -C Release --output-on-failure
 
 Run `build\Release\wholesale_pos.exe` (or the platform-specific build output). For deployment on Windows, run Qt's `windeployqt` on the executable and package the deployed directory with Inno Setup or NSIS. The data file deliberately lives in Qt's per-user app-data location, not beside the binary, so normal upgrades preserve business data.
 
+For QA/support fixtures, run `wholesale_pos.exe --seed-demo` once against the target per-user data directory. The seed is explicit and idempotent; normal application startup never inserts demo data.
+
 ## Architecture
 
 ```
@@ -40,7 +42,7 @@ src/ui/         Qt Widgets shell and QSS theme
 tests/          QtTest coverage for business transactions
 ```
 
-The next implementation slices should be returns/refunds, shift reconciliation, `QAbstractTableModel` data grids, PDF/CSV/XLSX export, ESC/POS printing, automated backup scheduling, cheques, then the optional FBR queue transport. Keep FBR behind `POS_ENABLE_FBR`; it must never become a dependency of sale completion.
+The remaining implementation slices are release QA expansion, seed/demo data, and an explicit SQLCipher/licensing decision. Keep FBR behind `POS_ENABLE_FBR`; it must never become a dependency of sale completion.
 
 ## Operational notes
 

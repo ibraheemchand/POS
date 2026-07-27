@@ -11,7 +11,7 @@
 - Customers now expose a service-backed payment allocation action; it selects an outstanding invoice and records the payment through `PaymentService` without direct business writes from the UI.
 - `SupplierService::ledger()` returns ordered supplier ledger entries; the Suppliers page renders the selected supplier's debit, credit, reference, and balance history without writing directly from the UI.
 - Reports can export the selected date range as local CSV, PDF, or native offline XLSX. `ExcelExportService` writes a minimal Open XML ZIP package with inline worksheet strings; Inventory CSV import parses quoted fields and delegates an atomic product batch to InventoryService.
-- Reports can also be sent to a selected local A4 printer through Qt PrintSupport; thermal ESC/POS and barcode-label protocols remain separate work.
+- Reports can also be sent to a selected local A4 printer through Qt PrintSupport. `ThermalPrintService` emits validated ESC/POS receipts and Code128 label bytes to a configured raw device path; control characters are rejected to prevent printer-command injection.
 - `SecurityService` stores only a salted SHA-256 PIN digest in the local settings table; the Settings screen supports setup/change/clear, and the UI enforces the PIN for shift close, supplier archive, verified backup restore, and PIN removal.
 - Sales POS treats scanner return/Enter as an auto-add command for the first exact search result, preserving the existing quantity control and cart path.
 - `SuspendedSaleService` stores cart lines as validated JSON in the existing `suspended_sales` table; Sales POS suspend/resume clears/restores carts and revalidates product existence and stock before resuming.
@@ -21,3 +21,5 @@
 - Operational notifications are best-effort after commit so a notification write can never roll back a completed sale, backup, or shift; low-stock alerts are emitted after sales cross the configured threshold.
 - `BackupService::pruneVerifiedBackups` deletes stale verified metadata and snapshot files after retaining the newest configured count; the UI currently applies a 30-backup default.
 - Settings stores `backup.interval_hours`; MainWindow starts an offline QTimer on restart when non-zero and creates verified scheduled snapshots with the same 30-item retention policy.
+- `scripts/deploy.ps1` is the supported Windows staging path; it rebuilds when needed, runs `windeployqt`, and copies the installer/support runbook without copying customer databases.
+- `SeedService` provides an idempotent `--seed-demo` startup mode for QA/support data; it uses existing services and records a local `seed.demo.version` marker rather than seeding automatically during normal startup.

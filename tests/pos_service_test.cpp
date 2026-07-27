@@ -17,6 +17,8 @@
 #include "core/suspended_sale_service.h"
 #include "core/notification_service.h"
 #include "core/backup_service.h"
+#include "core/thermal_print_service.h"
+#include "core/seed_service.h"
 #include <filesystem>
 #include <QTemporaryDir>
 #include <QFile>
@@ -50,6 +52,8 @@ private slots:
     void notificationsCreateReadAndMarkRead();
     void operationalNotificationsAreGenerated();
     void backupRetentionPrunesOldSnapshots();
+    void thermalReceiptAndBarcodeBytesAreValidated();
+    void demoSeedIsIdempotent();
 };
 
 static void insertProduct(pos::Database& db, const QString& id, qint64 stock) {
@@ -83,5 +87,7 @@ void PosServiceTest::mixedSalePersistsTendersAndCashReversal(){try{const auto pa
 void PosServiceTest::notificationsCreateReadAndMarkRead(){try{const auto path=std::filesystem::temp_directory_path()/("notifications-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::NotificationService service(db);const auto id=service.create("low_stock","Low stock","Rice is below minimum");QCOMPARE(service.unread().size(),qsizetype(1));service.markRead(id);QCOMPARE(service.unread().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::operationalNotificationsAreGenerated(){try{const auto path=std::filesystem::temp_directory_path()/("notification-events-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);pos::ProductDefinition product{"Low stock item",{}, {},{}, {},{},"piece",100,150,0,0,1,false,false,{}};const auto productId=inventory.createProduct(product);inventory.receiveStock({productId,2,100,"piece",{}, {},"Seed"});const auto sale=pos::PosService(db).completeSale({{}, {}, "cash",150,0,{},{{productId,{},1,150,0,"piece"}}});QVERIFY(!sale.saleId.isEmpty());const auto rows=pos::NotificationService(db).unread();bool saleEvent=false,lowStockEvent=false,shiftEvent=false;for(const auto& row:rows){saleEvent|=row.type=="sale";lowStockEvent|=row.type=="low_stock";shiftEvent|=row.type=="shift";}QVERIFY(saleEvent);QVERIFY(lowStockEvent);QVERIFY(shiftEvent);}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::backupRetentionPrunesOldSnapshots(){try{const auto root=std::filesystem::temp_directory_path()/("backup-retention-"+pos::uuid().toStdString());std::filesystem::create_directories(root);const auto live=root/"live.db";auto db=std::make_shared<pos::Database>(live);db->migrate();pos::BackupService service(db);service.createVerifiedBackup(root/"one.db");QTest::qWait(5);service.createVerifiedBackup(root/"two.db");QCOMPARE(service.verifiedBackups().size(),qsizetype(2));service.pruneVerifiedBackups(1);QCOMPARE(service.verifiedBackups().size(),qsizetype(1));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::thermalReceiptAndBarcodeBytesAreValidated(){try{const auto receipt=pos::ThermalPrintService::receiptBytes("Nexora","INV-1",{{"Rice",2,300}},300);QVERIFY(receipt.startsWith(QByteArray("\x1b@")));QVERIFY(receipt.contains("TOTAL (paisa): 300"));QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,pos::ThermalPrintService::receiptBytes("Nexora\x1b","INV-1",{{"Rice",2,300}},300));const auto label=pos::ThermalPrintService::barcodeLabelBytes("Rice","123456789012");QVERIFY(label.contains(QByteArray("\x1dkI")));QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,pos::ThermalPrintService::barcodeLabelBytes("Rice","bad\ncode"));const auto path=QString::fromStdString((std::filesystem::temp_directory_path()/("escpos-"+pos::uuid().toStdString()+".bin")).string());pos::ThermalPrintService::writeRaw(path,label);QFile output(path);QVERIFY(output.open(QIODevice::ReadOnly));QCOMPARE(output.readAll(),label);}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::demoSeedIsIdempotent(){try{const auto path=std::filesystem::temp_directory_path()/("seed-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SeedService seed(db);seed.seedDemoData();seed.seedDemoData();auto products=db->prepare("SELECT COUNT(*) FROM products WHERE sku LIKE 'DEMO-%'");products.stepRow();QCOMPARE(products.integer(0),qint64(2));auto stock=db->prepare("SELECT SUM(stock_quantity) FROM products WHERE sku LIKE 'DEMO-%'");stock.stepRow();QCOMPARE(stock.integer(0),qint64(37));auto marker=db->prepare("SELECT value FROM settings WHERE key='seed.demo.version'");QVERIFY(marker.stepRow());QCOMPARE(marker.text(0),QString("1"));}catch(const std::exception& error){QFAIL(error.what());}}
 QTEST_APPLESS_MAIN(PosServiceTest)
 #include "pos_service_test.moc"

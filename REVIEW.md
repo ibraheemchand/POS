@@ -17,6 +17,7 @@
 - [x] Inventory edit and archive actions delegate to InventoryService and preserve stock quantities.
 - [x] XLSX report export produces a valid Open XML ZIP package without network or external runtime dependencies.
 - [x] A4 report printing uses the local Qt print dialog and does not require network services.
+- [x] Thermal receipt and Code128 label output is offline, validates printer-control input, and has byte-level regression coverage.
 - [x] Security PIN setup stores a salted digest, has verification/clear regression coverage, and gates destructive UI actions.
 - [x] Sales POS supports scanner return-key auto-add without bypassing the existing cart validation path.
 - [x] Suspended-sale persistence validates line data and Sales POS suspend/resume revalidates product stock before restoring a cart.
@@ -28,11 +29,13 @@
 - [x] Backup UI supports user-selected local/USB destinations and external restore files while preserving integrity and PIN gates.
 - [x] Backup retention pruning has regression coverage and removes stale metadata/snapshot files after commit.
 - [x] Automatic backup interval is persisted locally and scheduled through an offline Qt timer; interval changes explicitly require restart.
+- [x] Deployment staging script packages only the Release executable and Qt runtime; customer databases are excluded and support instructions match the delivered restore flow.
+- [x] Demo seeding is explicit, idempotent, service-backed, and covered by a repeat-run regression test.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
-- [ ] No money calculation uses `double`/`float`.
+- [x] No money calculation uses `double`/`float`; POS display formatting uses integer paisa arithmetic.
 - [ ] Queries are parameterized and lookup columns indexed.
-- [ ] UI does not write business state outside services.
-- [ ] Backup checksum and integrity checks are verified before restore.
-- [ ] Startup quick-check/schema compatibility handling is tested.
+- [x] UI does not write business state outside services.
+- [x] Backup checksum and integrity checks are verified before restore.
+- [x] Startup quick-check/schema compatibility handling is tested.
 - [ ] Security review covers file paths, input validation, PIN-protected actions, and sensitive logs.
 - [ ] Documentation reflects only delivered behavior.

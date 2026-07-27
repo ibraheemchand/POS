@@ -17,7 +17,7 @@
 - [x] Add validated atomic product CSV import.
 - [x] Add native offline `.xlsx` report output.
 - [x] Add A4 report printing through the local Qt print dialog.
-- [ ] Add ESC/POS thermal and barcode-label printing.
+- [x] Add offline ESC/POS thermal receipt and Code128 barcode-label output with configured raw-device and test controls.
 - [x] Add scanner return-key timing and barcode auto-add behavior in Sales POS.
 - [x] Add suspended-sale persistence service with JSON validation and rollback-safe storage.
 - [x] Add Sales POS suspend/resume controls using SuspendedSaleService.
@@ -34,8 +34,10 @@
 
 ## Quality and release
 
-- [ ] Add migration, shift, return, inventory UI, and sanitizer tests; backup retention, notification events, cheque, report, audit, and inventory service coverage is now present.
-- [ ] Add seed data, deployment automation, and support-runbook updates.
+- [x] Add migration, shift, return, thermal, seed, backup retention, notification event, cheque, report, audit, and inventory service regression coverage.
+- [ ] Add Qt UI smoke coverage for Inventory/Settings/Backup and a sanitizer-enabled test job.
+- [x] Add deterministic, idempotent demo seed data for QA/support environments via `wholesale_pos.exe --seed-demo`.
+- [x] Add Windows deployment staging automation and synchronize the support/recovery runbook.
 - [ ] Evaluate SQLCipher and offline licensing separately; neither is enabled today.
 # Legacy Sprint List
 
