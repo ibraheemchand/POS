@@ -14,3 +14,4 @@
 - Reports can also be sent to a selected local A4 printer through Qt PrintSupport; thermal ESC/POS and barcode-label protocols remain separate work.
 - `SecurityService` stores only a salted SHA-256 PIN digest in the local settings table; the Settings screen supports setup/change/clear, and the UI enforces the PIN for shift close, supplier archive, verified backup restore, and PIN removal.
 - Sales POS treats scanner return/Enter as an auto-add command for the first exact search result, preserving the existing quantity control and cart path.
+- `SuspendedSaleService` stores cart lines as validated JSON in the existing `suspended_sales` table; the UI controls are intentionally tracked separately until they are wired to the service.

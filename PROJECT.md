@@ -4,7 +4,7 @@ Nexora POS is an offline-first Windows wholesale POS built with C++20, Qt 6 Widg
 
 ## Architecture
 
-- `src/core`: UI-independent database, migrations, transactional services, backup, reporting, audit, settings, security, inventory, POS, purchasing, payments, shifts, cheques, Excel export, and catalog services.
+- `src/core`: UI-independent database, migrations, transactional services, backup, reporting, audit, settings, security, suspended-sale persistence, inventory, POS, purchasing, payments, shifts, cheques, Excel export, and catalog services.
 - `src/ui`: Qt Widgets shell, QSS themes, live Inventory, Sales POS, Purchases, Customers, Suppliers, Cash Management, Cheques, Reports, Analytics, Audit Log, Settings, and Backup/Restore pages.
 - `tests`: QtTest business-logic coverage.
 - `third_party/sqlite`: vendored SQLite amalgamation.
@@ -19,4 +19,4 @@ Product CRUD with atomic CSV import, scanner return-key barcode auto-add, invent
 
 ## Known limitations
 
-Complete cheque reversal behavior, ESC/POS/barcode-label printing, notifications, scheduled backups, SQLCipher, and licensing remain backlog work. FBR is intentionally excluded from the product scope.
+Complete cheque reversal behavior, Sales POS suspend/resume controls, discounts/mixed payments, ESC/POS/barcode-label printing, notifications, scheduled backups, SQLCipher, and licensing remain backlog work. FBR is intentionally excluded from the product scope.

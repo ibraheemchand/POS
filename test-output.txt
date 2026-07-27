@@ -1,0 +1,47 @@
+********* Start testing of PosServiceTest *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+PASS   : PosServiceTest::initTestCase()
+FAIL!  : PosServiceTest::saleDecrementsStockAndCreatesLedger() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(54) : failure location
+FAIL!  : PosServiceTest::saleRollsBackWhenStockIsInsufficient() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(55) : failure location
+FAIL!  : PosServiceTest::receiptCreatesBatchAndMovement() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(56) : failure location
+FAIL!  : PosServiceTest::saleConsumesMultipleBatchesByFefo() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(57) : failure location
+FAIL!  : PosServiceTest::voidCashSaleReversesCashEntry() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(58) : failure location
+FAIL!  : PosServiceTest::catalogAndUnitConversionsAreValidated() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(59) : failure location
+FAIL!  : PosServiceTest::stockControlsProduceAlertsAndHistory() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(60) : failure location
+PASS   : PosServiceTest::ean13BarcodeRulesAreEnforced()
+FAIL!  : PosServiceTest::supplierCrudCreatesOpeningLedger() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(62) : failure location
+FAIL!  : PosServiceTest::purchaseUpdatesStockAndSupplierPayableTogether() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(63) : failure location
+FAIL!  : PosServiceTest::customerPaymentAllocatesToInvoiceAndLedger() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(64) : failure location
+PASS   : PosServiceTest::legacySchemaIsUpgradedAndValidated()
+FAIL!  : PosServiceTest::cashSaleIsAttachedToShiftAndReconciles() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(66) : failure location
+FAIL!  : PosServiceTest::salesReturnRestoresStockAndRefundsCash() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(67) : failure location
+FAIL!  : PosServiceTest::purchaseReturnReducesStockAndPayable() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(68) : failure location
+FAIL!  : PosServiceTest::chequeRegisterTracksDueAndStatus() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(69) : failure location
+FAIL!  : PosServiceTest::reportsAndAuditQueriesReturnPersistedData() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(70) : failure location
+FAIL!  : PosServiceTest::settingsPersistAndReadValues() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(71) : failure location
+FAIL!  : PosServiceTest::productImportIsAtomicAndValidated() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(72) : failure location
+PASS   : PosServiceTest::excelExportProducesOpenXmlWorkbook()
+FAIL!  : PosServiceTest::securityPinStoresOnlySaltedHashAndVerifies() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(74) : failure location
+FAIL!  : PosServiceTest::suspendedSaleRoundTripsAndRemoves() table suspended_sales already exists
+E:\pos--2\tests\pos_service_test.cpp(75) : failure location
+PASS   : PosServiceTest::cleanupTestCase()
+Totals: 5 passed, 19 failed, 0 skipped, 0 blacklisted, 1227ms
+********* Finished testing of PosServiceTest *********

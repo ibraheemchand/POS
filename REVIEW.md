@@ -18,6 +18,7 @@
 - [x] A4 report printing uses the local Qt print dialog and does not require network services.
 - [x] Security PIN setup stores a salted digest, has verification/clear regression coverage, and gates destructive UI actions.
 - [x] Sales POS supports scanner return-key auto-add without bypassing the existing cart validation path.
+- [x] Suspended-sale persistence validates line data and round-trips through a regression test; UI resume controls remain unchecked.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
 - [ ] No money calculation uses `double`/`float`.
 - [ ] Queries are parameterized and lookup columns indexed.

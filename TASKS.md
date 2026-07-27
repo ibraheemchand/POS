@@ -19,7 +19,8 @@
 - [x] Add A4 report printing through the local Qt print dialog.
 - [ ] Add ESC/POS thermal and barcode-label printing.
 - [x] Add scanner return-key timing and barcode auto-add behavior in Sales POS.
-- [ ] Add suspend/resume sales persistence.
+- [x] Add suspended-sale persistence service with JSON validation and rollback-safe storage.
+- [ ] Add Sales POS suspend/resume controls using SuspendedSaleService.
 - [ ] Add discounts and mixed-payment capture.
 - [x] Add salted PIN setup/verification in local settings and enforce it on shift close, supplier archive, backup restore, and PIN removal.
 - [ ] Add notifications and scheduled/retention-based backups.

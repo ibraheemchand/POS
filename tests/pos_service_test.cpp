@@ -14,6 +14,7 @@
 #include "core/settings_service.h"
 #include "core/excel_export_service.h"
 #include "core/security_service.h"
+#include "core/suspended_sale_service.h"
 #include <filesystem>
 #include <QTemporaryDir>
 #include <QFile>
@@ -42,6 +43,7 @@ private slots:
     void productImportIsAtomicAndValidated();
     void excelExportProducesOpenXmlWorkbook();
     void securityPinStoresOnlySaltedHashAndVerifies();
+    void suspendedSaleRoundTripsAndRemoves();
 };
 
 static void insertProduct(pos::Database& db, const QString& id, qint64 stock) {
@@ -70,5 +72,6 @@ void PosServiceTest::settingsPersistAndReadValues(){try{const auto path=std::fil
 void PosServiceTest::productImportIsAtomicAndValidated(){try{const auto path=std::filesystem::temp_directory_path()/("product-import-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);const QList<pos::ProductDefinition> products={{"Imported A","SKU-A","",{}, {},{},"piece",100,150,0,0,0,false,false,{}},{"Imported B","SKU-B","",{}, {},{},"piece",200,250,0,0,0,false,false,{}}};const auto ids=inventory.importProducts(products);QCOMPARE(ids.size(),qsizetype(2));QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,inventory.importProducts({products.first(),{"Broken",{}, {},{}, {},{},"piece",-1,100,0,0,0,false,false,{}}}));auto count=db->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0");QVERIFY(count.stepRow());QCOMPARE(count.integer(0),qint64(2));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::excelExportProducesOpenXmlWorkbook(){try{const auto path=QString::fromStdString((std::filesystem::temp_directory_path()/("report-"+pos::uuid().toStdString()+".xlsx")).string());pos::ExcelExportService::writeWorkbook(path,{"Metric","Value"},{{"Sales","100"}});QFile file(path);QVERIFY(file.open(QIODevice::ReadOnly));QCOMPARE(file.read(2),QByteArray("PK"));const auto package=file.readAll();QVERIFY(package.contains("xl/worksheets/sheet1.xml"));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::securityPinStoresOnlySaltedHashAndVerifies(){try{const auto path=std::filesystem::temp_directory_path()/("security-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SecurityService security(db);QVERIFY(!security.hasPin());QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,security.setPin("12"));security.setPin("1234");QVERIFY(security.hasPin());QVERIFY(security.verifyPin("1234"));QVERIFY(!security.verifyPin("4321"));auto stored=db->prepare("SELECT value FROM settings WHERE key='security.pin_hash'");QVERIFY(stored.stepRow());QVERIFY(!stored.text(0).contains("1234"));security.clearPin();QVERIFY(!security.hasPin());}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::suspendedSaleRoundTripsAndRemoves(){try{const auto path=std::filesystem::temp_directory_path()/("suspended-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SuspendedSaleService service(db);const auto id=service.save({{"product-1",2,150,"piece"}});QCOMPARE(service.list().size(),qsizetype(1));const auto sale=service.load(id);QCOMPARE(sale.lines.size(),qsizetype(1));QCOMPARE(sale.lines.first().quantity,qint64(2));QCOMPARE(sale.lines.first().unitPrice,qint64(150));service.remove(id);QCOMPARE(service.list().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
 QTEST_APPLESS_MAIN(PosServiceTest)
 #include "pos_service_test.moc"
