@@ -25,14 +25,16 @@
 - [x] Add split-tender payment persistence and mixed-payment capture.
 - [x] Add salted PIN setup/verification in local settings and enforce it on shift close, supplier archive, backup restore, and PIN removal.
 - [x] Add notification persistence, unread retrieval, and read-state service.
-- [ ] Add notifications UI and operational event generation.
-- [ ] The items in inventory once logged can be editable and can be deleteable.
-- [ ] When you click on backup it show all the availiable usb drives , user select the one , then save the backup init and when it is time to restore i also tell from where you want to restore , user select that usb drive it will load the sata from there  .
-- [ ] Add scheduled/retention-based backups.
+- [x] Add notifications UI with unread empty-state handling and read-on-view behavior in Settings.
+- [x] Generate best-effort operational notifications for completed sales, verified backups, shift lifecycle events, and low-stock sales.
+- [x] Add Inventory edit and archive controls backed by InventoryService.
+- [x] Backup UI lets operators choose a local or USB destination and restore from a selected external `.db` file with integrity/PIN checks.
+- [x] Add retention pruning for verified backups (default UI policy keeps the newest 30).
+- [x] Add persisted automatic backup interval settings and an offline QTimer scheduler (restart applies changes).
 
 ## Quality and release
 
-- [ ] Add migration, shift, return, backup, UI, and sanitizer tests; cheque, report, and audit service coverage is now present.
+- [ ] Add migration, shift, return, inventory UI, and sanitizer tests; backup retention, notification events, cheque, report, audit, and inventory service coverage is now present.
 - [ ] Add seed data, deployment automation, and support-runbook updates.
 - [ ] Evaluate SQLCipher and offline licensing separately; neither is enabled today.
 # Legacy Sprint List

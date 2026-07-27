@@ -1,5 +1,6 @@
 #include "core/backup_service.h"
 #include "core/database.h"
+#include "core/notification_service.h"
 #include <QCryptographicHash>
 #include <QFile>
 #include <sqlite3.h>
@@ -11,7 +12,7 @@ void BackupService::createVerifiedBackup(const std::filesystem::path& file) {
     if(!verifyBackup(file)) throw DatabaseError("backup integrity check failed");
     QFile input(QString::fromStdWString(file.wstring())); if(!input.open(QIODevice::ReadOnly)) throw DatabaseError("cannot read backup for checksum");
     const auto hash=QCryptographicHash::hash(input.readAll(),QCryptographicHash::Sha256).toHex(); QFile sidecar(QString::fromStdWString(file.wstring())+".sha256"); if(!sidecar.open(QIODevice::WriteOnly|QIODevice::Truncate)) throw DatabaseError("cannot write backup checksum"); sidecar.write(hash); sidecar.close();
-    auto insert=db_->prepare("INSERT INTO backups(id,file_path,sha256,verified_at,status,created_at) VALUES(?,?,?,?,?,?)"); insert.bind(1,uuid());insert.bind(2,QString::fromStdWString(file.wstring()));insert.bind(3,QString::fromLatin1(hash));insert.bind(4,utcNow());insert.bind(5,"verified");insert.bind(6,utcNow());insert.execute();
+    auto insert=db_->prepare("INSERT INTO backups(id,file_path,sha256,verified_at,status,created_at) VALUES(?,?,?,?,?,?)"); insert.bind(1,uuid());insert.bind(2,QString::fromStdWString(file.wstring()));insert.bind(3,QString::fromLatin1(hash));insert.bind(4,utcNow());insert.bind(5,"verified");insert.bind(6,utcNow());insert.execute(); NotificationService(db_).createBestEffort("backup", "Backup verified", QString("Verified backup created at %1.").arg(QString::fromStdWString(file.wstring())));
 }
 bool BackupService::verifyBackup(const std::filesystem::path& file) const {
     if (!std::filesystem::exists(file) || std::filesystem::file_size(file)==0) return false;
@@ -35,6 +36,18 @@ QList<BackupInfo> BackupService::verifiedBackups() const {
     auto query=db_->prepare("SELECT id,file_path,sha256,verified_at,status FROM backups WHERE status='verified' ORDER BY created_at DESC");
     while(query.stepRow()) result.append({query.text(0),std::filesystem::path(query.text(1).toStdWString()),query.text(2),query.text(3),query.text(4)});
     return result;
+}
+void BackupService::pruneVerifiedBackups(int keepCount) {
+    if (keepCount < 1 || keepCount > 1000) throw DatabaseError("invalid backup retention count");
+    QList<BackupInfo> stale;
+    auto query=db_->prepare("SELECT id,file_path,sha256,verified_at,status FROM backups WHERE status='verified' ORDER BY created_at DESC LIMIT -1 OFFSET ?");
+    query.bind(1,keepCount);
+    while(query.stepRow()) stale.append({query.text(0),std::filesystem::path(query.text(1).toStdWString()),query.text(2),query.text(3),query.text(4)});
+    if(stale.isEmpty()) return;
+    Transaction tx(db_->handle());
+    for(const auto& item:stale){auto remove=db_->prepare("DELETE FROM backups WHERE id=?");remove.bind(1,item.id);remove.execute();}
+    tx.commit();
+    for(const auto& item:stale){std::error_code ec;std::filesystem::remove(item.file,ec);std::filesystem::remove(item.file.wstring()+L".sha256",ec);}
 }
 void BackupService::restoreVerifiedBackup(const std::filesystem::path& file, const std::filesystem::path& safetyCopy) {
     if (!verifyBackup(file)) throw DatabaseError("selected backup failed integrity verification");

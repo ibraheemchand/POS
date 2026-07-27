@@ -12,6 +12,7 @@ public:
     void createVerifiedBackup(const std::filesystem::path& file);
     bool verifyBackup(const std::filesystem::path& file) const;
     QList<BackupInfo> verifiedBackups() const;
+    void pruneVerifiedBackups(int keepCount);
     void restoreVerifiedBackup(const std::filesystem::path& file, const std::filesystem::path& safetyCopy);
 private:
     std::shared_ptr<Database> db_;

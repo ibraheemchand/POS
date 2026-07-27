@@ -1,6 +1,7 @@
 #include "core/pos_service.h"
 #include "core/database.h"
 #include "core/shift_service.h"
+#include "core/notification_service.h"
 #include <algorithm>
 #include <QStringList>
 
@@ -102,7 +103,17 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     }
     for(const auto& tender:tenders){auto payment=db_->prepare("INSERT INTO sale_payments(id,sale_id,method,amount_paisa,created_at) VALUES(?,?,?,?,?)");payment.bind(1,uuid());payment.bind(2,id);payment.bind(3,tender.method);payment.bind(4,tender.amount);payment.bind(5,utcNow());payment.execute();}
     if (cashTender>0) { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,cashTender); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
-    tx.commit(); return {id,invoice,total};
+    tx.commit();
+    NotificationService notifications(db_);
+    notifications.createBestEffort("sale", "Sale completed", QString("Invoice %1 completed for %2 paisa.").arg(invoice).arg(total));
+    for (const auto& line : request.lines) {
+        auto stock = db_->prepare("SELECT name,stock_quantity,minimum_stock FROM products WHERE id=? AND is_deleted=0");
+        stock.bind(1, line.productId);
+        if (stock.stepRow() && stock.integer(1) <= stock.integer(2)) {
+            notifications.createBestEffort("low_stock", "Low stock alert", QString("%1 has %2 units remaining.").arg(stock.text(0)).arg(stock.integer(1)));
+        }
+    }
+    return {id,invoice,total};
 }
 
 void PosService::voidSale(const QString& saleId, const QString& reason, const QString& performedBy) {

@@ -14,6 +14,7 @@
 - [x] Report CSV export is local-only and reuses the validated ReportService date range.
 - [x] Report PDF export is local-only and uses Qt PrintSupport without network dependencies.
 - [x] Product CSV import validates integer money fields and commits the entire batch atomically, with rollback regression coverage.
+- [x] Inventory edit and archive actions delegate to InventoryService and preserve stock quantities.
 - [x] XLSX report export produces a valid Open XML ZIP package without network or external runtime dependencies.
 - [x] A4 report printing uses the local Qt print dialog and does not require network services.
 - [x] Security PIN setup stores a salted digest, has verification/clear regression coverage, and gates destructive UI actions.
@@ -22,6 +23,11 @@
 - [x] Sales POS discounts remain integer-paisa and cannot exceed subtotal before `PosService` validation.
 - [x] Mixed tenders are validated against paid total, persisted transactionally, and cash reversal uses only cash tender rows.
 - [x] Notification persistence validates fields and read-state transitions with regression coverage.
+- [x] Settings exposes unread notifications with an explicit empty state and marks displayed notifications read.
+- [x] Operational notifications are emitted after committed sales, backups, shifts, and low-stock thresholds without affecting business transaction success.
+- [x] Backup UI supports user-selected local/USB destinations and external restore files while preserving integrity and PIN gates.
+- [x] Backup retention pruning has regression coverage and removes stale metadata/snapshot files after commit.
+- [x] Automatic backup interval is persisted locally and scheduled through an offline Qt timer; interval changes explicitly require restart.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
 - [ ] No money calculation uses `double`/`float`.
 - [ ] Queries are parameterized and lookup columns indexed.

@@ -16,6 +16,7 @@
 #include "core/security_service.h"
 #include "core/suspended_sale_service.h"
 #include "core/notification_service.h"
+#include "core/backup_service.h"
 #include <filesystem>
 #include <QTemporaryDir>
 #include <QFile>
@@ -47,6 +48,8 @@ private slots:
     void suspendedSaleRoundTripsAndRemoves();
     void mixedSalePersistsTendersAndCashReversal();
     void notificationsCreateReadAndMarkRead();
+    void operationalNotificationsAreGenerated();
+    void backupRetentionPrunesOldSnapshots();
 };
 
 static void insertProduct(pos::Database& db, const QString& id, qint64 stock) {
@@ -78,5 +81,7 @@ void PosServiceTest::securityPinStoresOnlySaltedHashAndVerifies(){try{const auto
 void PosServiceTest::suspendedSaleRoundTripsAndRemoves(){try{const auto path=std::filesystem::temp_directory_path()/("suspended-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::SuspendedSaleService service(db);const auto id=service.save({{"product-1",2,150,"piece"}});QCOMPARE(service.list().size(),qsizetype(1));const auto sale=service.load(id);QCOMPARE(sale.lines.size(),qsizetype(1));QCOMPARE(sale.lines.first().quantity,qint64(2));QCOMPARE(sale.lines.first().unitPrice,qint64(150));service.remove(id);QCOMPARE(service.list().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::mixedSalePersistsTendersAndCashReversal(){try{const auto path=std::filesystem::temp_directory_path()/("mixed-sale-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();const auto product=pos::uuid();insertProduct(*db,product,5);pos::PosService sales(db);pos::SaleRequest request{{},{},"mixed",0,0,{},{{product,{},1,1000,0,"piece"}}};request.paidAmount=1000;request.tenders={{"cash",400},{"cheque",600}};const auto result=sales.completeSale(request);auto payments=db->prepare("SELECT COUNT(*),SUM(amount_paisa) FROM sale_payments WHERE sale_id=?");payments.bind(1,result.saleId);QVERIFY(payments.stepRow());QCOMPARE(payments.integer(0),qint64(2));QCOMPARE(payments.integer(1),qint64(1000));auto cash=db->prepare("SELECT amount_paisa FROM cash_transactions WHERE sale_id=? AND type='cash_in'");cash.bind(1,result.saleId);QVERIFY(cash.stepRow());QCOMPARE(cash.integer(0),qint64(400));sales.voidSale(result.saleId,"Mixed sale reversal","Manager");auto reversed=db->prepare("SELECT SUM(CASE WHEN type='cash_in' THEN amount_paisa ELSE -amount_paisa END) FROM cash_transactions WHERE sale_id=?");reversed.bind(1,result.saleId);QVERIFY(reversed.stepRow());QCOMPARE(reversed.integer(0),qint64(0));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::notificationsCreateReadAndMarkRead(){try{const auto path=std::filesystem::temp_directory_path()/("notifications-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::NotificationService service(db);const auto id=service.create("low_stock","Low stock","Rice is below minimum");QCOMPARE(service.unread().size(),qsizetype(1));service.markRead(id);QCOMPARE(service.unread().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::operationalNotificationsAreGenerated(){try{const auto path=std::filesystem::temp_directory_path()/("notification-events-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);pos::ProductDefinition product{"Low stock item",{}, {},{}, {},{},"piece",100,150,0,0,1,false,false,{}};const auto productId=inventory.createProduct(product);inventory.receiveStock({productId,2,100,"piece",{}, {},"Seed"});const auto sale=pos::PosService(db).completeSale({{}, {}, "cash",150,0,{},{{productId,{},1,150,0,"piece"}}});QVERIFY(!sale.saleId.isEmpty());const auto rows=pos::NotificationService(db).unread();bool saleEvent=false,lowStockEvent=false,shiftEvent=false;for(const auto& row:rows){saleEvent|=row.type=="sale";lowStockEvent|=row.type=="low_stock";shiftEvent|=row.type=="shift";}QVERIFY(saleEvent);QVERIFY(lowStockEvent);QVERIFY(shiftEvent);}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::backupRetentionPrunesOldSnapshots(){try{const auto root=std::filesystem::temp_directory_path()/("backup-retention-"+pos::uuid().toStdString());std::filesystem::create_directories(root);const auto live=root/"live.db";auto db=std::make_shared<pos::Database>(live);db->migrate();pos::BackupService service(db);service.createVerifiedBackup(root/"one.db");QTest::qWait(5);service.createVerifiedBackup(root/"two.db");QCOMPARE(service.verifiedBackups().size(),qsizetype(2));service.pruneVerifiedBackups(1);QCOMPARE(service.verifiedBackups().size(),qsizetype(1));}catch(const std::exception& error){QFAIL(error.what());}}
 QTEST_APPLESS_MAIN(PosServiceTest)
 #include "pos_service_test.moc"

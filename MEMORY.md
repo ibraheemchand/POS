@@ -17,4 +17,7 @@
 - `SuspendedSaleService` stores cart lines as validated JSON in the existing `suspended_sales` table; Sales POS suspend/resume clears/restores carts and revalidates product existence and stock before resuming.
 - Sales POS invoice discounts are captured as integer paisa, bounded by the cart subtotal, and delegated to the existing transactional `SaleRequest` path; mixed tender remains dependent on split-payment persistence.
 - Mixed sales now persist each tender in `sale_payments`; cash tenders alone affect the shift cash book, and voids reverse only persisted cash tender amounts.
-- `NotificationService` provides validated local notification creation, unread listing, and read-state transitions over the existing notifications table; UI/event generation remains separate.
+- `NotificationService` provides validated local notification creation, unread listing, and read-state transitions over the existing notifications table. Settings exposes a local unread-notifications dialog that marks displayed rows read; operational event generation remains separate.
+- Operational notifications are best-effort after commit so a notification write can never roll back a completed sale, backup, or shift; low-stock alerts are emitted after sales cross the configured threshold.
+- `BackupService::pruneVerifiedBackups` deletes stale verified metadata and snapshot files after retaining the newest configured count; the UI currently applies a 30-backup default.
+- Settings stores `backup.interval_hours`; MainWindow starts an offline QTimer on restart when non-zero and creates verified scheduled snapshots with the same 30-item retention policy.

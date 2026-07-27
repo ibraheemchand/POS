@@ -15,8 +15,8 @@ Schema compatibility is checked at startup. The migration runner repairs missing
 
 ## Current implemented workflows
 
-Product CRUD with atomic CSV import, scanner return-key barcode auto-add, suspend/resume sales, invoice discounts, mixed tender persistence/capture, inventory receipts/adjustments, FEFO multi-batch sales, atomic sales and purchase returns, cash sale voids, shift-attached cash sales/purchases/payments, purchase receiving, customer payments with invoice allocation UI, supplier CRUD with ledger display, shift lifecycle and reconciliation UI, cheque register, summary reporting with CSV/PDF/XLSX export and A4 printing, audit querying, persisted business settings, verified online backup/restore, and barcode validation.
+Product CRUD with atomic CSV import, inventory edit/archive controls, scanner return-key barcode auto-add, suspend/resume sales, invoice discounts, mixed tender persistence/capture, inventory receipts/adjustments, FEFO multi-batch sales, atomic sales and purchase returns, cash sale voids, shift-attached cash sales/purchases/payments, purchase receiving, customer payments with invoice allocation UI, supplier CRUD with ledger display, shift lifecycle and reconciliation UI, cheque register, summary reporting with CSV/PDF/XLSX export and A4 printing, audit querying, persisted business settings, verified online backup/restore, unread-notification viewing, and barcode validation.
 
 ## Known limitations
 
-Complete cheque reversal behavior, ESC/POS/barcode-label printing, notifications UI/event generation, scheduled backups, SQLCipher, and licensing remain backlog work. FBR is intentionally excluded from the product scope.
+Complete cheque reversal behavior, ESC/POS/barcode-label printing, SQLCipher, and licensing remain backlog work. Settings persist an optional automatic backup interval (applied on restart), and verified backup retention pruning keeps the newest 30 snapshots by default. Backup UI supports choosing local/USB destinations and external restore files. Operational notifications are generated best-effort after sales, backups, and shift events. FBR is intentionally excluded from the product scope.
