@@ -32,17 +32,19 @@ ctest --test-dir build -C Release --output-on-failure
 
 Run `build\Release\wholesale_pos.exe` (or the platform-specific build output). For deployment on Windows, run Qt's `windeployqt` on the executable and package the deployed directory with Inno Setup or NSIS. The data file deliberately lives in Qt's per-user app-data location, not beside the binary, so normal upgrades preserve business data.
 
-For QA/support fixtures, run `wholesale_pos.exe --seed-demo` once against the target per-user data directory. The seed is explicit and idempotent; normal application startup never inserts demo data.
+For QA/support fixtures, run `wholesale_pos.exe --seed-demo` once against the target per-user data directory. To generate priced random fixtures, run `wholesale_pos.exe --data-dir=<temporary-folder> --seed-random=25 --seed=20260727`. Both modes are explicit and idempotent; normal application startup never inserts data.
+
+See the complete [step-by-step user guide](docs/USER_GUIDE.md) for setup, sales, purchasing, shifts, reports, backups, printing, and QA data.
 
 ## Architecture
 
 ```
 src/core/       UI-independent business and SQLite layers
 src/ui/         Qt Widgets shell and QSS theme
-tests/          QtTest coverage for business transactions
+tests/          QtTest coverage for business transactions and the MainWindow UI smoke target
 ```
 
-The remaining implementation slices are release QA expansion, seed/demo data, and an explicit SQLCipher/licensing decision. Keep FBR behind `POS_ENABLE_FBR`; it must never become a dependency of sale completion.
+The remaining decisions are cheque reversal accounting rules, a sanitizer-capable compiler runtime, and an explicit SQLCipher/licensing choice. Demo/random seeding, deployment staging, thermal output, and UI smoke coverage are delivered. Keep FBR behind `POS_ENABLE_FBR`; it must never become a dependency of sale completion.
 
 ## Operational notes
 

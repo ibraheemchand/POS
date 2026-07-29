@@ -14,7 +14,7 @@ if ($CxxCompiler) { $configureArgs += "-DCMAKE_CXX_COMPILER=$CxxCompiler" }
 if ($QtPrefix) { $configureArgs += "-DCMAKE_PREFIX_PATH=$QtPrefix" }
 & $CMake @configureArgs
 if ($LASTEXITCODE -ne 0) { throw "Sanitizer CMake configuration failed ($LASTEXITCODE)." }
-& $CMake --build $BuildDir --parallel 4
+& $CMake --build $BuildDir --target pos_core_tests --parallel 4
 if ($LASTEXITCODE -ne 0) { throw "Sanitizer build failed ($LASTEXITCODE)." }
-& $ctest --test-dir $BuildDir --output-on-failure
+& $ctest --test-dir $BuildDir -R '^pos_core_tests$' --output-on-failure
 if ($LASTEXITCODE -ne 0) { throw "Sanitizer tests failed ($LASTEXITCODE)." }

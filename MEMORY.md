@@ -23,3 +23,12 @@
 - Settings stores `backup.interval_hours`; MainWindow starts an offline QTimer on restart when non-zero and creates verified scheduled snapshots with the same 30-item retention policy.
 - `scripts/deploy.ps1` is the supported Windows staging path; it rebuilds when needed, runs `windeployqt`, and copies the installer/support runbook without copying customer databases.
 - `SeedService` provides an idempotent `--seed-demo` startup mode for QA/support data; it uses existing services and records a local `seed.demo.version` marker rather than seeding automatically during normal startup.
+- `SeedService::seedRandomData` creates deterministic, idempotent `RND-<seed>-NNNN` products with integer-paisa prices and stock. Seed commands run in `QCoreApplication` without opening the GUI and accept `--data-dir=<path>` for isolated QA databases.
+- `pos_ui_smoke_tests` constructs MainWindow with a migrated temporary database and verifies key Inventory/Settings/Backup controls plus an empty sales table; CTest injects the Qt runtime bin directory for Windows execution.
+- The current Codex shell can launch the deployed POS process but does not expose a stable top-level HWND for cursor/keyboard injection; real Windows desktop E2E remains a separate test-runner dependency.
+- `docs/USER_GUIDE.md` is the canonical operator workflow reference and must stay aligned with visible page labels, paisa entry rules, backup/PIN safeguards, and QA seed commands.
+- `ReturnService` is covered by core tests, but the current MainWindow has no dedicated return/refund controls; keep this distinction explicit until the Returns UI task is completed.
+- Core regression coverage includes multi-step purchase, customer-payment, and purchase-return failures to prove transaction rollback removes earlier writes.
+- `POS_ENABLE_SANITIZERS` and `scripts/test-sanitizers.ps1` provide an opt-in sanitizer build, but the bundled Qt MinGW toolchain has no ASan/UBSan runtime libraries; use a compiler distribution that supplies them before enabling the job.
+- Cheque rows currently track lifecycle status only; reversal accounting is intentionally blocked until the product defines how bounced/cleared cheques link to originating sale, purchase, or customer-payment records.
+- SQLCipher and offline licensing remain deliberately unimplemented because they require an external encrypted-SQLite distribution and a business licensing policy decision.

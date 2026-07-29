@@ -31,40 +31,16 @@
 - [x] Backup UI lets operators choose a local or USB destination and restore from a selected external `.db` file with integrity/PIN checks.
 - [x] Add retention pruning for verified backups (default UI policy keeps the newest 30).
 - [x] Add persisted automatic backup interval settings and an offline QTimer scheduler (restart applies changes).
+- [ ] [P1][blocked] Define and implement cheque reversal accounting (link cheque rows to the originating sale/purchase/payment and reverse the corresponding ledger/cash effect); dependency: business rule for bounced/cleared cheque settlement.
 
 ## Quality and release
 
-- [x] Add migration, shift, return, thermal, seed, backup retention, notification event, cheque, report, audit, and inventory service regression coverage.
-- [ ] Add Qt UI smoke coverage for Inventory/Settings/Backup and a sanitizer-enabled test job.
-- [x] Add deterministic, idempotent demo seed data for QA/support environments via `wholesale_pos.exe --seed-demo`.
+- [x] Add migration, shift, return, thermal, seed, backup retention, notification event, cheque, report, audit, inventory service, and multi-step rollback regression coverage.
+- [x] Add Qt UI smoke coverage for Inventory/Settings/Backup through the `pos_ui_smoke_tests` CTest target.
+- [ ] Add interactive Windows cursor/keyboard E2E coverage; dependency: a desktop test runner/session that exposes a stable application window handle.
+- [ ] [P2][blocked] Add a sanitizer-enabled test job; dependency: compiler/Qt toolchain that ships ASan/UBSan runtime libraries (the bundled MinGW toolchain does not).
+- [x] Add deterministic, idempotent demo and randomized QA seed data via `wholesale_pos.exe --seed-demo` and `--seed-random=<count> --seed=<seed>`.
 - [x] Add Windows deployment staging automation and synchronize the support/recovery runbook.
-- [ ] Evaluate SQLCipher and offline licensing separately; neither is enabled today.
-# Legacy Sprint List
-
-This file is retained for historical context. The active backlog is `TASKS.md`.
-
-## High Priority
-- [ ] Product Management (CRUD)
-- [ ] Customer Management
-- [ ] Supplier Management
-- [ ] Purchase Entry
-- [ ] Sales Screen
-- [ ] Receipt Printing (ESC/POS)
-- [ ] Inventory Adjustments
-- [ ] Cash In / Cash Out
-- [ ] Customer Ledger
-- [ ] Supplier Ledger
-
-## Medium Priority
-- [ ] Reports
-- [ ] Analytics Dashboard
-- [ ] Barcode Support
-- [ ] Backup & Restore
-- [ ] Settings
-- [ ] Database Maintenance
-
-## Polish
-- [ ] Keyboard Shortcuts
-- [ ] Error Handling
-- [ ] Performance Optimization
-- [ ] UI Improvements
+- [x] Add a step-by-step user guide covering setup, operations, backups, printing, keyboard use, and QA data.
+- [ ] Add visible Sales Return and Purchase Return UI workflows backed by `ReturnService`.
+- [ ] [P1][blocked] Evaluate SQLCipher and offline licensing separately; dependencies: SQLCipher distribution/license choice and product licensing policy.

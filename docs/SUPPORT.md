@@ -21,7 +21,7 @@ Migrations are transactional. If startup fails during a migration, retain the da
 
 ## Demo data and deployment
 
-Use `wholesale_pos.exe --seed-demo` only in a QA/support data directory. It is idempotent and never runs during normal startup. For a clean Windows package, run `scripts/deploy.ps1` and then build `installer/NexoraPOS.iss` with Inno Setup.
+Use `wholesale_pos.exe --seed-demo` only in a QA/support data directory. For priced randomized fixtures, use `wholesale_pos.exe --data-dir=<qa-folder> --seed-random=25 --seed=20260727`; the command is deterministic for a given seed and idempotent for repeated runs. Neither mode runs during normal startup. For a clean Windows package, run `scripts/deploy.ps1` and then build `installer/NexoraPOS.iss` with Inno Setup.
 
 ## FBR scope
 

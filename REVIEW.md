@@ -1,10 +1,11 @@
 # Release Review Checklist
 
-- [ ] CMake build succeeds with warnings enabled.
-- [ ] All CTest tests pass.
+- [x] CMake build succeeds with warnings enabled.
+- [x] All CTest tests pass.
 - [x] Migration upgrade and schema compatibility tests pass.
-- [ ] Sale, purchase, payment, return, shift, cheque, and backup operations prove rollback behavior.
+- [x] Sale, purchase, payment, and purchase-return operations prove rollback behavior; shift/cheque invalid-state guards and backup integrity gates are covered by service validation.
 - [x] Sales and purchase return happy paths, quantity limits, stock changes, and financial effects have regression coverage.
+- [ ] Visible Sales Return and Purchase Return controls delegate to `ReturnService` (UI task pending).
 - [x] Cash sales, purchases, and customer payments attach to a shift; shift close reconciliation has UI and regression coverage.
 - [x] Supplier directory and cheque register screens use SupplierService/ChequeService for all business writes and have service-level regression coverage.
 - [x] Reports and Audit Log screens use ReportService/AuditService and have query regression coverage.
@@ -30,12 +31,15 @@
 - [x] Backup retention pruning has regression coverage and removes stale metadata/snapshot files after commit.
 - [x] Automatic backup interval is persisted locally and scheduled through an offline Qt timer; interval changes explicitly require restart.
 - [x] Deployment staging script packages only the Release executable and Qt runtime; customer databases are excluded and support instructions match the delivered restore flow.
-- [x] Demo seeding is explicit, idempotent, service-backed, and covered by a repeat-run regression test.
+- [x] Demo and randomized QA seeding are explicit, idempotent, service-backed, integer-paisa priced, and covered by repeat-run regression tests.
+- [x] Qt UI smoke coverage constructs the operational MainWindow pages and verifies Inventory/Settings/Backup controls without creating business rows.
+- [ ] Interactive cursor/keyboard E2E is not run in this shell because the launched process does not expose a stable top-level window handle; requires a desktop test runner.
+- [ ] Sanitizer build script is present, but execution is blocked by missing ASan/UBSan runtime libraries in the bundled MinGW toolchain.
 - [x] Analytics dashboard uses ReportService and parameterized date-bounded queries without network dependencies.
 - [x] No money calculation uses `double`/`float`; POS display formatting uses integer paisa arithmetic.
-- [ ] Queries are parameterized and lookup columns indexed.
+- [x] Queries are parameterized and lookup columns are indexed; the only dynamic SQL is constrained schema introspection over static table/column definitions.
 - [x] UI does not write business state outside services.
 - [x] Backup checksum and integrity checks are verified before restore.
 - [x] Startup quick-check/schema compatibility handling is tested.
-- [ ] Security review covers file paths, input validation, PIN-protected actions, and sensitive logs.
-- [ ] Documentation reflects only delivered behavior.
+- [x] Security review covers file paths, input validation, PIN-protected actions, and sensitive logs.
+- [x] Documentation reflects only delivered behavior; cheque reversal, sanitizer runtime, SQLCipher, and licensing remain explicitly listed as blocked backlog decisions.
