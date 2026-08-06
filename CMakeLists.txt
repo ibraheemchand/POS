@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
+set(CMAKE_RC_COMPILER "C:/Qt/Tools/mingw1310_64/bin/windres.exe" CACHE FILEPATH "Resource compiler" FORCE)
 project(WholesalePOS VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -11,7 +12,7 @@ option(POS_BUILD_TESTS "Build business-logic tests" ON)
 option(POS_ENABLE_FBR "Include the isolated FBR queue module" OFF)
 option(POS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport)
 
 # Vendored official SQLite amalgamation. The business layer never relies on Qt's
 # SQLite plugin, keeping builds fully offline after the Qt toolchain is installed.
@@ -56,12 +57,17 @@ if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_link_options(pos_core PUBLIC -fsanitize=address,undefined)
 endif()
 
-add_executable(wholesale_pos
+add_executable(invento
     src/main.cpp
     src/ui/main_window.cpp
     src/ui/main_window.h
+    src/ui/resources.qrc
 )
-target_link_libraries(wholesale_pos PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
+target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
+
+if(WIN32)
+  target_sources(invento PRIVATE src/ui/app_icon.rc)
+endif()
 
 if(MSVC)
   target_compile_options(pos_core PRIVATE /W4 /permissive-)
@@ -72,7 +78,7 @@ endif()
 if(POS_BUILD_TESTS)
   include(CTest)
   if(BUILD_TESTING)
-    find_package(Qt6 6.4 REQUIRED COMPONENTS Test)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
     add_executable(pos_core_tests tests/pos_service_test.cpp)
     target_link_libraries(pos_core_tests PRIVATE pos_core Qt6::Test)
     if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

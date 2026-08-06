@@ -1,0 +1,232 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'pos_service_test.cpp'
+**
+** Created by: The Qt Meta Object Compiler version 69 (Qt 6.11.1)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include <QtCore/qmetatype.h>
+
+#include <QtCore/qtmochelpers.h>
+
+#include <memory>
+
+
+#include <QtCore/qxptype_traits.h>
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'pos_service_test.cpp' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 69
+#error "This file was generated using the moc from 6.11.1. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+#ifndef Q_CONSTINIT
+#define Q_CONSTINIT
+#endif
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Wuseless-cast")
+namespace {
+struct qt_meta_tag_ZN14PosServiceTestE_t {};
+} // unnamed namespace
+
+template <> constexpr inline auto PosServiceTest::qt_create_metaobjectdata<qt_meta_tag_ZN14PosServiceTestE_t>()
+{
+    namespace QMC = QtMocConstants;
+    QtMocHelpers::StringRefStorage qt_stringData {
+        "PosServiceTest",
+        "saleDecrementsStockAndCreatesLedger",
+        "",
+        "saleRollsBackWhenStockIsInsufficient",
+        "receiptCreatesBatchAndMovement",
+        "saleConsumesMultipleBatchesByFefo",
+        "voidCashSaleReversesCashEntry",
+        "catalogAndUnitConversionsAreValidated",
+        "stockControlsProduceAlertsAndHistory",
+        "ean13BarcodeRulesAreEnforced",
+        "supplierCrudCreatesOpeningLedger",
+        "purchaseUpdatesStockAndSupplierPayableTogether",
+        "purchaseRollsBackWhenLaterLineIsInvalid",
+        "customerPaymentAllocatesToInvoiceAndLedger",
+        "customerPaymentRollsBackEarlierAllocationsOnFailure",
+        "legacySchemaIsUpgradedAndValidated",
+        "cashSaleIsAttachedToShiftAndReconciles",
+        "salesReturnRestoresStockAndRefundsCash",
+        "purchaseReturnReducesStockAndPayable",
+        "purchaseReturnRollsBackWhenStockIsInsufficient",
+        "chequeRegisterTracksDueAndStatus",
+        "reportsAndAuditQueriesReturnPersistedData",
+        "settingsPersistAndReadValues",
+        "productImportIsAtomicAndValidated",
+        "excelExportProducesOpenXmlWorkbook",
+        "securityPinStoresOnlySaltedHashAndVerifies",
+        "suspendedSaleRoundTripsAndRemoves",
+        "mixedSalePersistsTendersAndCashReversal",
+        "notificationsCreateReadAndMarkRead",
+        "operationalNotificationsAreGenerated",
+        "backupRetentionPrunesOldSnapshots",
+        "thermalReceiptAndBarcodeBytesAreValidated",
+        "demoSeedIsIdempotent",
+        "randomSeedCreatesPricedDataIdempotently"
+    };
+
+    QtMocHelpers::UintData qt_methods {
+        // Slot 'saleDecrementsStockAndCreatesLedger'
+        QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'saleRollsBackWhenStockIsInsufficient'
+        QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'receiptCreatesBatchAndMovement'
+        QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'saleConsumesMultipleBatchesByFefo'
+        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'voidCashSaleReversesCashEntry'
+        QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'catalogAndUnitConversionsAreValidated'
+        QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'stockControlsProduceAlertsAndHistory'
+        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'ean13BarcodeRulesAreEnforced'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'supplierCrudCreatesOpeningLedger'
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'purchaseUpdatesStockAndSupplierPayableTogether'
+        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'purchaseRollsBackWhenLaterLineIsInvalid'
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'customerPaymentAllocatesToInvoiceAndLedger'
+        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'customerPaymentRollsBackEarlierAllocationsOnFailure'
+        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'legacySchemaIsUpgradedAndValidated'
+        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'cashSaleIsAttachedToShiftAndReconciles'
+        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'salesReturnRestoresStockAndRefundsCash'
+        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'purchaseReturnReducesStockAndPayable'
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'purchaseReturnRollsBackWhenStockIsInsufficient'
+        QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'chequeRegisterTracksDueAndStatus'
+        QtMocHelpers::SlotData<void()>(20, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'reportsAndAuditQueriesReturnPersistedData'
+        QtMocHelpers::SlotData<void()>(21, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'settingsPersistAndReadValues'
+        QtMocHelpers::SlotData<void()>(22, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'productImportIsAtomicAndValidated'
+        QtMocHelpers::SlotData<void()>(23, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'excelExportProducesOpenXmlWorkbook'
+        QtMocHelpers::SlotData<void()>(24, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'securityPinStoresOnlySaltedHashAndVerifies'
+        QtMocHelpers::SlotData<void()>(25, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'suspendedSaleRoundTripsAndRemoves'
+        QtMocHelpers::SlotData<void()>(26, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'mixedSalePersistsTendersAndCashReversal'
+        QtMocHelpers::SlotData<void()>(27, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'notificationsCreateReadAndMarkRead'
+        QtMocHelpers::SlotData<void()>(28, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'operationalNotificationsAreGenerated'
+        QtMocHelpers::SlotData<void()>(29, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'backupRetentionPrunesOldSnapshots'
+        QtMocHelpers::SlotData<void()>(30, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'thermalReceiptAndBarcodeBytesAreValidated'
+        QtMocHelpers::SlotData<void()>(31, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'demoSeedIsIdempotent'
+        QtMocHelpers::SlotData<void()>(32, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'randomSeedCreatesPricedDataIdempotently'
+        QtMocHelpers::SlotData<void()>(33, 2, QMC::AccessPrivate, QMetaType::Void),
+    };
+    QtMocHelpers::UintData qt_properties {
+    };
+    QtMocHelpers::UintData qt_enums {
+    };
+    return QtMocHelpers::metaObjectData<PosServiceTest, qt_meta_tag_ZN14PosServiceTestE_t>(QMC::MetaObjectFlag{}, qt_stringData,
+            qt_methods, qt_properties, qt_enums);
+}
+Q_CONSTINIT const QMetaObject PosServiceTest::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_staticMetaObjectStaticContent<qt_meta_tag_ZN14PosServiceTestE_t>.stringdata,
+    qt_staticMetaObjectStaticContent<qt_meta_tag_ZN14PosServiceTestE_t>.data,
+    qt_static_metacall,
+    nullptr,
+    qt_staticMetaObjectRelocatingContent<qt_meta_tag_ZN14PosServiceTestE_t>.metaTypes,
+    nullptr
+} };
+
+void PosServiceTest::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    auto *_t = static_cast<PosServiceTest *>(_o);
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        switch (_id) {
+        case 0: _t->saleDecrementsStockAndCreatesLedger(); break;
+        case 1: _t->saleRollsBackWhenStockIsInsufficient(); break;
+        case 2: _t->receiptCreatesBatchAndMovement(); break;
+        case 3: _t->saleConsumesMultipleBatchesByFefo(); break;
+        case 4: _t->voidCashSaleReversesCashEntry(); break;
+        case 5: _t->catalogAndUnitConversionsAreValidated(); break;
+        case 6: _t->stockControlsProduceAlertsAndHistory(); break;
+        case 7: _t->ean13BarcodeRulesAreEnforced(); break;
+        case 8: _t->supplierCrudCreatesOpeningLedger(); break;
+        case 9: _t->purchaseUpdatesStockAndSupplierPayableTogether(); break;
+        case 10: _t->purchaseRollsBackWhenLaterLineIsInvalid(); break;
+        case 11: _t->customerPaymentAllocatesToInvoiceAndLedger(); break;
+        case 12: _t->customerPaymentRollsBackEarlierAllocationsOnFailure(); break;
+        case 13: _t->legacySchemaIsUpgradedAndValidated(); break;
+        case 14: _t->cashSaleIsAttachedToShiftAndReconciles(); break;
+        case 15: _t->salesReturnRestoresStockAndRefundsCash(); break;
+        case 16: _t->purchaseReturnReducesStockAndPayable(); break;
+        case 17: _t->purchaseReturnRollsBackWhenStockIsInsufficient(); break;
+        case 18: _t->chequeRegisterTracksDueAndStatus(); break;
+        case 19: _t->reportsAndAuditQueriesReturnPersistedData(); break;
+        case 20: _t->settingsPersistAndReadValues(); break;
+        case 21: _t->productImportIsAtomicAndValidated(); break;
+        case 22: _t->excelExportProducesOpenXmlWorkbook(); break;
+        case 23: _t->securityPinStoresOnlySaltedHashAndVerifies(); break;
+        case 24: _t->suspendedSaleRoundTripsAndRemoves(); break;
+        case 25: _t->mixedSalePersistsTendersAndCashReversal(); break;
+        case 26: _t->notificationsCreateReadAndMarkRead(); break;
+        case 27: _t->operationalNotificationsAreGenerated(); break;
+        case 28: _t->backupRetentionPrunesOldSnapshots(); break;
+        case 29: _t->thermalReceiptAndBarcodeBytesAreValidated(); break;
+        case 30: _t->demoSeedIsIdempotent(); break;
+        case 31: _t->randomSeedCreatesPricedDataIdempotently(); break;
+        default: ;
+        }
+    }
+    (void)_a;
+}
+
+const QMetaObject *PosServiceTest::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *PosServiceTest::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_staticMetaObjectStaticContent<qt_meta_tag_ZN14PosServiceTestE_t>.strings))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int PosServiceTest::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 32)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 32;
+    }
+    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 32)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 32;
+    }
+    return _id;
+}
+QT_WARNING_POP

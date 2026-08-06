@@ -38,12 +38,14 @@
 #include <QDateEdit>
 #include <QFileDialog>
 #include <QFile>
+#include <QIcon>
 #include <QTextStream>
 #include <QPrinter>
 #include <QPainter>
 #include <QPrintDialog>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QPixmap>
 #include <filesystem>
 
 namespace {
@@ -81,10 +83,10 @@ QLineEdit {background:#1E293B;border:1px solid #334155;border-radius:10px;paddin
 
 MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QMainWindow(parent), database_(std::move(database)), pos_(std::make_unique<pos::PosService>(database_)) {
-    setWindowTitle("Nexora POS"); setMinimumSize(1180, 720); resize(1440, 900);
+    setWindowTitle("Nexora POS"); setWindowIcon(QIcon(":/branding/app_icon")); setMinimumSize(1180, 720); resize(1440, 900);
     auto* root=new QWidget(this); auto* layout=new QHBoxLayout(root); layout->setContentsMargins(0,0,0,0); layout->setSpacing(0);
     auto* sidebar=new QFrame(root); sidebar->setObjectName("sidebar"); auto* sideLayout=new QVBoxLayout(sidebar); sideLayout->setContentsMargins(0,0,0,18);
-    auto* brand=new QLabel("NEXORA",sidebar);brand->setObjectName("brand"); auto* sub=new QLabel("WHOLESALE OPERATIONS",sidebar);sub->setObjectName("subtitle"); sideLayout->addWidget(brand);sideLayout->addWidget(sub);
+    auto* logo=new QLabel(sidebar); logo->setAlignment(Qt::AlignCenter); logo->setPixmap(QPixmap(":/branding/logo").scaled(186, 186, Qt::KeepAspectRatio, Qt::SmoothTransformation)); logo->setStyleSheet("background: white; border-radius: 18px; padding: 14px;"); sideLayout->addWidget(logo,0,Qt::AlignHCenter); auto* brand=new QLabel("NEXORA",sidebar);brand->setObjectName("brand"); auto* sub=new QLabel("WHOLESALE OPERATIONS",sidebar);sub->setObjectName("subtitle"); sideLayout->addWidget(brand);sideLayout->addWidget(sub);
     auto* navigation=new QListWidget(sidebar); navigation->addItems({"▦  Dashboard","□  Inventory","▣  Sales POS","⇄  Purchases","♙  Customers","▤  Suppliers","₨  Cash Management","▱  Cheques","▥  Reports","◔  Analytics","⌁  Audit Log","⚙  Settings","▣  Backup & Restore"}); navigation->setCurrentRow(0);sideLayout->addWidget(navigation,1);
     auto* footer=new QLabel("● Offline secure database",sidebar);footer->setObjectName("subtitle");sideLayout->addWidget(footer);
     layout->addWidget(sidebar); auto* content=new QWidget(root); content->setObjectName("content");auto* contentLayout=new QVBoxLayout(content);contentLayout->setContentsMargins(30,22,30,26);contentLayout->setSpacing(18);

@@ -1,0 +1,41 @@
+Start testing: Aug 03 09:34 Pakistan Standard Time
+----------------------------------------------------------
+1/2 Testing: pos_core_tests
+1/2 Test: pos_core_tests
+Command: "E:/pos--2/build-logo/pos_core_tests.exe"
+Directory: E:/pos--2/build-logo
+"pos_core_tests" start time: Aug 03 09:34 Pakistan Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.68 sec
+----------------------------------------------------------
+Test Failed.
+"pos_core_tests" end time: Aug 03 09:34 Pakistan Standard Time
+"pos_core_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: pos_ui_smoke_tests
+2/2 Test: pos_ui_smoke_tests
+Command: "E:/pos--2/build-logo/pos_ui_smoke_tests.exe"
+Directory: E:/pos--2/build-logo
+"pos_ui_smoke_tests" start time: Aug 03 09:34 Pakistan Standard Time
+Output:
+----------------------------------------------------------
+********* Start testing of UiSmokeTest *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+PASS   : UiSmokeTest::initTestCase()
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() QPixmap::scaled: Pixmap is a null pixmap
+PASS   : UiSmokeTest::mainWindowConstructsAllOperationalPages()
+PASS   : UiSmokeTest::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 2472ms
+********* Finished testing of UiSmokeTest *********
+<end of output>
+Test time =   3.55 sec
+----------------------------------------------------------
+Test Passed.
+"pos_ui_smoke_tests" end time: Aug 03 09:34 Pakistan Standard Time
+"pos_ui_smoke_tests" time elapsed: 00:00:03
+----------------------------------------------------------
+
+End testing: Aug 03 09:34 Pakistan Standard Time

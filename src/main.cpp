@@ -2,6 +2,7 @@
 #include "core/seed_service.h"
 #include "ui/main_window.h"
 #include <QApplication>
+#include <QIcon>
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QMessageBox>
@@ -80,8 +81,8 @@ int main(int argc, char* argv[]) {
     const auto dataDirectory = dataDirectoryArgument(argc, argv);
     if (hasSeedArgument(argc, argv)) {
         QCoreApplication app(argc, argv);
-        QCoreApplication::setApplicationName("Nexora POS");
-        QCoreApplication::setOrganizationName("Nexora");
+        QCoreApplication::setApplicationName("Invento");
+        QCoreApplication::setOrganizationName("Invento");
         try {
             return runSeedCommand(app.arguments());
         } catch (const std::exception& error) {
@@ -91,15 +92,16 @@ int main(int argc, char* argv[]) {
     }
 
     QApplication app(argc, argv);
-    QApplication::setApplicationName("Nexora POS");
-    QApplication::setOrganizationName("Nexora");
+    QApplication::setApplicationName("Invento");
+    QApplication::setOrganizationName("Invento");
+    QApplication::setWindowIcon(QIcon(":/branding/app_icon"));
     try {
         auto database = openDatabase(dataDirectory);
         MainWindow window(database);
         window.show();
         return app.exec();
     } catch (const std::exception& error) {
-        QMessageBox::critical(nullptr, "Unable to start Nexora POS", error.what());
+        QMessageBox::critical(nullptr, "Unable to start Invento", error.what());
         return 1;
     }
 }

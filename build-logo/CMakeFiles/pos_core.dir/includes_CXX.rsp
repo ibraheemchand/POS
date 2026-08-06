@@ -1,0 +1,1 @@
+-I"E:/pos--2/build-logo/pos_core_autogen/include" -I"E:/pos--2/src" -I"E:/pos--2/third_party/sqlite" -isystem C:/Qt/6.11.1/mingw_64/include/QtCore -isystem C:/Qt/6.11.1/mingw_64/include -isystem "C:/Qt/6.11.1/mingw_64/mkspecs/win32-g++" -isystem C:/Qt/6.11.1/mingw_64/include/QtGui
