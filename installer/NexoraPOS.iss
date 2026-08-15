@@ -2,7 +2,7 @@
 #define AppName "Nexora POS"
 #define AppVersion "0.1.0"
 #define AppPublisher "Nexora"
-#define AppExeName "wholesale_pos.exe"
+#define AppExeName "invento.exe"
 
 [Setup]
 AppId={{E4E735C7-3AB2-4610-A33D-6BC1A6A43F4E}

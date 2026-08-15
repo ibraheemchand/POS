@@ -1,0 +1,16 @@
+[  0%] Built target pos_sqlite_autogen_timestamp_deps
+[  2%] Built target pos_sqlite_autogen
+[  8%] Built target pos_sqlite
+[  8%] Built target pos_core_autogen_timestamp_deps
+[ 10%] Built target pos_core_autogen
+[ 63%] Built target pos_core
+[ 63%] Built target invento_autogen_timestamp_deps
+[ 63%] Built target pos_core_tests_autogen_timestamp_deps
+[ 63%] Built target pos_ui_smoke_tests_autogen_timestamp_deps
+[ 65%] Built target invento_autogen
+[ 68%] Built target pos_core_tests_autogen
+[ 70%] Built target pos_ui_smoke_tests_autogen
+[ 72%] Linking CXX executable invento.exe
+[ 78%] Built target pos_core_tests
+[ 87%] Built target pos_ui_smoke_tests
+[100%] Built target invento

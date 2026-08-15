@@ -5,14 +5,14 @@ This guide describes the delivered offline Windows application. The application 
 ## 1. Install and start
 
 1. Copy the complete `deploy` folder to the POS computer. Keep the executable together with its DLLs and subfolders.
-2. Double-click `deploy\wholesale_pos.exe`.
+2. Double-click `deploy\invento.exe`.
 3. On first start, Nexora creates the local SQLite database automatically.
 4. If Windows reports a missing Qt DLL, do not copy only the executable. Recreate the deployment folder with `scripts\deploy.ps1` and Qt's `windeployqt`.
 
 For this repository, the ready-to-run file is:
 
 ```text
-E:\pos--2\deploy\wholesale_pos.exe
+E:\pos--2\deploy\invento.exe
 ```
 
 ## 2. First-time setup
@@ -127,13 +127,13 @@ The transactional return services are implemented, but the current visible deskt
 The normal application never inserts demo data automatically.
 
 ```powershell
-.\deploy\wholesale_pos.exe --seed-demo
+.\deploy\invento.exe --seed-demo
 ```
 
 For an isolated priced random fixture:
 
 ```powershell
-.\deploy\wholesale_pos.exe `
+.\deploy\invento.exe `
   --data-dir=E:\qa-pos `
   --seed-random=25 `
   --seed=20260727

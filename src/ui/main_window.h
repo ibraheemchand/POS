@@ -1,5 +1,7 @@
 #pragma once
 #include <QMainWindow>
+#include <QStringList>
+#include <QVector>
 #include <memory>
 
 class QStackedWidget;
@@ -12,6 +14,7 @@ public:
     explicit MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent=nullptr);
     ~MainWindow() override;
 private:
+    void goToPage(const QString& pageName);
     QWidget* makeDashboard();
     QWidget* makeInventory();
     QWidget* makeSalesPos();
@@ -32,5 +35,8 @@ private:
     std::shared_ptr<pos::Database> database_;
     std::unique_ptr<pos::PosService> pos_;
     QStackedWidget* pages_{};
+    QListWidget* navigation_{};
+    QStringList pageNames_;
+    QVector<int> navRowToPage_;
     bool dark_{false};
 };
