@@ -1,0 +1,19 @@
+********* Start testing of UiSmokeTest *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+PASS   : UiSmokeTest::initTestCase()
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() QPixmap::scaled: Pixmap is a null pixmap
+PASS   : UiSmokeTest::mainWindowConstructsAllOperationalPages()
+QWARN  : UiSmokeTest::dashboardLayoutHasNoClippingOrOverlap() QPixmap::scaled: Pixmap is a null pixmap
+FAIL!  : UiSmokeTest::dashboardLayoutHasNoClippingOrOverlap() Compared values are not the same
+   Actual   (cards.size()): 10
+   Expected (6)           : 6
+E:\pos--2\tests\ui_smoke_test.cpp(67) : failure location
+QWARN  : UiSmokeTest::sidebarRemainsFullyAccessible() QPixmap::scaled: Pixmap is a null pixmap
+PASS   : UiSmokeTest::sidebarRemainsFullyAccessible()
+QWARN  : UiSmokeTest::everyPageIsScrollable() QPixmap::scaled: Pixmap is a null pixmap
+PASS   : UiSmokeTest::everyPageIsScrollable()
+QWARN  : UiSmokeTest::settingsContentIsReachableWhenWindowIsSmall() QPixmap::scaled: Pixmap is a null pixmap
+PASS   : UiSmokeTest::settingsContentIsReachableWhenWindowIsSmall()
+PASS   : UiSmokeTest::cleanupTestCase()
+Totals: 6 passed, 1 failed, 0 skipped, 0 blacklisted, 3859ms
+********* Finished testing of UiSmokeTest *********

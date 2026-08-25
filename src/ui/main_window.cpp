@@ -31,6 +31,7 @@
 #include <QPushButton>
 #include <QStatusBar>
 #include <QStackedWidget>
+#include <QScrollArea>
 #include <QStandardPaths>
 #include <QTableWidget>
 #include <QHeaderView>
@@ -59,77 +60,122 @@ QString formatPaisa(pos::Money value) {
     return QString("%1%2.%3").arg(sign).arg(absolute / 100).arg(absolute % 100, 2, 10, QChar('0'));
 }
 
+QWidget* pageScroller(QWidget* content) {
+    if (!content) return nullptr;
+    auto* scroll = new QScrollArea;
+    scroll->setObjectName("pageScroll");
+    scroll->setWidgetResizable(true);
+    scroll->setWidget(content);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    return scroll;
+}
+
 const char* lightStyle = R"QSS(
-* { font-family: "Segoe UI", "Inter", sans-serif; color: #1B2536; font-size: 13px; }
-QMainWindow, #content { background: #F4F6FB; }
-#sidebar { background: #101B33; min-width: 262px; max-width: 262px; }
-#brand { color: #FFFFFF; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; }
-#subtitle { color: #A9B8D4; padding: 0 22px 12px; font-size: 11px; font-weight: 600; }
-#navCaption { color: #6D7E9F; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
-#workspaceTitle { font-size: 21px; font-weight: 800; } #workspaceHint { color: #74819A; font-size: 12px; }
-#statusChip { background: #E7F7EF; color: #0F7A4C; border: 1px solid #C5EEDA; border-radius: 12px; padding: 5px 11px; font-weight: 700; }
-QListWidget { background: transparent; border: 0; color: #C7D2E4; outline: 0; padding: 2px 12px 12px; }
-QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; } QListWidget::item:hover { background: #1A2A49; color: #FFFFFF; } QListWidget::item:selected { background: #2E6DE6; color: #FFFFFF; font-weight: 700; }
-QListWidget::item:disabled { background: transparent; color: #6D7E9F; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
-QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #FFFFFF; border: 1px solid #D9E1ED; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #2E6DE6; selection-color: #FFFFFF; }
-QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #B8C5DB; }
-QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #2E6DE6; padding: 8px 11px; }
-QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled { background: #F2F4F8; color: #A6B0C2; }
+* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #1a1c1c; font-size: 13px; }
+QMainWindow, #content { background: #f9f9f9; }
+#sidebar { background: #f3f3f3; min-width: 262px; max-width: 262px; border-right: 1px solid #dbc1b7; }
+#brand { color: #99461f; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; }
+#subtitle { color: #55433b; padding: 0 22px 12px; font-size: 11px; font-weight: 600; }
+#navCaption { color: #88726a; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
+#workspaceTitle { font-size: 21px; font-weight: 800; color: #1a1c1c; }
+#workspaceHint { color: #55433b; font-size: 12px; }
+#statusChip { background: #ffdbcd; color: #360f00; border: 1px solid #ffb597; border-radius: 12px; padding: 5px 11px; font-weight: 700; }
+QListWidget { background: transparent; border: 0; color: #55433b; outline: 0; padding: 2px 12px 12px; }
+QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; }
+QListWidget::item:hover { background: #e8e8e8; color: #99461f; }
+QListWidget::item:selected { background: #ffdbcd; color: #360f00; font-weight: 700; }
+QListWidget::item:disabled { background: transparent; color: #88726a; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
+QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #ffdbcd; selection-color: #360f00; }
+QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #88726a; }
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #99461f; padding: 8px 11px; }
+QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled { background: #dadada; color: #55433b; }
 QComboBox::drop-down, QDateEdit::drop-down, QSpinBox::up-button, QSpinBox::down-button { border: 0; width: 26px; }
-QComboBox QAbstractItemView { background: #FFFFFF; color: #1B2536; border: 1px solid #D9E1ED; border-radius: 8px; padding: 4px; selection-background-color: #E7F0FF; selection-color: #1B2536; }
-QPushButton { border: 1px solid #CBD7EA; border-radius: 10px; min-height: 18px; padding: 9px 15px; background: #FFFFFF; color: #2E3B57; font-weight: 700; }
-QPushButton:hover { background: #F5F8FD; border-color: #A9BCDA; } QPushButton:pressed { background: #EAF1FC; } QPushButton:disabled { background: #EFF2F7; color: #A2ACBF; border-color: #E5E9F0; }
-QPushButton:focus { border: 2px solid #6A9AF5; padding: 8px 14px; }
-#primary { background: #2E6DE6; color: #FFFFFF; border-color: #2E6DE6; } #primary:hover { background: #245FCE; border-color: #245FCE; } #primary:pressed { background: #1D50B0; border-color: #1D50B0; } #primary:focus { border-color: #A6C3FF; }
-#danger { background: #FEF4F3; color: #B3261E; border-color: #F3C9C4; } #danger:hover { background: #FCE2E0; border-color: #EA9C94; } #danger:pressed { background: #F8D0CC; border-color: #E07E75; } #danger:disabled { background: #F6F7F9; color: #C1C7D3; border-color: #EAEDF3; } #danger:focus { border-color: #E58A80; }
-QTableWidget { background: #FFFFFF; alternate-background-color: #F8FAFD; border: 1px solid #E2E8F1; border-radius: 12px; gridline-color: #EDF1F6; selection-background-color: #E3ECFF; selection-color: #172033; }
-QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #EEF2F7; } QTableWidget::item:hover { background: #F2F6FF; } QTableWidget::item:selected { background: #E3ECFF; color: #172033; }
-QHeaderView::section { background: #F4F7FB; color: #52627A; border: 0; border-bottom: 1px solid #DFE6F0; padding: 11px 10px; font-size: 11px; font-weight: 800; } QHeaderView::section:hover { color: #2E6DE6; }
-QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; } QScrollBar::handle:vertical { background: #C7D1E0; border-radius: 5px; min-height: 28px; } QScrollBar::handle:vertical:hover { background: #A9B6CB; }
-QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QScrollBar::handle:horizontal { background: #C7D1E0; border-radius: 5px; min-width: 28px; } QScrollBar::handle:horizontal:hover { background: #A9B6CB; }
-QFrame#metric, QFrame#panel { background: #FFFFFF; border: 1px solid #E6EBF3; border-radius: 14px; } QFrame#metric:hover, QFrame#panel:hover { border-color: #C6D4EC; }
-#metric { min-width: 190px; } #metricLabel { color: #64748B; font-weight: 700; } #metricValue { font-size: 25px; font-weight: 800; } #metricCaption { color: #74819A; font-size: 11px; }
-#pageTitle { font-size: 27px; font-weight: 800; } #muted { color: #64748B; } #sectionTitle { font-size: 16px; font-weight: 800; }
-#footerCard { background: #1A2A49; border: 1px solid #24375C; border-radius: 12px; margin: 0 12px 6px; } #footerStore { color: #EAF1FF; font-weight: 750; font-size: 12px; } #footerStatus { color: #7FE0B0; font-size: 11px; font-weight: 600; }
-#quick { background: #FFFFFF; border: 1px solid #E2E8F1; border-radius: 12px; padding: 12px 14px; font-weight: 700; text-align: left; } #quick:hover { border-color: #2E6DE6; color: #2E6DE6; background: #F5F9FF; } #quick:pressed { background: #EAF2FF; }
-#recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #3A475F; border-bottom: 1px solid #EEF2F7; }
+QComboBox QAbstractItemView { background: #ffffff; color: #1a1c1c; border: 1px solid #dbc1b7; border-radius: 8px; padding: 4px; selection-background-color: #ffdbcd; selection-color: #360f00; }
+QPushButton { border: 1px solid #dbc1b7; border-radius: 10px; min-height: 18px; padding: 9px 15px; background: #ffffff; color: #535f75; font-weight: 700; }
+QPushButton:hover { background: #f3f3f3; border-color: #88726a; }
+QPushButton:pressed { background: #eeeeee; }
+QPushButton:disabled { background: #e8e8e8; color: #dadada; border-color: #dbc1b7; }
+QPushButton:focus { border: 2px solid #99461f; padding: 8px 14px; }
+#primary { background: #99461f; color: #ffffff; border-color: #99461f; }
+#primary:hover { background: #ffdbcd; color: #360f00; border-color: #ffdbcd; }
+#primary:pressed { background: #7a3008; border-color: #7a3008; }
+#primary:focus { border-color: #ffdbcd; }
+#danger { background: #ffdad6; color: #ba1a1a; border-color: #ffdad6; }
+#danger:hover { background: #ffb4ab; border-color: #ffb4ab; }
+#danger:pressed { background: #93000a; color: #ffffff; border-color: #93000a; }
+#danger:disabled { background: #dadada; color: #55433b; border-color: #dbc1b7; }
+#danger:focus { border-color: #ba1a1a; }
+QTableWidget { background: #ffffff; alternate-background-color: #f9f9f9; border: 1px solid #dbc1b7; border-radius: 12px; gridline-color: #eeeeee; selection-background-color: #ffdbcd; selection-color: #360f00; }
+QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #eeeeee; }
+QTableWidget::item:hover { background: #f3f3f3; }
+QTableWidget::item:selected { background: #ffdbcd; color: #360f00; }
+QHeaderView::section { background: #eeeeee; color: #55433b; border: 0; border-bottom: 1px solid #dbc1b7; padding: 11px 10px; font-size: 11px; font-weight: 800; }
+QHeaderView::section:hover { color: #99461f; }
+QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; }
+QScrollBar::handle:vertical { background: #dadada; border-radius: 5px; min-height: 28px; }
+QScrollBar::handle:vertical:hover { background: #88726a; }
+QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; }
+QScrollBar::handle:horizontal { background: #dadada; border-radius: 5px; min-width: 28px; }
+QScrollBar::handle:horizontal:hover { background: #88726a; }
+QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 14px; }
+QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #88726a; }
+#metric, #inventoryMetric { min-width: 190px; }
+#metricLabel { color: #55433b; font-weight: 700; }
+#metricValue { font-family: "JetBrains Mono", monospace; font-size: 25px; font-weight: 800; }
+#metricCaption { color: #88726a; font-size: 11px; }
+#pageTitle { font-size: 27px; font-weight: 800; color: #1a1c1c; }
+#sectionTitle { font-size: 16px; font-weight: 800; color: #1a1c1c; }
+#footerCard { background: #eeeeee; border: 1px solid #dbc1b7; border-radius: 12px; margin: 0 12px 6px; }
+#footerStore { color: #1a1c1c; font-weight: 750; font-size: 12px; }
+#footerStatus { color: #99461f; font-size: 11px; font-weight: 600; }
+#quick { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 12px; padding: 12px 14px; font-weight: 700; }
+#quick:hover { border-color: #99461f; color: #99461f; background: #ffdbcd; }
+#quick:pressed { background: #ffb597; }
+#recentList { background: transparent; border: 0; }
+#recentList::item { border-radius: 8px; padding: 8px 10px; color: #55433b; border-bottom: 1px solid #eeeeee; }
+#pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
-#summaryBox { background: #EFF4FD; border: 1px solid #C9DAF5; border-radius: 12px; }
-#sumLabel { color: #64748B; font-weight: 700; } #sumValue { font-weight: 800; font-size: 14px; }
-#posTotal { font-size: 28px; font-weight: 800; color: #2E6DE6; }
-QStatusBar { background: #FFFFFF; color: #64748B; border-top: 1px solid #E4E9F2; padding-left: 12px; }
-QToolTip { background: #1C2537; color: #FFFFFF; border: 1px solid #2E3A54; border-radius: 8px; padding: 6px 9px; }
-QMessageBox { background: #FFFFFF; }
+#summaryBox { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 12px; }
+#sumLabel { color: #55433b; font-weight: 700; }
+#sumValue { font-weight: 800; font-size: 14px; color: #1a1c1c; }
+#posTotal { font-size: 28px; font-weight: 800; color: #99461f; }
+QStatusBar { background: #eeeeee; color: #55433b; border-top: 1px solid #dbc1b7; padding-left: 12px; }
+QToolTip { background: #ffffff; color: #1a1c1c; border: 1px solid #dbc1b7; border-radius: 8px; padding: 6px 9px; }
+QMessageBox { background: #ffffff; color: #1a1c1c; }
 )QSS";
+
 const char* darkStyle = R"QSS(
-* { font-family: "Segoe UI", "Inter", sans-serif; color: #E7EDF8; font-size: 13px; }
-QMainWindow, #content { background: #0E1728; } #sidebar { background: #091223; min-width: 262px; max-width: 262px; }
-#brand { color: white; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; } #subtitle { color: #9EB0CD; padding: 0 22px 12px; font-size: 11px; font-weight: 600; } #navCaption { color: #647694; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
-#workspaceTitle { font-size: 21px; font-weight: 800; } #workspaceHint, #muted, #metricLabel, #metricCaption { color: #9AAAC4; } #statusChip { background: #123A30; color: #78D6A7; border: 1px solid #205B49; border-radius: 12px; padding: 5px 11px; font-weight: 700; }
-QListWidget { background: transparent; border: 0; color: #C8D3E4; outline: 0; padding: 2px 12px 12px; } QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; } QListWidget::item:hover { background: #142643; color: white; } QListWidget::item:selected { background: #2E6DE6; color: white; font-weight: 700; }
-QListWidget::item:disabled { background: transparent; color: #647694; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
-QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #18263C; border: 1px solid #334761; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #2E6DE6; } QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #4A6080; } QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #6A9AF5; padding: 8px 11px; } QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled { background: #121C2E; color: #6A7890; }
+* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #E2E2E9; font-size: 13px; }
+QMainWindow, #content { background: #111318; } #sidebar { background: #1A1B21; min-width: 262px; max-width: 262px; }
+#brand { color: #E9C349; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; } #subtitle { color: #C6C6CC; padding: 0 22px 12px; font-size: 11px; font-weight: 600; } #navCaption { color: #909096; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
+#workspaceTitle { font-size: 21px; font-weight: 800; color: #E2E2E9; } #workspaceHint, #muted, #metricLabel, #metricCaption { color: #C6C6CC; } #statusChip { background: #123A30; color: #78D6A7; border: 1px solid #205B49; border-radius: 12px; padding: 5px 11px; font-weight: 700; }
+QListWidget { background: transparent; border: 0; color: #C6C6CC; outline: 0; padding: 2px 12px 12px; } QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; } QListWidget::item:hover { background: #1E2025; color: #E2E2E9; } QListWidget::item:selected { background: #33353A; color: #E9C349; font-weight: 700; }
+QListWidget::item:disabled { background: transparent; color: #909096; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
+QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #1E2025; border: 1px solid #45464C; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #E9C349; selection-color: #241a00; } QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #909096; } QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #E9C349; padding: 8px 11px; } QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled { background: #1A1B21; color: #909096; }
 QComboBox::drop-down, QDateEdit::drop-down, QSpinBox::up-button, QSpinBox::down-button { border: 0; width: 26px; }
-QComboBox QAbstractItemView { background: #1C2C44; color: #E7EDF8; border: 1px solid #334761; border-radius: 8px; padding: 4px; selection-background-color: #2E6DE6; selection-color: white; }
-QPushButton { border: 1px solid #3A4E6B; border-radius: 10px; min-height: 18px; padding: 9px 15px; background: #1A2A43; color: #C9D8F4; font-weight: 700; } QPushButton:hover { background: #22375A; border-color: #4D648A; } QPushButton:pressed { background: #162440; } QPushButton:disabled { background: #141F33; color: #6E7C94; border-color: #26344C; }
-QPushButton:focus { border: 2px solid #6A9AF5; padding: 8px 14px; }
-#primary { background: #2E6DE6; color: white; border-color: #2E6DE6; } #primary:hover { background: #4280F4; border-color: #4280F4; } #primary:pressed { background: #1D50B0; border-color: #1D50B0; } #primary:focus { border-color: #A6C3FF; }
-#danger { background: #3B1A1A; color: #F4A19A; border-color: #6E3230; } #danger:hover { background: #4A2321; border-color: #9A4C48; } #danger:pressed { background: #331312; border-color: #7E3B37; } #danger:disabled { background: #1B2636; color: #7C879C; border-color: #2C3A52; } #danger:focus { border-color: #F0A8A0; }
-QTableWidget { background: #18263C; alternate-background-color: #1C2C44; border: 1px solid #30445F; border-radius: 12px; gridline-color: #263A55; selection-background-color: #294D83; selection-color: white; } QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #263A55; } QTableWidget::item:hover { background: #20334E; } QTableWidget::item:selected { background: #294D83; color: white; }
-QHeaderView::section { background: #132138; color: #AFC0DB; border: 0; border-bottom: 1px solid #30445F; padding: 11px 10px; font-size: 11px; font-weight: 800; } QHeaderView::section:hover { color: #8DB8FF; }
-QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; } QScrollBar::handle:vertical { background: #3B506E; border-radius: 5px; min-height: 28px; } QScrollBar::handle:vertical:hover { background: #4D6484; }
-QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QScrollBar::handle:horizontal { background: #3B506E; border-radius: 5px; min-width: 28px; } QScrollBar::handle:horizontal:hover { background: #4D6484; }
-QFrame#metric, QFrame#panel { background: #18263C; border: 1px solid #30445F; border-radius: 14px; } QFrame#metric:hover, QFrame#panel:hover { border-color: #3F5A7E; } #metric { min-width: 190px; } #metricLabel { font-weight: 700; } #metricValue { font-size: 25px; font-weight: 800; } #metricCaption { font-size: 11px; } #pageTitle { font-size: 27px; font-weight: 800; } #sectionTitle { font-size: 16px; font-weight: 800; }
-#footerCard { background: #142643; border: 1px solid #22406B; border-radius: 12px; margin: 0 12px 6px; } #footerStore { color: #EAF1FF; font-weight: 750; font-size: 12px; } #footerStatus { color: #7FE0B0; font-size: 11px; font-weight: 600; }
-#quick { background: #18263C; border: 1px solid #30445F; border-radius: 12px; padding: 12px 14px; font-weight: 700; } #quick:hover { border-color: #2E6DE6; color: #8DB8FF; background: #1C2C44; } #quick:pressed { background: #20334E; }
-#recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #C4D2EA; border-bottom: 1px solid #263A55; }
+QComboBox QAbstractItemView { background: #1E2025; color: #E2E2E9; border: 1px solid #45464C; border-radius: 8px; padding: 4px; selection-background-color: #E9C349; selection-color: #241a00; }
+QPushButton { border: 1px solid #45464C; border-radius: 10px; min-height: 18px; padding: 9px 15px; background: #1E2025; color: #E2E2E9; font-weight: 700; } QPushButton:hover { background: #282A2F; border-color: #909096; } QPushButton:pressed { background: #33353A; } QPushButton:disabled { background: #1A1B21; color: #909096; border-color: #45464C; }
+QPushButton:focus { border: 2px solid #E9C349; padding: 8px 14px; }
+#primary { background: #E9C349; color: #241a00; border-color: #E9C349; } #primary:hover { background: #ffe088; border-color: #ffe088; } #primary:pressed { background: #af8d11; border-color: #af8d11; } #primary:focus { border-color: #dee2f4; }
+#danger { background: #3B1A1A; color: #FFB4AB; border-color: #6E3230; } #danger:hover { background: #4A2321; border-color: #9A4C48; } #danger:pressed { background: #331312; border-color: #7E3B37; } #danger:disabled { background: #1B2636; color: #7C879C; border-color: #2C3A52; } #danger:focus { border-color: #FFB4AB; }
+QTableWidget { background: #1E2025; alternate-background-color: #1A1B21; border: 1px solid #45464C; border-radius: 12px; gridline-color: #33353A; selection-background-color: #282A2F; selection-color: #E2E2E9; } QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #33353A; } QTableWidget::item:hover { background: #282A2F; } QTableWidget::item:selected { background: #282A2F; color: #E2E2E9; }
+QHeaderView::section { background: #0C0E13; color: #C6C6CC; border: 0; border-bottom: 1px solid #45464C; padding: 11px 10px; font-size: 11px; font-weight: 800; } QHeaderView::section:hover { color: #E9C349; }
+QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; } QScrollBar::handle:vertical { background: #33353A; border-radius: 5px; min-height: 28px; } QScrollBar::handle:vertical:hover { background: #45464C; }
+QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QScrollBar::handle:horizontal { background: #33353A; border-radius: 5px; min-width: 28px; } QScrollBar::handle:horizontal:hover { background: #45464C; }
+QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; border: 1px solid #45464C; border-radius: 14px; } QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #909096; } #metric, #inventoryMetric { min-width: 190px; } #metricLabel { font-weight: 700; color: #C6C6CC; } #metricValue { font-family: "JetBrains Mono", monospace; font-size: 25px; font-weight: 800; } #metricCaption { font-size: 11px; color: #C6C6CC; } #pageTitle { font-size: 27px; font-weight: 800; color: #E2E2E9; } #sectionTitle { font-size: 16px; font-weight: 800; color: #E2E2E9; }
+#footerCard { background: #1A1B21; border: 1px solid #45464C; border-radius: 12px; margin: 0 12px 6px; } #footerStore { color: #E2E2E9; font-weight: 750; font-size: 12px; } #footerStatus { color: #78D6A7; font-size: 11px; font-weight: 600; }
+#quick { background: #1E2025; border: 1px solid #45464C; border-radius: 12px; padding: 12px 14px; font-weight: 700; } #quick:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; } #quick:pressed { background: #33353A; }
+#recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #C6C6CC; border-bottom: 1px solid #33353A; }
+#pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
-#summaryBox { background: #1C2C44; border: 1px solid #3A4E6B; border-radius: 12px; }
-#sumLabel { color: #9AAAC4; font-weight: 700; } #sumValue { font-weight: 800; font-size: 14px; }
-#posTotal { font-size: 28px; font-weight: 800; color: #8DB8FF; }
-QStatusBar { background: #111E31; color: #9AAAC4; border-top: 1px solid #30445F; padding-left: 12px; }
-QToolTip { background: #10182A; color: #E7EDF8; border: 1px solid #334761; border-radius: 8px; padding: 6px 9px; }
-QMessageBox { background: #18263C; color: #E7EDF8; }
+#summaryBox { background: #1E2025; border: 1px solid #45464C; border-radius: 12px; }
+#sumLabel { color: #C6C6CC; font-weight: 700; } #sumValue { font-weight: 800; font-size: 14px; color: #E2E2E9; }
+#posTotal { font-size: 28px; font-weight: 800; color: #E9C349; }
+QStatusBar { background: #0C0E13; color: #C6C6CC; border-top: 1px solid #45464C; padding-left: 12px; }
+QToolTip { background: #0C0E13; color: #E2E2E9; border: 1px solid #45464C; border-radius: 8px; padding: 6px 9px; }
+QMessageBox { background: #1E2025; color: #E2E2E9; }
 )QSS";
 }
 
@@ -139,25 +185,25 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     auto* root=new QWidget(this); auto* layout=new QHBoxLayout(root); layout->setContentsMargins(0,0,0,0); layout->setSpacing(0);
     auto* sidebar=new QFrame(root); sidebar->setObjectName("sidebar"); auto* sideLayout=new QVBoxLayout(sidebar); sideLayout->setContentsMargins(0,0,0,18); sideLayout->setSpacing(0);
     auto* logo=new QLabel(sidebar); logo->setAlignment(Qt::AlignCenter); logo->setPixmap(QPixmap(":/branding/logo").scaled(92, 92, Qt::KeepAspectRatio, Qt::SmoothTransformation)); logo->setStyleSheet("background: white; border-radius: 14px; padding: 8px; margin-top: 18px;"); logo->setAccessibleName("Nexora POS logo"); sideLayout->addWidget(logo,0,Qt::AlignHCenter);
-    auto* brand=new QLabel("NEXORA",sidebar); brand->setObjectName("brand"); auto* sub=new QLabel("WHOLESALE OPERATIONS",sidebar); sub->setObjectName("subtitle"); sideLayout->addWidget(brand); sideLayout->addWidget(sub);
+    auto* brand=new QLabel("Nexora POS",sidebar); brand->setObjectName("brand"); auto* sub=new QLabel("Enterprise Edition",sidebar); sub->setObjectName("subtitle"); sideLayout->addWidget(brand); sideLayout->addWidget(sub);
     const QList<QPair<QString,QStringList>> navGroups={{"MAIN",{"Dashboard","Sales POS","Inventory"}},{"BUSINESS",{"Purchases","Customers","Suppliers"}},{"FINANCE",{"Cash & Shifts","Cheques"}},{"ANALYTICS",{"Reports","Analytics","Audit log"}},{"SYSTEM",{"Settings","Backup & Restore"}}};
     QStringList pageNames; QVector<int> navRowToPage;
     auto* navigation=new QListWidget(sidebar); navigation->setAccessibleName("Primary navigation"); navigation->setToolTip("Choose an operational workspace");
     for(const auto& group:navGroups){ auto* caption=new QListWidgetItem(group.first,navigation); caption->setFlags(Qt::NoItemFlags); caption->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter); navRowToPage.append(-1); for(const auto& name:group.second){ navRowToPage.append(pageNames.size()); pageNames.append(name); new QListWidgetItem(name,navigation); } }
     navigation_=navigation; pageNames_=pageNames; navRowToPage_=navRowToPage;
-    navigation->setCurrentRow(1); sideLayout->addWidget(navigation,1);
-    auto* footerFrame=new QFrame(sidebar); footerFrame->setObjectName("footerCard"); auto* footerLayout=new QVBoxLayout(footerFrame); footerLayout->setContentsMargins(14,12,14,12); footerLayout->setSpacing(4);
+    navigation->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); navigation->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); navigation->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding); navigation->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel); navigation->setUniformItemSizes(true); navigation->setCurrentRow(1); sideLayout->addWidget(navigation,1);
+    auto* footerFrame=new QFrame(sidebar); footerFrame->setObjectName("footerCard"); footerFrame->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed); auto* footerLayout=new QVBoxLayout(footerFrame); footerLayout->setContentsMargins(14,12,14,12); footerLayout->setSpacing(4);
     auto* store=new QLabel(pos::SettingsService(database_).value("business.name","Nexora POS"),footerFrame); store->setObjectName("footerStore"); store->setWordWrap(true);
     auto* status=new QLabel("●  Local data • offline ready",footerFrame); status->setObjectName("footerStatus");
     footerLayout->addWidget(store); footerLayout->addWidget(status); sideLayout->addWidget(footerFrame);
     layout->addWidget(sidebar); auto* content=new QWidget(root); content->setObjectName("content");auto* contentLayout=new QVBoxLayout(content);contentLayout->setContentsMargins(32,24,32,22);contentLayout->setSpacing(18);
-    auto* top=new QHBoxLayout; auto* workspace=new QVBoxLayout; auto* workspaceTitle=new QLabel("Dashboard",content); workspaceTitle->setObjectName("workspaceTitle"); auto* workspaceHint=new QLabel("Monitor the health of your operation and move quickly to the next task.",content); workspaceHint->setObjectName("workspaceHint"); workspace->addWidget(workspaceTitle); workspace->addWidget(workspaceHint); top->addLayout(workspace); top->addStretch(); auto* online=new QLabel("OFFLINE READY",content); online->setObjectName("statusChip"); top->addWidget(online); auto* date=new QLabel(QDate::currentDate().toString("ddd, dd MMM yyyy"),content);date->setObjectName("muted");top->addWidget(date);auto* theme=new QPushButton("Theme",content); theme->setToolTip("Switch between light and dark appearance"); top->addWidget(theme);contentLayout->addLayout(top);
+    auto* top=new QHBoxLayout; auto* workspace=new QVBoxLayout; auto* workspaceTitle=new QLabel("Dashboard",content); workspaceTitle->setObjectName("workspaceTitle"); auto* workspaceHint=new QLabel("Monitor the health of your operation and move quickly to the next task.",content); workspaceHint->setObjectName("workspaceHint"); workspaceHint->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Preferred); workspace->addWidget(workspaceTitle); workspace->addWidget(workspaceHint); top->addLayout(workspace,1); auto* online=new QLabel("OFFLINE READY",content); online->setObjectName("statusChip"); top->addWidget(online); auto* date=new QLabel(QDate::currentDate().toString("ddd, dd MMM yyyy"),content);date->setObjectName("muted");top->addWidget(date);auto* theme=new QPushButton("Theme",content); theme->setToolTip("Switch between light and dark appearance"); top->addWidget(theme);contentLayout->addLayout(top);
     pages_=new QStackedWidget(content);
-    const auto makePage=[this](const QString& n)->QWidget*{ return n=="Dashboard" ? makeDashboard() : n=="Inventory" ? makeInventory() : n=="Sales POS" ? makeSalesPos() : n=="Purchases" ? makePurchases() : n=="Customers" ? makeCustomers() : n=="Suppliers" ? makeSuppliers() : n=="Cash & Shifts" ? makeCashManagement() : n=="Cheques" ? makeCheques() : n=="Reports" ? makeReports() : n=="Analytics" ? makeAnalytics() : n=="Audit log" ? makeAuditLog() : n=="Settings" ? makeSettings() : n=="Backup & Restore" ? makeBackupRestore() : makePlaceholder(n,{});};
+    const auto makePage=[this](const QString& n)->QWidget*{ if(n=="Dashboard") return pageScroller(makeDashboard()); QWidget* content=nullptr; if(n=="Inventory") content=makeInventory(); else if(n=="Sales POS") content=makeSalesPos(); else if(n=="Purchases") content=makePurchases(); else if(n=="Customers") content=makeCustomers(); else if(n=="Suppliers") content=makeSuppliers(); else if(n=="Cash & Shifts") content=makeCashManagement(); else if(n=="Cheques") content=makeCheques(); else if(n=="Reports") content=makeReports(); else if(n=="Analytics") content=makeAnalytics(); else if(n=="Audit log") content=makeAuditLog(); else if(n=="Settings") content=makeSettings(); else if(n=="Backup & Restore") content=makeBackupRestore(); else content=makePlaceholder(n,{}); return pageScroller(content); };
     for(const auto& name:pageNames) pages_->addWidget(makePage(name)); contentLayout->addWidget(pages_,1);layout->addWidget(content,1);setCentralWidget(root);
     const QHash<QString,QString> hints={{"Dashboard","Monitor the health of your operation and move quickly to the next task."},{"Sales POS","Build a sale from product search through payment, without losing your place."},{"Inventory","Find products fast and keep stock levels healthy."},{"Purchases","Receive stock from suppliers and manage payables."},{"Customers","Manage customers, balances and receive payments."},{"Suppliers","Manage suppliers, payables and purchasing history."},{"Cash & Shifts","Track the till, shifts and cash transactions."},{"Cheques","Register received and issued cheques and their status."},{"Reports","Filter, print and export business reports."},{"Analytics","Revenue, profit and inventory trends at a glance."},{"Audit log","Append-only record of sensitive business actions."},{"Settings","Business identity, currency, printers, security and backup."},{"Backup & Restore","Verified backups and a guided, checksum-safe restore."}};
     connect(navigation,&QListWidget::currentRowChanged,this,[this,navigation,workspaceTitle,workspaceHint,hints](int row){ if(row<0||row>=navRowToPage_.size())return; const int pageIndex=navRowToPage_.value(row); if(pageIndex<0||pageIndex>=pages_->count())return; pages_->setCurrentIndex(pageIndex); const auto* item=navigation->item(row); if(!item)return; const auto name=pageNames_.value(pageIndex); workspaceTitle->setText(name); workspaceHint->setText(hints.value(name)); });
-    connect(theme,&QPushButton::clicked,this,&MainWindow::switchTheme); qApp->setStyleSheet(lightStyle); statusBar()->showMessage("Ready — local data is available offline");
+    connect(theme,&QPushButton::clicked,this,&MainWindow::switchTheme); qApp->setStyleSheet(darkStyle); dark_ = true; statusBar()->showMessage("Ready — local data is available offline");
     const auto backupIntervalHours=pos::SettingsService(database_).value("backup.interval_hours","0").toInt();
     if(backupIntervalHours>0){auto* timer=new QTimer(this);timer->setInterval(backupIntervalHours*60*60*1000);connect(timer,&QTimer::timeout,this,[this]{try{const auto folder=QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)+"/backups";const auto file=std::filesystem::path(folder.toStdWString())/(L"scheduled-"+QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString()+L".db");pos::BackupService service(database_);service.createVerifiedBackup(file);service.pruneVerifiedBackups(30);}catch(...){}});timer->start();}
 }
@@ -166,7 +212,7 @@ MainWindow::~MainWindow() = default;
 void MainWindow::goToPage(const QString& pageName){ if(!navigation_) return; const int pageIndex=pageNames_.indexOf(pageName); if(pageIndex<0) return; const int navRow=navRowToPage_.indexOf(pageIndex); if(navRow<0) return; if(navigation_->currentRow()!=navRow) navigation_->setCurrentRow(navRow); }
 bool MainWindow::authorizeSensitiveAction(const QString& action){pos::SecurityService security(database_);if(!security.hasPin()){QMessageBox::warning(this,"PIN required",QString("Configure a security PIN before %1.").arg(action));return false;}bool ok=false;const auto pin=QInputDialog::getText(this,"Security PIN",QString("Enter PIN to %1:").arg(action),QLineEdit::Password,{},&ok);if(!ok||!security.verifyPin(pin)){QMessageBox::warning(this,"Action denied","The security PIN was incorrect.");return false;}return true;}
 
-QWidget* MainWindow::makeMetric(const QString& label,const QString& value,const QString& caption,const QString& accent){auto* card=new QFrame;card->setObjectName("metric");auto* l=new QVBoxLayout(card);l->setContentsMargins(16,15,16,15);auto* a=new QLabel(label);a->setObjectName("metricLabel");auto* v=new QLabel(value);v->setObjectName("metricValue");v->setStyleSheet("color:"+accent+";");auto* c=new QLabel(caption);c->setObjectName("metricCaption");l->addWidget(a);l->addWidget(v);l->addWidget(c);return card;}
+QWidget* MainWindow::makeMetric(const QString& label,const QString& value,const QString& caption,const QString& accent){auto* card=new QFrame;card->setObjectName("metric");auto* l=new QVBoxLayout(card);l->setContentsMargins(16,15,16,15);l->setSpacing(6);auto* a=new QLabel(label);a->setObjectName("metricLabel");auto* v=new QLabel(value);v->setObjectName("metricValue");v->setStyleSheet("color:"+accent+";");auto* c=new QLabel(caption);c->setObjectName("metricCaption");l->addWidget(a);l->addWidget(v);l->addWidget(c);return card;}
 QWidget* MainWindow::makeDashboard(){
     auto* page=new QWidget; auto* l=new QVBoxLayout(page); l->setContentsMargins(0,0,0,0); l->setSpacing(18);
     auto* heading=new QHBoxLayout; auto* title=new QLabel(page); title->setObjectName("pageTitle"); const auto hour=QTime::currentTime().hour(); title->setText(hour<12?"Good morning":hour<17?"Good afternoon":"Good evening");
@@ -193,15 +239,212 @@ QWidget* MainWindow::makeDashboard(){
     l->addLayout(lower,1);
 connect(backup,&QPushButton::clicked,this,[this]{try {const auto folder=QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)+"/backups";const auto file=std::filesystem::path(folder.toStdWString())/(L"backup-"+QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString()+L".db");pos::BackupService service(database_);service.createVerifiedBackup(file);service.pruneVerifiedBackups(30);QMessageBox::information(this,"Backup complete",QString("A verified backup was saved to:\n%1").arg(QString::fromStdWString(file.wstring())));}catch(const std::exception& e){QMessageBox::critical(this,"Backup failed",e.what());}});return page;}
 QWidget* MainWindow::makeInventory(){
-    auto* page=new QWidget; auto* layout=new QVBoxLayout(page); layout->setContentsMargins(0,0,0,0);
-    auto* title=new QLabel("Inventory",page); title->setObjectName("pageTitle"); layout->addWidget(title);
-    auto* controls=new QHBoxLayout; auto* search=new QLineEdit(page); search->setPlaceholderText("Search product, SKU or barcode"); auto* add=new QPushButton("Add product",page); add->setObjectName("primary"); auto* edit=new QPushButton("Edit selected",page); auto* archive=new QPushButton("Archive selected",page); archive->setObjectName("danger"); auto* printLabel=new QPushButton("Print barcode label",page); auto* importCsv=new QPushButton("Import CSV",page); auto* refresh=new QPushButton("Refresh",page); controls->addWidget(search); controls->addWidget(add); controls->addWidget(edit); controls->addWidget(archive); controls->addWidget(printLabel); controls->addWidget(importCsv); controls->addWidget(refresh); controls->addStretch(); layout->addLayout(controls);
-    auto* table=new QTableWidget(page); table->setColumnCount(6); table->setHorizontalHeaderLabels({"Product","SKU","Barcode","Unit","Stock","Retail (paisa)"}); table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); table->setSelectionBehavior(QAbstractItemView::SelectRows); table->setEditTriggers(QAbstractItemView::NoEditTriggers); layout->addWidget(table,1);
-    const auto load=[this,table,search](){ auto query=database_->prepare("SELECT id,name,sku,barcode,base_unit,stock_quantity,retail_price_paisa,minimum_stock FROM products WHERE is_deleted=0 AND (name LIKE ? OR COALESCE(sku,'') LIKE ? OR COALESCE(barcode,'') LIKE ?) ORDER BY name LIMIT 250"); const auto term="%"+search->text().trimmed()+"%"; query.bind(1,term); query.bind(2,term); query.bind(3,term); table->setRowCount(0); while(query.stepRow()){const int row=table->rowCount(); table->insertRow(row); auto* name=new QTableWidgetItem(query.text(1)); name->setData(Qt::UserRole,query.text(0)); table->setItem(row,0,name); table->setItem(row,1,new QTableWidgetItem(query.text(2))); table->setItem(row,2,new QTableWidgetItem(query.text(3))); table->setItem(row,3,new QTableWidgetItem(query.text(4))); const auto stock=query.integer(5),minimum=query.integer(7); auto* stockItem=new QTableWidgetItem(QString("%1%2").arg(stock<=minimum?"● ":"",QString::number(stock))); stockItem->setForeground(stock<=minimum?QColor("#EF4444"):QColor("#16A34A")); stockItem->setFont(stock<=minimum?QFont("Segoe UI",9,QFont::Bold):QFont("Segoe UI",9)); stockItem->setToolTip(stock<=minimum?QString("Low stock — at or below minimum (%1)").arg(minimum):"In stock"); table->setItem(row,4,stockItem); table->setItem(row,5,new QTableWidgetItem(QString("PKR %1").arg(formatPaisa(query.integer(6)))));} };
-    load(); connect(search,&QLineEdit::textChanged,this,[load]{load();}); connect(refresh,&QPushButton::clicked,this,[load]{load();});
+    auto* page=new QWidget; auto* layout=new QVBoxLayout(page); layout->setContentsMargins(0,0,0,0); layout->setSpacing(24);
+    
+    // Page Header & Caption
+    auto* headerLayout = new QHBoxLayout;
+    auto* titleContainer = new QVBoxLayout;
+    auto* title=new QLabel("Inventory",page); title->setObjectName("pageTitle"); titleContainer->addWidget(title);
+    auto* subtitle=new QLabel("Manage stock, track SKUs, and monitor valuation across Main Branch.",page); subtitle->setObjectName("muted"); titleContainer->addWidget(subtitle);
+    headerLayout->addLayout(titleContainer); headerLayout->addStretch();
+    layout->addLayout(headerLayout);
+
+    // Controls Row
+    auto* controls=new QHBoxLayout;
+    auto* search=new QLineEdit(page); search->setPlaceholderText("Search product, SKU or barcode...");
+    search->setMinimumWidth(280); search->setMaximumWidth(400);
+    auto* filterBtn=new QPushButton("Filters",page);
+    auto* add=new QPushButton("Add New Item",page); add->setObjectName("primary");
+    controls->addWidget(search); controls->addWidget(filterBtn); controls->addWidget(add); controls->addStretch();
+    layout->addLayout(controls);
+
+    // Quick Stats Grid Layout
+    auto* statsGrid = new QGridLayout;
+    statsGrid->setSpacing(20);
+    
+    auto* card1 = new QFrame(page); card1->setObjectName("metric");
+    auto* l1 = new QVBoxLayout(card1);
+    auto* lbl1 = new QLabel("TOTAL SKUS",card1); lbl1->setObjectName("metricLabel");
+    auto* val1 = new QLabel("0",card1); val1->setObjectName("metricValue");
+    auto* cap1 = new QLabel("+0 this week",card1); cap1->setObjectName("metricCaption");
+    l1->addWidget(lbl1); l1->addWidget(val1); l1->addWidget(cap1);
+    
+    auto* card2 = new QFrame(page); card2->setObjectName("metric");
+    auto* l2 = new QVBoxLayout(card2);
+    auto* lbl2 = new QLabel("LOW STOCK ITEMS",card2); lbl2->setObjectName("metricLabel");
+    auto* val2 = new QLabel("0",card2); val2->setObjectName("metricValue"); val2->setStyleSheet("color: #E9C349;");
+    auto* cap2 = new QLabel("Requires reorder",card2); cap2->setObjectName("metricCaption");
+    l2->addWidget(lbl2); l2->addWidget(val2); l2->addWidget(cap2);
+    
+    auto* card3 = new QFrame(page); card3->setObjectName("metric");
+    auto* l3 = new QVBoxLayout(card3);
+    auto* lbl3 = new QLabel("OUT OF STOCK",card3); lbl3->setObjectName("metricLabel");
+    auto* val3 = new QLabel("0",card3); val3->setObjectName("metricValue"); val3->setStyleSheet("color: #FFB4AB;");
+    auto* cap3 = new QLabel("Critical attention",card3); cap3->setObjectName("metricCaption");
+    l3->addWidget(lbl3); l3->addWidget(val3); l3->addWidget(cap3);
+    
+    auto* card4 = new QFrame(page); card4->setObjectName("metric");
+    auto* l4 = new QVBoxLayout(card4);
+    auto* lbl4 = new QLabel("TOTAL INVENTORY VALUE",card4); lbl4->setObjectName("metricLabel");
+    auto* val4 = new QLabel("PKR 0.00",card4); val4->setObjectName("metricValue");
+    auto* cap4 = new QLabel("Based on retail price",card4); cap4->setObjectName("metricCaption");
+    l4->addWidget(lbl4); l4->addWidget(val4); l4->addWidget(cap4);
+    
+    statsGrid->addWidget(card1, 0, 0); statsGrid->addWidget(card2, 0, 1);
+    statsGrid->addWidget(card3, 0, 2); statsGrid->addWidget(card4, 0, 3);
+    layout->addLayout(statsGrid);
+
+    // High Density Table Panel
+    auto* tablePanel = new QFrame(page); tablePanel->setObjectName("panel");
+    auto* tableLayout = new QVBoxLayout(tablePanel); tableLayout->setContentsMargins(16,16,16,16); tableLayout->setSpacing(12);
+    
+    auto* tableToolbar = new QHBoxLayout;
+    auto* resultsCount = new QLabel("Showing 0 results",tablePanel); resultsCount->setObjectName("muted");
+    auto* edit=new QPushButton("Edit selected",tablePanel);
+    auto* archive=new QPushButton("Archive selected",tablePanel); archive->setObjectName("danger");
+    auto* printLabel=new QPushButton("Print barcode label",tablePanel);
+    auto* importCsv=new QPushButton("Import CSV",tablePanel);
+    auto* refresh=new QPushButton("Refresh",tablePanel);
+    tableToolbar->addWidget(resultsCount); tableToolbar->addStretch();
+    tableToolbar->addWidget(edit); tableToolbar->addWidget(archive);
+    tableToolbar->addWidget(printLabel); tableToolbar->addWidget(importCsv); tableToolbar->addWidget(refresh);
+    tableLayout->addLayout(tableToolbar);
+
+    auto* table=new QTableWidget(tablePanel);
+    table->setColumnCount(7);
+    table->setHorizontalHeaderLabels({"SKU / CODE","ITEM NAME","CATEGORY","STOCK LEVEL","UNIT PRICE","TOTAL VALUE","ACTIONS"});
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tableLayout->addWidget(table,1);
+
+    // Pagination Footer
+    auto* paginationRow = new QHBoxLayout;
+    auto* paginationText = new QLabel("Showing 1-250 of 250 items",tablePanel); paginationText->setObjectName("muted");
+    auto* prevBtn = new QPushButton("◀",tablePanel); prevBtn->setFixedWidth(36);
+    auto* pageNum = new QLabel("Page 1 of 1",tablePanel); pageNum->setObjectName("muted");
+    auto* nextBtn = new QPushButton("▶",tablePanel); nextBtn->setFixedWidth(36);
+    paginationRow->addWidget(paginationText); paginationRow->addStretch();
+    paginationRow->addWidget(prevBtn); paginationRow->addWidget(pageNum); paginationRow->addWidget(nextBtn);
+    tableLayout->addLayout(paginationRow);
+    layout->addWidget(tablePanel,1);
+
+    const auto load=[this,table,search,val1,val2,val3,val4,resultsCount,paginationText,pageNum,edit,archive](){
+        // Update stats
+        qint64 totalSkus=0, lowStock=0, outOfStock=0, totalValuation=0;
+        try {
+            auto q1 = database_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0"); q1.stepRow(); totalSkus = q1.integer(0);
+            auto q2 = database_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0 AND stock_quantity<=minimum_stock AND stock_quantity>0"); q2.stepRow(); lowStock = q2.integer(0);
+            auto q3 = database_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0 AND stock_quantity=0"); q3.stepRow(); outOfStock = q3.integer(0);
+            auto q4 = database_->prepare("SELECT COALESCE(SUM(stock_quantity * retail_price_paisa), 0) FROM products WHERE is_deleted=0"); q4.stepRow(); totalValuation = q4.integer(0);
+        } catch(...) {}
+        
+        val1->setText(QString::number(totalSkus));
+        val2->setText(QString::number(lowStock));
+        val3->setText(QString::number(outOfStock));
+        val4->setText(QString("PKR %1").arg(formatPaisa(totalValuation)));
+        
+        // Load table rows
+        table->setRowCount(0);
+        try {
+            auto query = database_->prepare(
+                "SELECT p.id, p.name, p.sku, p.retail_price_paisa, p.stock_quantity, p.minimum_stock, c.name "
+                "FROM products p "
+                "LEFT JOIN categories c ON p.category_id = c.id "
+                "WHERE p.is_deleted=0 AND (p.name LIKE ? OR COALESCE(p.sku,'') LIKE ? OR COALESCE(p.barcode,'') LIKE ?) "
+                "ORDER BY p.name LIMIT 250"
+            );
+            const auto term="%"+search->text().trimmed()+"%";
+            query.bind(1,term); query.bind(2,term); query.bind(3,term);
+            
+            while(query.stepRow()){
+                const int row=table->rowCount();
+                table->insertRow(row);
+                
+                const auto id = query.text(0);
+                const auto name = query.text(1);
+                const auto sku = query.text(2);
+                const auto price = query.integer(3);
+                const auto stock = query.integer(4);
+                const auto minimum = query.integer(5);
+                const auto categoryName = query.text(6).isEmpty() ? "General" : query.text(6);
+                
+                // SKU item (monospaced)
+                auto* skuItem = new QTableWidgetItem(sku.isEmpty() ? "—" : sku);
+                skuItem->setFont(QFont("JetBrains Mono", 9));
+                skuItem->setData(Qt::UserRole, id);
+                table->setItem(row, 0, skuItem);
+                
+                // Item Name
+                table->setItem(row, 1, new QTableWidgetItem(name));
+                
+                // Category
+                table->setItem(row, 2, new QTableWidgetItem(categoryName));
+                
+                // Stock Level Badge Widget
+                auto* badgeLabel = new QLabel;
+                badgeLabel->setAlignment(Qt::AlignCenter);
+                badgeLabel->setFont(QFont("JetBrains Mono", 9, QFont::Bold));
+                if (stock == 0) {
+                    badgeLabel->setText("0 OUT OF STOCK");
+                    badgeLabel->setStyleSheet("background-color: #ffdad6; color: #ba1a1a; border: 1px solid #ffb4ab; border-radius: 8px; font-weight: bold; padding: 2px 6px;");
+                } else if (stock <= minimum) {
+                    badgeLabel->setText(QString("%1 LOW STOCK").arg(stock));
+                    badgeLabel->setStyleSheet("background-color: #ffe08b; color: #745b00; border: 1px solid #e6c35e; border-radius: 8px; font-weight: bold; padding: 2px 6px;");
+                } else {
+                    badgeLabel->setText(QString("%1 IN STOCK").arg(stock));
+                    badgeLabel->setStyleSheet("background-color: #ffdbcd; color: #99461f; border: 1px solid #ffb597; border-radius: 8px; font-weight: bold; padding: 2px 6px;");
+                }
+                table->setCellWidget(row, 3, badgeLabel);
+                
+                // Unit Price (monospaced)
+                auto* priceItem = new QTableWidgetItem(QString("PKR %1").arg(formatPaisa(price)));
+                priceItem->setFont(QFont("JetBrains Mono", 9));
+                priceItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+                table->setItem(row, 4, priceItem);
+                
+                // Total Value (monospaced)
+                auto* totalValueItem = new QTableWidgetItem(QString("PKR %1").arg(formatPaisa(stock * price)));
+                totalValueItem->setFont(QFont("JetBrains Mono", 9));
+                totalValueItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+                table->setItem(row, 5, totalValueItem);
+                
+                // Action Buttons Cell Widget
+                auto* actionWidget = new QWidget;
+                auto* actionLayout = new QHBoxLayout(actionWidget);
+                actionLayout->setContentsMargins(4,2,4,2); actionLayout->setSpacing(6);
+                
+                auto* editBtn = new QPushButton("✏️"); editBtn->setToolTip("Edit product details");
+                editBtn->setFixedWidth(28); editBtn->setFixedHeight(24);
+                connect(editBtn, &QPushButton::clicked, [table, row, edit]() {
+                    table->setCurrentCell(row, 0);
+                    edit->click();
+                });
+                
+                auto* archiveBtn = new QPushButton("🗑️"); archiveBtn->setToolTip("Archive product");
+                archiveBtn->setFixedWidth(28); archiveBtn->setFixedHeight(24);
+                connect(archiveBtn, &QPushButton::clicked, [table, row, archive]() {
+                    table->setCurrentCell(row, 0);
+                    archive->click();
+                });
+                
+                actionLayout->addWidget(editBtn); actionLayout->addWidget(archiveBtn); actionLayout->addStretch();
+                table->setCellWidget(row, 6, actionWidget);
+            }
+        } catch(...) {}
+        
+        const int rowCount = table->rowCount();
+        resultsCount->setText(QString("Showing %1 results").arg(rowCount));
+        paginationText->setText(QString("Showing 1-%1 of %2 items").arg(rowCount).arg(rowCount));
+        pageNum->setText("Page 1 of 1");
+    };
+
+    load();
+    connect(search,&QLineEdit::textChanged,this,[load]{load();});
+    connect(refresh,&QPushButton::clicked,this,[load]{load();});
     connect(add,&QPushButton::clicked,this,[this,load]{ bool ok=false; const auto name=QInputDialog::getText(this,"New product","Product name:",QLineEdit::Normal,{},&ok); if(!ok||name.trimmed().isEmpty()) return; const auto unit=QInputDialog::getText(this,"New product","Base unit:",QLineEdit::Normal,"piece",&ok); if(!ok) return; const auto retail=QInputDialog::getInt(this,"New product","Retail price (paisa):",0,0,1000000000,1,&ok); if(!ok) return; try{pos::InventoryService inventory(database_); inventory.createProduct(name,unit,0,retail,false); load();}catch(const std::exception& error){QMessageBox::critical(this,"Could not add product",error.what());} });
     connect(edit,&QPushButton::clicked,this,[this,table,load]{const int row=table->currentRow();if(row<0){QMessageBox::information(this,"Edit product","Select a product first.");return;}const auto id=table->item(row,0)->data(Qt::UserRole).toString();auto query=database_->prepare("SELECT name,sku,barcode,category_id,brand_id,description,base_unit,purchase_price_paisa,retail_price_paisa,wholesale_price_paisa,dealer_price_paisa,minimum_stock,track_batches,track_expiry,image_path FROM products WHERE id=? AND is_deleted=0");query.bind(1,id);if(!query.stepRow()){QMessageBox::warning(this,"Edit product","The selected product is no longer available.");load();return;}bool ok=false;const auto name=QInputDialog::getText(this,"Edit product","Product name:",QLineEdit::Normal,query.text(0),&ok);if(!ok)return;const auto unit=QInputDialog::getText(this,"Edit product","Base unit:",QLineEdit::Normal,query.text(6),&ok);if(!ok)return;const auto purchase=QInputDialog::getInt(this,"Edit product","Purchase price (paisa):",query.integer(7),0,1000000000,1,&ok);if(!ok)return;const auto retail=QInputDialog::getInt(this,"Edit product","Retail price (paisa):",query.integer(8),0,1000000000,1,&ok);if(!ok)return;const auto minimum=QInputDialog::getInt(this,"Edit product","Minimum stock:",query.integer(11),0,1000000000,1,&ok);if(!ok)return;pos::ProductDefinition product;product.name=name;product.sku=query.text(1);product.barcode=query.text(2);product.categoryId=query.text(3);product.brandId=query.text(4);product.description=query.text(5);product.baseUnit=unit;product.purchasePrice=purchase;product.retailPrice=retail;product.wholesalePrice=query.integer(9);product.dealerPrice=query.integer(10);product.minimumStock=minimum;product.trackBatches=query.integer(12)!=0;product.trackExpiry=query.integer(13)!=0;product.imagePath=query.text(14);try{pos::InventoryService(database_).updateProduct(id,product);load();}catch(const std::exception& error){QMessageBox::critical(this,"Could not edit product",error.what());}});
-    connect(archive,&QPushButton::clicked,this,[this,table,load]{const int row=table->currentRow();if(row<0){QMessageBox::information(this,"Archive product","Select a product first.");return;}const auto id=table->item(row,0)->data(Qt::UserRole).toString();const auto name=table->item(row,0)->text();if(QMessageBox::question(this,"Archive product",QString("Archive %1? It will no longer appear in active inventory or sales.").arg(name),QMessageBox::Yes|QMessageBox::Cancel,QMessageBox::Cancel)!=QMessageBox::Yes)return;try{pos::InventoryService(database_).archiveProduct(id);load();}catch(const std::exception& error){QMessageBox::critical(this,"Could not archive product",error.what());}});
+    connect(archive,&QPushButton::clicked,this,[this,table,load]{const int row=table->currentRow();if(row<0){QMessageBox::information(this,"Archive product","Select a product first.");return;}const auto id=table->item(row,0)->data(Qt::UserRole).toString();const auto name=table->item(row,1)->text();if(QMessageBox::question(this,"Archive product",QString("Archive %1? It will no longer appear in active inventory or sales.").arg(name),QMessageBox::Yes|QMessageBox::Cancel,QMessageBox::Cancel)!=QMessageBox::Yes)return;try{pos::InventoryService(database_).archiveProduct(id);load();}catch(const std::exception& error){QMessageBox::critical(this,"Could not archive product",error.what());}});
     connect(printLabel,&QPushButton::clicked,this,[this,table]{const int row=table->currentRow();if(row<0){QMessageBox::information(this,"Print label","Select a product first.");return;}const auto id=table->item(row,0)->data(Qt::UserRole).toString();auto query=database_->prepare("SELECT name,barcode FROM products WHERE id=? AND is_deleted=0");query.bind(1,id);if(!query.stepRow()||query.text(1).trimmed().isEmpty()){QMessageBox::warning(this,"Print label","The selected product has no barcode.");return;}try{const auto path=pos::SettingsService(database_).value("printer.thermal_path");pos::ThermalPrintService::writeRaw(path,pos::ThermalPrintService::barcodeLabelBytes(query.text(0),query.text(1)));QMessageBox::information(this,"Label sent","The barcode label was sent to the configured thermal device.");}catch(const std::exception& error){QMessageBox::critical(this,"Could not print label",error.what());}});
     connect(importCsv,&QPushButton::clicked,this,[this,load]{const auto fileName=QFileDialog::getOpenFileName(this,"Import products",{},"CSV files (*.csv)");if(fileName.isEmpty())return;try{QFile file(fileName);if(!file.open(QIODevice::ReadOnly|QIODevice::Text))throw pos::DatabaseError("could not open import file");QTextStream stream(&file);if(stream.atEnd())throw pos::DatabaseError("CSV file is empty");const auto parse=[](const QString& line){QStringList fields;QString field;bool quoted=false;for(int i=0;i<line.size();++i){const auto ch=line.at(i);if(ch=='"'){if(quoted&&i+1<line.size()&&line.at(i+1)=='"'){field+=ch;++i;}else quoted=!quoted;}else if(ch==','&&!quoted){fields.append(field.trimmed());field.clear();}else field+=ch;}if(quoted)throw pos::DatabaseError("CSV contains an unterminated quote");fields.append(field.trimmed());return fields;};const auto header=parse(stream.readLine());if(header.size()<4||header.at(0).compare("name",Qt::CaseInsensitive)!=0||header.at(1).compare("base_unit",Qt::CaseInsensitive)!=0)throw pos::DatabaseError("CSV header must start with name,base_unit,purchase_price_paisa,retail_price_paisa");QList<pos::ProductDefinition> products;int lineNumber=1;while(!stream.atEnd()){++lineNumber;const auto fields=parse(stream.readLine());if(fields.size()==1&&fields.first().isEmpty())continue;if(fields.size()<4)throw pos::DatabaseError(QString("CSV line %1 has fewer than four fields").arg(lineNumber));bool purchaseOk=false,retailOk=false;const auto purchase=fields.at(2).toLongLong(&purchaseOk);const auto retail=fields.at(3).toLongLong(&retailOk);if(!purchaseOk||!retailOk)throw pos::DatabaseError(QString("CSV line %1 has invalid prices").arg(lineNumber));pos::ProductDefinition product;product.name=fields.at(0);product.baseUnit=fields.at(1);product.purchasePrice=purchase;product.retailPrice=retail;if(fields.size()>4)product.sku=fields.at(4);if(fields.size()>5)product.barcode=fields.at(5);if(fields.size()>6){bool ok=false;product.wholesalePrice=fields.at(6).toLongLong(&ok);if(!ok)throw pos::DatabaseError(QString("CSV line %1 has invalid wholesale price").arg(lineNumber));}if(fields.size()>7){bool ok=false;product.dealerPrice=fields.at(7).toLongLong(&ok);if(!ok)throw pos::DatabaseError(QString("CSV line %1 has invalid dealer price").arg(lineNumber));}if(fields.size()>8){bool ok=false;product.minimumStock=fields.at(8).toLongLong(&ok);if(!ok)throw pos::DatabaseError(QString("CSV line %1 has invalid minimum stock").arg(lineNumber));}if(fields.size()>9)product.trackBatches=fields.at(9)=="1"||fields.at(9).compare("true",Qt::CaseInsensitive)==0;if(fields.size()>10)product.trackExpiry=fields.at(10)=="1"||fields.at(10).compare("true",Qt::CaseInsensitive)==0;if(fields.size()>11)product.description=fields.at(11);if(fields.size()>12)product.imagePath=fields.at(12);products.append(product);}const auto ids=pos::InventoryService(database_).importProducts(products);load();QMessageBox::information(this,"Import complete",QString("Imported %1 products.").arg(ids.size()));}catch(const std::exception& error){QMessageBox::critical(this,"Could not import products",error.what());}});
     return page;

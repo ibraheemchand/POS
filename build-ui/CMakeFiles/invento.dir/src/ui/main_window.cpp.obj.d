@@ -520,6 +520,8 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstatusbar.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstackedwidget.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStandardPaths \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qstandardpaths.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QTableWidget \

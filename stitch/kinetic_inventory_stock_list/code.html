@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inventory Tracker - List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f9f9f9",
+                        "secondary": "#745b00",
+                        "on-secondary-fixed": "#241a00",
+                        "on-tertiary-container": "#2f3b4f",
+                        "surface-dim": "#dadada",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-fixed": "#360f00",
+                        "on-surface": "#1a1c1c",
+                        "outline-variant": "#dbc1b7",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary-container": "#692400",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed": "#0f1c2f",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-background": "#1a1c1c",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#584400",
+                        "surface-tint": "#99461f",
+                        "on-primary-fixed-variant": "#7a3008",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#f08a5d",
+                        "on-secondary-container": "#775e00",
+                        "secondary-fixed": "#ffe08b",
+                        "surface-container": "#eeeeee",
+                        "background": "#f9f9f9",
+                        "on-surface-variant": "#55433b",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-container": "#fed972",
+                        "secondary-fixed-dim": "#e6c35e",
+                        "primary": "#99461f",
+                        "tertiary-fixed-dim": "#bbc7e0",
+                        "surface-container-low": "#f3f3f3",
+                        "tertiary-container": "#99a5be",
+                        "on-tertiary-fixed-variant": "#3b475c",
+                        "outline": "#88726a",
+                        "tertiary": "#535f75",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffdbcd",
+                        "primary-fixed-dim": "#ffb597",
+                        "tertiary-fixed": "#d7e3fd",
+                        "inverse-primary": "#ffb597",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "row-padding-y": "10px",
+                        "margin-page": "24px",
+                        "card-gap": "20px",
+                        "row-padding-x": "12px",
+                        "base": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "monospaced-data": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "table-data": ["Inter"],
+                        "body-base": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "monospaced-data": ["13px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "table-data": ["13px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "body-base": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom scrollbar for high-density tables */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dadada; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #88726a; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-base antialiased h-screen flex overflow-hidden">
+<!-- Shared Component: SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col h-full py-4 fixed left-0 top-0 w-64 border-r border-outline-variant bg-surface-container-low z-20">
+<div class="px-6 mb-8 flex flex-col gap-1">
+<span class="font-headline-md text-headline-md text-primary font-bold">Global Ops</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Central Warehouse</span>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<!-- Inactive -->
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Home
+            </a>
+<!-- Active (Mapped to Intent: Inventory Management) -->
+<a class="bg-primary-container text-on-primary-container rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-3 font-semibold font-label-sm text-label-sm translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined icon-filled" data-icon="inventory_2" data-weight="fill">inventory_2</span>
+                Stocks
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="warehouse">warehouse</span>
+                Warehouse
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Vendors
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+                Reports
+            </a>
+</div>
+<div class="mt-auto border-t border-outline-variant pt-4 flex flex-col gap-1">
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="headset_mic">headset_mic</span>
+                Support
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors mx-2 my-1 px-4 py-3 flex items-center gap-3 rounded-lg font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
+<!-- Shared Component: TopNavBar (Mobile/Tablet) -->
+<header class="lg:hidden flex justify-between items-center w-full px-margin-page h-[64px] docked full-width top border-b border-outline-variant bg-surface shrink-0 z-10">
+<div class="text-headline-md font-headline-md font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="inventory">inventory</span>
+                Inventory Tracker
+            </div>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Mobile Nav Tabs (Simplified for context) -->
+<div class="lg:hidden flex px-margin-page gap-6 border-b border-outline-variant bg-surface shrink-0 overflow-x-auto">
+<a class="text-on-surface-variant pb-2 pt-3 font-label-sm text-label-sm whitespace-nowrap" href="#">Dashboard</a>
+<a class="text-primary border-b-2 border-primary pb-2 pt-3 font-bold font-label-sm text-label-sm whitespace-nowrap opacity-80 scale-95 duration-75" href="#">Inventory</a>
+<a class="text-on-surface-variant pb-2 pt-3 font-label-sm text-label-sm whitespace-nowrap" href="#">Analytics</a>
+<a class="text-on-surface-variant pb-2 pt-3 font-label-sm text-label-sm whitespace-nowrap" href="#">Settings</a>
+</div>
+<!-- Main Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto bg-surface flex flex-col">
+<div class="p-margin-page flex-1 flex flex-col max-w-7xl mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+<h1 class="font-display-lg text-display-lg text-on-surface">Inventory List</h1>
+<div class="flex gap-3">
+<button class="px-4 py-2 border border-outline-variant rounded-DEFAULT font-label-sm text-label-sm text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                            Export
+                        </button>
+<button class="px-4 py-2 bg-primary-container text-on-primary-container rounded-DEFAULT font-label-sm text-label-sm hover:opacity-90 transition-opacity flex items-center gap-2 font-semibold">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                            Add New
+                        </button>
+</div>
+</div>
+<!-- Visual Health / Dashboard Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-card-gap mb-8">
+<!-- Chart 1 Placeholder: Category Values -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex flex-col shadow-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant mb-4">Inventory Value by Category</h3>
+<div class="flex-1 flex flex-col justify-center gap-3">
+<div class="flex items-center gap-3">
+<span class="text-[11px] text-on-surface-variant w-24 truncate">Office Equipment</span>
+<div class="flex-1 h-6 bg-primary-container rounded-r-sm"></div>
+<span class="font-monospaced-data text-monospaced-data text-on-surface w-12 text-right">$1.2k</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[11px] text-on-surface-variant w-24 truncate">Office Furniture</span>
+<div class="flex-1 h-6 bg-secondary-container rounded-r-sm w-[90%]"></div>
+<span class="font-monospaced-data text-monospaced-data text-on-surface w-12 text-right">$1.1k</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[11px] text-on-surface-variant w-24 truncate">Paper Products</span>
+<div class="flex-1 h-6 bg-tertiary-fixed-dim rounded-r-sm w-[30%]"></div>
+<span class="font-monospaced-data text-monospaced-data text-on-surface w-12 text-right">$240</span>
+</div>
+</div>
+</div>
+<!-- Chart 2 Placeholder: Stock Levels -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-4 flex flex-col shadow-sm">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant">Top Items Stock</h3>
+<div class="flex gap-2 text-[10px] items-center">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container"></span> Stock</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary-container"></span> Reorder</span>
+</div>
+</div>
+<div class="flex-1 flex items-end justify-around gap-2 h-32 mt-auto border-b border-surface-variant pb-2">
+<div class="flex flex-col items-center gap-1 w-1/4">
+<div class="flex items-end gap-1 w-full justify-center h-full">
+<div class="w-1/2 bg-primary-container rounded-t-sm h-[80%]"></div>
+<div class="w-1/2 bg-secondary-container rounded-t-sm h-[50%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant truncate w-full text-center">Pen</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-1/4">
+<div class="flex items-end gap-1 w-full justify-center h-full">
+<div class="w-1/2 bg-primary-container rounded-t-sm h-[40%]"></div>
+<div class="w-1/2 bg-secondary-container rounded-t-sm h-[40%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant truncate w-full text-center">Notebook</span>
+</div>
+<div class="flex flex-col items-center gap-1 w-1/4">
+<div class="flex items-end gap-1 w-full justify-center h-full">
+<div class="w-1/2 bg-primary-container rounded-t-sm h-[10%]"></div>
+<div class="w-1/2 bg-secondary-container rounded-t-sm h-[30%]"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant truncate w-full text-center">Stapler</span>
+</div>
+</div>
+</div>
+<!-- Status Cards -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-primary-fixed border border-outline-variant rounded-lg p-4 flex flex-col justify-center">
+<span class="font-display-lg text-display-lg text-on-primary-fixed mb-1">12</span>
+<span class="font-label-sm text-label-sm text-on-primary-fixed-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="warning">warning</span>
+                                Low Stock
+                            </span>
+</div>
+<div class="bg-secondary-fixed border border-outline-variant rounded-lg p-4 flex flex-col justify-center">
+<span class="font-display-lg text-display-lg text-on-secondary-fixed mb-1">5</span>
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="shopping_cart">shopping_cart</span>
+                                Reorder Needed
+                            </span>
+</div>
+</div>
+</div>
+<!-- Filters & Controls -->
+<div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 bg-surface-container-lowest p-3 rounded-lg border border-surface-variant">
+<div class="relative w-full sm:w-72 flex-shrink-0">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-[20px]" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border border-surface-variant rounded-DEFAULT font-body-base text-body-base text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary h-[36px] transition-colors" placeholder="Search SKU, Item Name..." type="text"/>
+</div>
+<div class="flex gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+<select class="px-3 py-2 bg-surface border border-surface-variant rounded-DEFAULT font-label-sm text-label-sm text-on-surface focus:outline-none focus:border-primary h-[36px]">
+<option>All Categories</option>
+<option>Writing Tools</option>
+<option>Paper Products</option>
+<option>Office Supplies</option>
+</select>
+<select class="px-3 py-2 bg-surface border border-surface-variant rounded-DEFAULT font-label-sm text-label-sm text-on-surface focus:outline-none focus:border-primary h-[36px]">
+<option>All Locations</option>
+<option>Warehouse 1</option>
+<option>Store 1</option>
+</select>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg overflow-x-auto shadow-sm">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-surface-variant">
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold">Item ID</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold">Item Name</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold w-16">Photo</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold">Category</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold">Supplier</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold">Location</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold text-right">Stock Level</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold text-right">Reorder Level</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold text-right">Unit Price</th>
+<th class="py-3 px-4 font-label-sm text-label-sm text-on-surface-variant font-semibold text-right">Total Value</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant">1001</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface font-medium">Ballpoint Pen - Blue</td>
+<td class="py-row-padding-y px-4">
+<div class="w-10 h-10 rounded border border-surface-variant overflow-hidden bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A macro studio shot of a sleek blue ballpoint pen resting on a crisp white surface. The lighting is bright, high-key, and commercial, reflecting a modern office aesthetic. Soft shadows emphasize the pen's metallic clip and smooth barrel. Shot from a slightly elevated angle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGydmz3W4sxQqpf14RtEfSYro_SrJjoovKicAFnqzwlchfMYxbOO658Ame89CP8YoSg2vUD0svAEHQPCvV_-WGiGOlSG6B5QMNFX1K2S14ub1I865ER9CC1mKa-VjOrx6A7RJyRv2f76N0W6dETkFJY47LpV763NNq-5kFYntAKi7ZPi0f0dJ69vkgk2uEdW2Ax86YiZCRMZMPE_XKHYb69uNT8kRgHkS68GIrqb3zbUEvH4xKuxsR0g"/>
+</div>
+</td>
+<td class="py-row-padding-y px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-primary-fixed-dim text-on-primary-fixed-variant">
+                                        Writing Tools
+                                    </span>
+</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Fawne Stationery Supply</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Warehouse 1</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface text-right">150</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">100</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">$1.00</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface font-medium text-right">$150.00</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant">1002</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface font-medium">Spiral Notebook A4</td>
+<td class="py-row-padding-y px-4">
+<div class="w-10 h-10 rounded border border-surface-variant overflow-hidden bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A top-down view of a minimalist white spiral notebook on a light wooden desk background. The lighting is natural and soft, creating a calm workspace vibe. A few stray paperclips are visible near the binding. High resolution, clean composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp7eXGYuTiK7DmGaN_hGBItpGFo3MFeEn6Wc0w1R6s2qJnIs7lfy2p0AS4keziPLapzNuCnwfmuNVPOb7hRQ-ghJ7ZMkAWxp6EOpzG0phB4fDDeSGAj3dBVNTgm4DQJ552CMfmlonUcXQCNAmRPWEiQpA3ow4eBk5EFsefgk7xSJ6Jd7OGXvQYyPp73_6ZifsnsufvCl-j9M3hjt4ejjxGmMzMCWvAmxwFwD5x4XOIeds_WaMzCIUSjg"/>
+</div>
+</td>
+<td class="py-row-padding-y px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                        Paper Products
+                                    </span>
+</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Fawne Stationery Supply</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Store 1</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface text-right">80</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">80</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">$3.00</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface font-medium text-right">$240.00</td>
+</tr>
+<!-- Row 3 - Low Stock Warning -->
+<tr class="hover:bg-surface-container transition-colors group bg-error-container/20">
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant">1003</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface font-medium">Heavy Duty Stapler</td>
+<td class="py-row-padding-y px-4">
+<div class="w-10 h-10 rounded border border-surface-variant overflow-hidden bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A close-up product photograph of a modern, metallic silver heavy-duty stapler on a pristine white background. The studio lighting highlights the brushed metal texture and ergonomic design. The image is crisp, professional, and well-lit." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLO4jbermL56EXzGI7f3T452gSe-sg8XZhGt-mRzEEOHhtRgsojXL7x-VBvFn3MM1f3o1exYtKrRRZDbHHVyfUFI4L8VHT1_atKTl8Dqv4-CwZbZFNKcXXvubW_4pgkPZzjgJE2PuPAvOFt5SfTeaDS-d3uI4LKlUYW42vdiVIPzUlsQIC6p8oo5-OsgjKZW0ZjRT5M4n2j3XycrPttSMzkS5GYheRicc4mB7953fSmt76RRh8itPIsg"/>
+</div>
+</td>
+<td class="py-row-padding-y px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-secondary-fixed text-on-secondary-fixed-variant">
+                                        Office Supplies
+                                    </span>
+</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Curation Central</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Store 1</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-error font-bold text-right flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="warning">warning</span>
+                                    0
+                                </td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">30</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">$15.00</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface font-medium text-right">$0.00</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant">1004</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface font-medium">Desk Lamp - LED</td>
+<td class="py-row-padding-y px-4">
+<div class="w-10 h-10 rounded border border-surface-variant overflow-hidden bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A stylish, matte black LED desk lamp positioned on an uncluttered light grey desk surface. The lamp is turned off, showcasing its modern, architectural silhouette against a bright, airy background. Shot with a shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_yVwInRfADUuXCrx-O37AfxyPF-TUanv6beVSfBPqhin2iilkPBCAHQpGQ39LKH96nATTfg3CEdvAimVH5iMoKdBm5uVnO467Cn0FXw8P4AXnijqWtOxDSbvfqhkWDAK2i5pS_DTzkaFWck6wiLLiv0jjTK8G_Nuv4beRmQVS2Y3SNHSMTS7MFoh2tLckP8GkwdDp8clESHsTh21nJzWoEeb386z8tmbCUIvseF7as0EV3LUQa-cLw"/>
+</div>
+</td>
+<td class="py-row-padding-y px-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-primary-fixed-dim text-on-primary-fixed-variant">
+                                        Office Equipment
+                                    </span>
+</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Lumina Tech</td>
+<td class="py-row-padding-y px-4 font-table-data text-table-data text-on-surface">Warehouse 2</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface text-right">45</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">20</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface-variant text-right">$45.00</td>
+<td class="py-row-padding-y px-4 font-monospaced-data text-monospaced-data text-on-surface font-medium text-right">$2,025.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Simple Placeholder) -->
+<div class="flex justify-between items-center mt-4 text-on-surface-variant font-label-sm text-label-sm pb-8">
+<span>Showing 1-4 of 124 items</span>
+<div class="flex gap-2">
+<button class="p-1 border border-surface-variant rounded hover:bg-surface-container disabled:opacity-50"><span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span></button>
+<button class="p-1 border border-surface-variant rounded hover:bg-surface-container"><span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

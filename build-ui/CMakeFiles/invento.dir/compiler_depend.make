@@ -1143,6 +1143,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStatusBar \
@@ -1175,6 +1176,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qrubberband.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qslider.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qspinbox.h \
@@ -2531,6 +2533,8 @@ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdialogbuttonbox.h:
 
+C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h:
+
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/fs_ops.h:
@@ -2592,6 +2596,8 @@ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit:
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidget:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton:
+
+C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox:
 

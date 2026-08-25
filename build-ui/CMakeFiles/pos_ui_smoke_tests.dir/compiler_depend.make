@@ -672,6 +672,7 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/m
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMessageBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStatusBar \
@@ -704,6 +705,7 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/m
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qrubberband.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qslider.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qspinbox.h \
@@ -3131,6 +3133,8 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/qcollator.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton:
 
+C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea:
+
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget:
@@ -3166,6 +3170,8 @@ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qinputdialog.h:
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlayout.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlistwidget.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmessagebox.h:
 
