@@ -428,6 +428,21 @@ CMakeFiles/pos_core.dir/src/core/seed_service.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_core.dir/src/core/seed_service.cpp.s"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\core\seed_service.cpp -o CMakeFiles\pos_core.dir\src\core\seed_service.cpp.s
 
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj: CMakeFiles/pos_core.dir/flags.make
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj: CMakeFiles/pos_core.dir/includes_CXX.rsp
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj: E:/pos--2/src/core/data_change_bus.cpp
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj: CMakeFiles/pos_core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj -MF CMakeFiles\pos_core.dir\src\core\data_change_bus.cpp.obj.d -o CMakeFiles\pos_core.dir\src\core\data_change_bus.cpp.obj -c E:\pos--2\src\core\data_change_bus.cpp
+
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\core\data_change_bus.cpp > CMakeFiles\pos_core.dir\src\core\data_change_bus.cpp.i
+
+CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\core\data_change_bus.cpp -o CMakeFiles\pos_core.dir\src\core\data_change_bus.cpp.s
+
 # Object files for target pos_core
 pos_core_OBJECTS = \
 "CMakeFiles/pos_core.dir/pos_core_autogen/mocs_compilation.cpp.obj" \
@@ -453,7 +468,8 @@ pos_core_OBJECTS = \
 "CMakeFiles/pos_core.dir/src/core/pos_service.cpp.obj" \
 "CMakeFiles/pos_core.dir/src/core/backup_service.cpp.obj" \
 "CMakeFiles/pos_core.dir/src/core/thermal_print_service.cpp.obj" \
-"CMakeFiles/pos_core.dir/src/core/seed_service.cpp.obj"
+"CMakeFiles/pos_core.dir/src/core/seed_service.cpp.obj" \
+"CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj"
 
 # External object files for target pos_core
 pos_core_EXTERNAL_OBJECTS =
@@ -482,9 +498,10 @@ libpos_core.a: CMakeFiles/pos_core.dir/src/core/pos_service.cpp.obj
 libpos_core.a: CMakeFiles/pos_core.dir/src/core/backup_service.cpp.obj
 libpos_core.a: CMakeFiles/pos_core.dir/src/core/thermal_print_service.cpp.obj
 libpos_core.a: CMakeFiles/pos_core.dir/src/core/seed_service.cpp.obj
+libpos_core.a: CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj
 libpos_core.a: CMakeFiles/pos_core.dir/build.make
 libpos_core.a: CMakeFiles/pos_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Linking CXX static library libpos_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Linking CXX static library libpos_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\pos_core.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\pos_core.dir\link.txt --verbose=$(VERBOSE)
 

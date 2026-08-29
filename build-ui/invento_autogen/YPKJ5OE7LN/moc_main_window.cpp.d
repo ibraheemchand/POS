@@ -1,5 +1,6 @@
 E:/pos--2/build-ui/invento_autogen/YPKJ5OE7LN/moc_main_window.cpp: E:/pos--2/src/ui/main_window.h \
   E:/pos--2/build-ui/invento_autogen/moc_predefs.h \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
   C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h \

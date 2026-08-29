@@ -948,6 +948,30 @@ src/core/customer_service.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_core.dir\build.make CMakeFiles/pos_core.dir/src/core/customer_service.cpp.s
 .PHONY : src/core/customer_service.cpp.s
 
+src/core/data_change_bus.obj: src/core/data_change_bus.cpp.obj
+.PHONY : src/core/data_change_bus.obj
+
+# target to build an object file
+src/core/data_change_bus.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_core.dir\build.make CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj
+.PHONY : src/core/data_change_bus.cpp.obj
+
+src/core/data_change_bus.i: src/core/data_change_bus.cpp.i
+.PHONY : src/core/data_change_bus.i
+
+# target to preprocess a source file
+src/core/data_change_bus.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_core.dir\build.make CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.i
+.PHONY : src/core/data_change_bus.cpp.i
+
+src/core/data_change_bus.s: src/core/data_change_bus.cpp.s
+.PHONY : src/core/data_change_bus.s
+
+# target to generate assembly for a file
+src/core/data_change_bus.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_core.dir\build.make CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.s
+.PHONY : src/core/data_change_bus.cpp.s
+
 src/core/database.obj: src/core/database.cpp.obj
 .PHONY : src/core/database.obj
 
@@ -1596,6 +1620,9 @@ help:
 	@echo ... src/core/customer_service.obj
 	@echo ... src/core/customer_service.i
 	@echo ... src/core/customer_service.s
+	@echo ... src/core/data_change_bus.obj
+	@echo ... src/core/data_change_bus.i
+	@echo ... src/core/data_change_bus.s
 	@echo ... src/core/database.obj
 	@echo ... src/core/database.i
 	@echo ... src/core/database.s

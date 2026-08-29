@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "E:/pos--2/src/core/barcode_service.cpp" "CMakeFiles/pos_core.dir/src/core/barcode_service.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/barcode_service.cpp.obj.d"
   "E:/pos--2/src/core/cheque_service.cpp" "CMakeFiles/pos_core.dir/src/core/cheque_service.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/cheque_service.cpp.obj.d"
   "E:/pos--2/src/core/customer_service.cpp" "CMakeFiles/pos_core.dir/src/core/customer_service.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/customer_service.cpp.obj.d"
+  "E:/pos--2/src/core/data_change_bus.cpp" "CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj.d"
   "E:/pos--2/src/core/database.cpp" "CMakeFiles/pos_core.dir/src/core/database.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/database.cpp.obj.d"
   "E:/pos--2/src/core/excel_export_service.cpp" "CMakeFiles/pos_core.dir/src/core/excel_export_service.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/excel_export_service.cpp.obj.d"
   "E:/pos--2/src/core/inventory_service.cpp" "CMakeFiles/pos_core.dir/src/core/inventory_service.cpp.obj" "gcc" "CMakeFiles/pos_core.dir/src/core/inventory_service.cpp.obj.d"

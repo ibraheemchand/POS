@@ -1,6 +1,7 @@
 #include "core/payment_service.h"
 #include "core/database.h"
 #include "core/shift_service.h"
+#include "core/data_change_bus.h"
 #include <QStringList>
 
 namespace pos {
@@ -32,6 +33,10 @@ PaymentResult PaymentService::recordCustomerPayment(const QString& customerId, c
     auto balance=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa-? WHERE id=?"); balance.bind(1,total); balance.bind(2,customerId); balance.execute();
     auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,'Customer payment',0,?,balance_paisa,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,customerId); ledger.bind(3,total); ledger.bind(4,utcNow()); ledger.bind(5,customerId); ledger.execute();
     if(method=="cash") { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,type,amount_paisa,reason,created_at) VALUES(?,?, 'cash_in',?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,total); cash.bind(4,"Customer payment"); cash.bind(5,utcNow()); cash.execute(); }
-    tx.commit(); return {paymentId,total};
+    tx.commit();
+    notifyCustomersChanged();
+    notifySalesChanged();
+    if (method == "cash") notifyCashChanged();
+    return {paymentId,total};
 }
 } // namespace pos

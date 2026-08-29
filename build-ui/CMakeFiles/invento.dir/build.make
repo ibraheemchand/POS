@@ -166,6 +166,7 @@ invento.exe: libpos_sqlite.a
 invento.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6Widgets.a
 invento.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6Gui.a
 invento.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6Core.a
+invento.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6EntryPoint.a
 invento.exe: CMakeFiles/invento.dir/linkLibs.rsp
 invento.exe: CMakeFiles/invento.dir/objects1.rsp
 invento.exe: CMakeFiles/invento.dir/link.txt

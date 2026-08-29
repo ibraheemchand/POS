@@ -1,4 +1,5 @@
 invento_autogen/timestamp: \
+	C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
 	C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
 	C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
 	C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h \

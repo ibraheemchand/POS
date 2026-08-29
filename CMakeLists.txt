@@ -48,6 +48,7 @@ add_library(pos_core
     src/core/backup_service.cpp
     src/core/thermal_print_service.cpp
     src/core/seed_service.cpp
+    src/core/data_change_bus.cpp
 )
 target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
@@ -57,7 +58,7 @@ if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_link_options(pos_core PUBLIC -fsanitize=address,undefined)
 endif()
 
-add_executable(invento
+add_executable(invento WIN32
     src/main.cpp
     src/ui/main_window.cpp
     src/ui/main_window.h

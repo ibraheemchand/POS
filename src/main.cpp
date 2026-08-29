@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     try {
         auto database = openDatabase(dataDirectory);
         MainWindow window(database);
-        window.show();
+        window.showMaximized();
         return app.exec();
     } catch (const std::exception& error) {
         QMessageBox::critical(nullptr, "Unable to start Invento", error.what());

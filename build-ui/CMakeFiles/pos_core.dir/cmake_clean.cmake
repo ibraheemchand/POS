@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/pos_core.dir/src/core/cheque_service.cpp.obj.d"
   "CMakeFiles/pos_core.dir/src/core/customer_service.cpp.obj"
   "CMakeFiles/pos_core.dir/src/core/customer_service.cpp.obj.d"
+  "CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj"
+  "CMakeFiles/pos_core.dir/src/core/data_change_bus.cpp.obj.d"
   "CMakeFiles/pos_core.dir/src/core/database.cpp.obj"
   "CMakeFiles/pos_core.dir/src/core/database.cpp.obj.d"
   "CMakeFiles/pos_core.dir/src/core/excel_export_service.cpp.obj"

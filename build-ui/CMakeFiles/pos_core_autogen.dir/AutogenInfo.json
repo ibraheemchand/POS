@@ -439,6 +439,12 @@
 			null
 		],
 		[
+			"E:/pos--2/src/core/data_change_bus.h",
+			"MU",
+			"PRMOGMWJPH/moc_data_change_bus.cpp",
+			null
+		],
+		[
 			"E:/pos--2/src/core/database.h",
 			"MU",
 			"PRMOGMWJPH/moc_database.cpp",
@@ -623,6 +629,7 @@
 		[ "E:/pos--2/src/core/barcode_service.cpp", "MU", null ],
 		[ "E:/pos--2/src/core/cheque_service.cpp", "MU", null ],
 		[ "E:/pos--2/src/core/customer_service.cpp", "MU", null ],
+		[ "E:/pos--2/src/core/data_change_bus.cpp", "MU", null ],
 		[ "E:/pos--2/src/core/database.cpp", "MU", null ],
 		[ "E:/pos--2/src/core/excel_export_service.cpp", "MU", null ],
 		[ "E:/pos--2/src/core/inventory_service.cpp", "MU", null ],

@@ -2,6 +2,7 @@
 #include "core/database.h"
 #include "core/shift_service.h"
 #include "core/notification_service.h"
+#include "core/data_change_bus.h"
 #include <algorithm>
 #include <QStringList>
 
@@ -104,6 +105,10 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     for(const auto& tender:tenders){auto payment=db_->prepare("INSERT INTO sale_payments(id,sale_id,method,amount_paisa,created_at) VALUES(?,?,?,?,?)");payment.bind(1,uuid());payment.bind(2,id);payment.bind(3,tender.method);payment.bind(4,tender.amount);payment.bind(5,utcNow());payment.execute();}
     if (cashTender>0) { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,cashTender); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
     tx.commit();
+    notifySalesChanged();
+    notifyInventoryChanged();
+    if (!request.customerId.isEmpty() && due > 0) notifyCustomersChanged();
+    if (cashTender > 0) notifyCashChanged();
     NotificationService notifications(db_);
     notifications.createBestEffort("sale", "Sale completed", QString("Invoice %1 completed for %2 paisa.").arg(invoice).arg(total));
     for (const auto& line : request.lines) {
@@ -126,5 +131,9 @@ void PosService::voidSale(const QString& saleId, const QString& reason, const QS
     if(!customer.isEmpty() && due>0){auto c=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa-? WHERE id=?");c.bind(1,due);c.bind(2,customer);c.execute();auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Voided sale reversal',0,?,balance_paisa,? FROM customers WHERE id=?");ledger.bind(1,uuid());ledger.bind(2,customer);ledger.bind(3,saleId);ledger.bind(4,due);ledger.bind(5,utcNow());ledger.bind(6,customer);ledger.execute();}
     auto cashPaid=db_->prepare("SELECT COALESCE(SUM(amount_paisa),0) FROM sale_payments WHERE sale_id=? AND method='cash'");cashPaid.bind(1,saleId);cashPaid.stepRow();if(cashPaid.integer(0)>0){auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) SELECT ?,shift_id,?,'cash_out',?,'Voided sale reversal',? FROM sales WHERE id=?");cash.bind(1,uuid());cash.bind(2,saleId);cash.bind(3,cashPaid.integer(0));cash.bind(4,utcNow());cash.bind(5,saleId);cash.execute();}
     auto audit=db_->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");audit.bind(1,uuid());audit.bind(2,"sale_voided");audit.bind(3,"sale");audit.bind(4,saleId);audit.bind(5,reason);audit.bind(6,utcNow());audit.execute();tx.commit();
+    notifySalesChanged();
+    notifyInventoryChanged();
+    if (!customer.isEmpty() && due > 0) notifyCustomersChanged();
+    notifyCashChanged();
 }
 } // namespace pos

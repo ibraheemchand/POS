@@ -794,5 +794,6 @@ CMakeFiles/pos_ui_smoke_tests.dir/tests/ui_smoke_test.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmainwindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
  E:/pos--2/build-ui/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qtmochelpers.h

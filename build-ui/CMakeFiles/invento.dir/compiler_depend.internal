@@ -6,6 +6,7 @@ CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj
 
 CMakeFiles/invento.dir/invento_autogen/mocs_compilation.cpp.obj
  E:/pos--2/build-ui/invento_autogen/mocs_compilation.cpp
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVector
  C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h
@@ -446,6 +447,7 @@ CMakeFiles/invento.dir/src/main.cpp.obj
  C:/Qt/6.11.1/mingw_64/include/QtCore/QCoreApplication
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDateTime
  C:/Qt/6.11.1/mingw_64/include/QtCore/QDebug
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStandardPaths
  C:/Qt/6.11.1/mingw_64/include/QtCore/QString
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList
@@ -919,6 +921,8 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj
  C:/Qt/6.11.1/mingw_64/include/QtCore/QFile
  C:/Qt/6.11.1/mingw_64/include/QtCore/QHash
  C:/Qt/6.11.1/mingw_64/include/QtCore/QList
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QObject
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStandardPaths
  C:/Qt/6.11.1/mingw_64/include/QtCore/QString
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList
@@ -1079,10 +1083,14 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj
  C:/Qt/6.11.1/mingw_64/include/QtCore/qversiontagging.h
  C:/Qt/6.11.1/mingw_64/include/QtCore/qxptype_traits.h
  C:/Qt/6.11.1/mingw_64/include/QtCore/qyieldcpu.h
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush
  C:/Qt/6.11.1/mingw_64/include/QtGui/QColor
  C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QLinearGradient
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QShortcut
  C:/Qt/6.11.1/mingw_64/include/QtGui/qaction.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qbrush.h
@@ -1113,6 +1121,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj
  C:/Qt/6.11.1/mingw_64/include/QtGui/qregion.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qrgb.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qrgba64.h
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qshortcut.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextdocument.h
  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h
@@ -1470,6 +1479,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj
  E:/pos--2/src/core/backup_service.h
  E:/pos--2/src/core/cheque_service.h
  E:/pos--2/src/core/customer_service.h
+ E:/pos--2/src/core/data_change_bus.h
  E:/pos--2/src/core/database.h
  E:/pos--2/src/core/excel_export_service.h
  E:/pos--2/src/core/inventory_service.h

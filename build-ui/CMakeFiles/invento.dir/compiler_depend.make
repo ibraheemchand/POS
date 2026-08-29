@@ -4,6 +4,7 @@
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj: invento_autogen/YPKJ5OE7LN/qrc_resources.cpp
 
 CMakeFiles/invento.dir/invento_autogen/mocs_compilation.cpp.obj: invento_autogen/mocs_compilation.cpp \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
   C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h \
@@ -443,6 +444,7 @@ CMakeFiles/invento.dir/src/main.cpp.obj: E:/pos--2/src/main.cpp \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QCoreApplication \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QDateTime \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QDebug \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStandardPaths \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
@@ -915,6 +917,8 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   C:/Qt/6.11.1/mingw_64/include/QtCore/QFile \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QList \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStandardPaths \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
@@ -1075,10 +1079,14 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   C:/Qt/6.11.1/mingw_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.11.1/mingw_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.11.1/mingw_64/include/QtCore/qyieldcpu.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QLinearGradient \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QShortcut \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qaction.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qbrush.h \
@@ -1109,6 +1117,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   C:/Qt/6.11.1/mingw_64/include/QtGui/qregion.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qrgb.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qrgba64.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qshortcut.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtextdocument.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h \
@@ -1466,6 +1475,7 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.obj: E:/pos--2/src/ui/main_window.
   E:/pos--2/src/core/backup_service.h \
   E:/pos--2/src/core/cheque_service.h \
   E:/pos--2/src/core/customer_service.h \
+  E:/pos--2/src/core/data_change_bus.h \
   E:/pos--2/src/core/database.h \
   E:/pos--2/src/core/excel_export_service.h \
   E:/pos--2/src/core/inventory_service.h \
@@ -1503,11 +1513,17 @@ invento_autogen/YPKJ5OE7LN/qrc_resources.cpp:
 
 invento_autogen/mocs_compilation.cpp:
 
-C:/Qt/6.11.1/mingw_64/include/QtCore/q20functional.h:
+C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash:
 
-C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/utility:
+C:/Qt/6.11.1/mingw_64/include/QtCore/q20algorithm.h:
 
-C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32/bits/ctype_base.h:
+C:/Qt/6.11.1/mingw_64/include/QtCore/qobjectdefs.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtCore/qcompare.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtGui/qimage.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qbytearray.h:
 
@@ -1521,15 +1537,11 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/QVector:
 
-C:/Qt/6.11.1/mingw_64/include/QtCore/q20algorithm.h:
+C:/Qt/6.11.1/mingw_64/include/QtCore/q20functional.h:
 
-C:/Qt/6.11.1/mingw_64/include/QtCore/qobjectdefs.h:
+C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/utility:
 
-C:/Qt/6.11.1/mingw_64/include/QtCore/qcompare.h:
-
-C:/Qt/6.11.1/mingw_64/include/QtCore/q17memory.h:
-
-C:/Qt/6.11.1/mingw_64/include/QtGui/qimage.h:
+C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32/bits/ctype_base.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/QGridLayout:
 
@@ -1570,6 +1582,8 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/q23type_traits.h:
 C:/Qt/6.11.1/mingw_64/include/QtCore/q23utility.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qbindingstorage.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qtenvironmentvariables.h:
 
@@ -1687,9 +1701,13 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/qfunctionaltools_impl.h:
 
 C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/pthread_time.h:
 
+C:/Qt/6.11.1/mingw_64/include/QtCore/QObject:
+
 C:/Qt/6.11.1/mingw_64/include/QtCore/qlogging.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32/bits/os_defines.h:
+
+E:/pos--2/src/core/data_change_bus.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qfunctionpointer.h:
 
@@ -1765,11 +1783,11 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/qprocessordetection.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/fs_path.h:
 
+C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h:
+
 C:/Qt/6.11.1/mingw_64/include/QtCore/qrect.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/tr1/modified_bessel_func.tcc:
-
-C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qrefcount.h:
 
@@ -1812,6 +1830,8 @@ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstatusbar.h:
 C:/Qt/6.11.1/mingw_64/include/QtCore/qstdlibdetection.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qutf8stringview.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtGui/QLinearGradient:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qstring.h:
 
@@ -1954,6 +1974,8 @@ C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_
 C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/_mingw_off_t.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtGui/qicon.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush:
 
 C:/Qt/6.11.1/mingw_64/include/QtGui/qkeysequence.h:
 
@@ -2157,13 +2179,13 @@ C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ptr_
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ranges_algo.h:
 
-C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ranges_algobase.h:
-
-C:/Qt/6.11.1/mingw_64/include/QtCore/QTextStream:
+C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap:
 
 C:/Qt/6.11.1/mingw_64/include/QtPrintSupport/QPrinter:
 
-C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap:
+C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ranges_algobase.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtCore/QTextStream:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/ranges_cmp.h:
 
@@ -2309,9 +2331,9 @@ C:/Qt/6.11.1/mingw_64/include/QtGui/qpicture.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/concepts:
 
-C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/_timeval.h:
-
 C:/Qt/6.11.1/mingw_64/include/QtGui/qvalidator.h:
+
+C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/_timeval.h:
 
 C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/cstdint:
 
@@ -2449,9 +2471,9 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/qabstractitemmodel.h:
 
 C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/_mingw_secapi.h:
 
-C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/corecrt.h:
-
 C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h:
+
+C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/corecrt.h:
 
 C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/corecrt_stdio_config.h:
 
@@ -2559,9 +2581,13 @@ C:/Qt/6.11.1/mingw_64/include/QtCore/qdirlisting.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtCore/qfiledevice.h:
 
+C:/Qt/6.11.1/mingw_64/include/QtGui/QShortcut:
+
 C:/Qt/6.11.1/mingw_64/include/QtGui/qpagesize.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h:
+
+C:/Qt/6.11.1/mingw_64/include/QtGui/qshortcut.h:
 
 C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h:
 

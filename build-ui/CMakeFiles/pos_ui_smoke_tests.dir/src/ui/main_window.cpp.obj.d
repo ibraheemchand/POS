@@ -429,6 +429,7 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qvector.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
  E:/pos--2/src/core/database.h E:/pos--2/third_party/sqlite/sqlite3.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/filesystem \
@@ -443,6 +444,8 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qcalendar.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qlocale.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QList \
+ E:/pos--2/src/core/data_change_bus.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
  E:/pos--2/src/core/backup_service.h \
  E:/pos--2/src/core/inventory_service.h \
  E:/pos--2/src/core/purchase_service.h \
@@ -561,10 +564,15 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qpageranges.h \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QLinearGradient \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush \
  C:/Qt/6.11.1/mingw_64/include/QtPrintSupport/QPrintDialog \
  C:/Qt/6.11.1/mingw_64/include/QtPrintSupport/qprintdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtPrintSupport/qabstractprintdialog.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QVBoxLayout \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QTimer \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qtimer.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QShortcut \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qshortcut.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence

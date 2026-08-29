@@ -2,6 +2,8 @@
 #include <QMainWindow>
 #include <QStringList>
 #include <QVector>
+#include <QMultiHash>
+#include <functional>
 #include <memory>
 
 class QStackedWidget;
@@ -15,6 +17,10 @@ public:
     ~MainWindow() override;
 private:
     void goToPage(const QString& pageName);
+    void registerDataRefresh(const QString& topic, std::function<void()> reload);
+    void connectDataChangeBus();
+    void reloadPurchaseCombos();
+    void reloadSalesCustomerCombo();
     QWidget* makeDashboard();
     QWidget* makeInventory();
     QWidget* makeSalesPos();
@@ -39,4 +45,5 @@ private:
     QStringList pageNames_;
     QVector<int> navRowToPage_;
     bool dark_{false};
+    QMultiHash<QString, std::function<void()>> dataRefreshCallbacks_;
 };

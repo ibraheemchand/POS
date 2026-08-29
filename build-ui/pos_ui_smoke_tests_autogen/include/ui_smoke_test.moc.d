@@ -8,6 +8,7 @@ E:/pos--2/build-ui/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos-
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMap \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMargins \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMetaEnum \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMutex \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QRect \

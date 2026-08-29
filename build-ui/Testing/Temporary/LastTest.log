@@ -1,33 +1,33 @@
-Start testing: Aug 25 06:26 Pakistan Standard Time
+Start testing: Aug 26 10:49 Pakistan Standard Time
 ----------------------------------------------------------
 1/2 Testing: pos_core_tests
 1/2 Test: pos_core_tests
 Command: "E:/pos--2/build-ui/pos_core_tests.exe"
 Directory: E:/pos--2/build-ui
-"pos_core_tests" start time: Aug 25 06:26 Pakistan Standard Time
+"pos_core_tests" start time: Aug 26 10:49 Pakistan Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   1.69 sec
+Test time =   3.48 sec
 ----------------------------------------------------------
 Test Passed.
-"pos_core_tests" end time: Aug 25 06:26 Pakistan Standard Time
-"pos_core_tests" time elapsed: 00:00:01
+"pos_core_tests" end time: Aug 26 10:49 Pakistan Standard Time
+"pos_core_tests" time elapsed: 00:00:03
 ----------------------------------------------------------
 
 2/2 Testing: pos_ui_smoke_tests
 2/2 Test: pos_ui_smoke_tests
 Command: "E:/pos--2/build-ui/pos_ui_smoke_tests.exe"
 Directory: E:/pos--2/build-ui
-"pos_ui_smoke_tests" start time: Aug 25 06:26 Pakistan Standard Time
+"pos_ui_smoke_tests" start time: Aug 26 10:49 Pakistan Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   2.37 sec
+Test time =   4.25 sec
 ----------------------------------------------------------
 Test Passed.
-"pos_ui_smoke_tests" end time: Aug 25 06:26 Pakistan Standard Time
-"pos_ui_smoke_tests" time elapsed: 00:00:02
+"pos_ui_smoke_tests" end time: Aug 26 10:49 Pakistan Standard Time
+"pos_ui_smoke_tests" time elapsed: 00:00:04
 ----------------------------------------------------------
 
-End testing: Aug 25 06:26 Pakistan Standard Time
+End testing: Aug 26 10:49 Pakistan Standard Time

@@ -396,4 +396,6 @@ CMakeFiles/pos_core.dir/src/core/shift_service.cpp.obj: \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/codecvt \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/fs_dir.h \
  C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/fs_ops.h \
- E:/pos--2/src/core/notification_service.h
+ E:/pos--2/src/core/notification_service.h \
+ E:/pos--2/src/core/data_change_bus.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QObject
