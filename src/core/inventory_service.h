@@ -10,6 +10,13 @@ struct UnitConversion { QString name; Quantity factor{}; };
 struct StockAdjustment { QString productId; QString batchId; Quantity quantityDelta{}; QString type; QString reason; QString performedBy; };
 struct InventoryAlert { QString productId; QString productName; Quantity quantity{}; QString batchId; QDate expiryDate; };
 
+struct ProductSummary { QString id; QString name; QString baseUnit; };
+struct ProductPOSSummary { QString id; QString name; QString sku; QString baseUnit; Quantity stock{}; Money retailPrice{}; };
+struct ProductDisplayItem { QString id; QString name; QString sku; QString barcode; QString categoryId; QString categoryName; QString brandId; QString description; QString baseUnit; Money purchasePrice{}; Money retailPrice{}; Money wholesalePrice{}; Money dealerPrice{}; Quantity stock{}; Quantity minimumStock{}; bool trackBatches{}; bool trackExpiry{}; QString imagePath; };
+struct InventoryStats { qint64 totalSkus{}; qint64 lowStock{}; qint64 outOfStock{}; Money totalValuation{}; };
+struct ProductSearchFilter { QString text; QString categoryId; QString brandId; bool lowStockOnly{false}; bool outOfStockOnly{false}; };
+struct ProductStockSummary { QString name; Quantity quantity{}; Quantity minimumStock{}; QString baseUnit; };
+
 class InventoryService {
 public:
     explicit InventoryService(std::shared_ptr<Database> database);
@@ -30,6 +37,15 @@ public:
     QList<InventoryAlert> lowStock() const;
     QList<InventoryAlert> nearExpiry(const QDate& until) const;
     void receiveStock(const StockReceipt& receipt);
+
+    QList<ProductSummary> listActiveSummaries() const;
+    QList<ProductPOSSummary> searchPOSProducts(const QString& term) const;
+    QList<ProductDisplayItem> searchProducts(const ProductSearchFilter& filter) const;
+    QList<ProductStockSummary> listLowStock(int limit) const;
+    InventoryStats stats() const;
+    ProductDefinition findProduct(const QString& productId) const;
+    Quantity getStock(const QString& productId) const;
+    QPair<QString, bool> getProductTrackingInfo(const QString& productId) const;
 private:
     std::shared_ptr<Database> db_;
 };

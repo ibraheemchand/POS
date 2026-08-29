@@ -1,0 +1,34 @@
+#pragma once
+
+#include <QWidget>
+#include <memory>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QLabel>
+#include <QPushButton>
+
+namespace pos { class Database; }
+
+class SettingsPage : public QWidget {
+    Q_OBJECT
+public:
+    explicit SettingsPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
+    void load();
+private:
+    std::shared_ptr<pos::Database> database_;
+
+    QLineEdit* businessNameInput_{};
+    QLineEdit* phoneInput_{};
+    QLineEdit* currencyInput_{};
+    QLineEdit* footerInput_{};
+    QSpinBox* backupHoursSpin_{};
+    QLineEdit* thermalPathInput_{};
+
+    QPushButton* saveSettingsBtn_{};
+    QPushButton* setPinBtn_{};
+    QPushButton* clearPinBtn_{};
+    QPushButton* viewNotificationsBtn_{};
+    QPushButton* testReceiptBtn_{};
+    QPushButton* testLabelBtn_{};
+    QLabel* pinStatusLabel_{};
+};

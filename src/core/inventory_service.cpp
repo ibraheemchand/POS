@@ -37,4 +37,116 @@ void InventoryService::receiveStock(const StockReceipt& receipt) {
     auto update=db_->prepare("UPDATE products SET stock_quantity=stock_quantity+?,purchase_price_paisa=?,updated_at=? WHERE id=?");update.bind(1,receipt.quantity);update.bind(2,receipt.purchasePrice);update.bind(3,utcNow());update.bind(4,receipt.productId);update.execute();
     auto movement=db_->prepare("INSERT INTO stock_movements(id,product_id,batch_id,type,quantity,original_unit,reason,balance_after,performed_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)");movement.bind(1,uuid());movement.bind(2,receipt.productId);if(batchId.isEmpty())movement.bindNull(3);else movement.bind(3,batchId);movement.bind(4,"purchase");movement.bind(5,receipt.quantity);movement.bind(6,receipt.enteredUnit);movement.bind(7,"Stock received");movement.bind(8,previous+receipt.quantity);movement.bind(9,receipt.performedBy);    movement.bind(10,utcNow());movement.execute();tx.commit();notifyInventoryChanged();
 }
+
+QList<ProductSummary> InventoryService::listActiveSummaries() const {
+    QList<ProductSummary> result;
+    auto query = db_->prepare("SELECT id, name, base_unit FROM products WHERE is_deleted=0 ORDER BY name");
+    while (query.stepRow()) {
+        result.append({query.text(0), query.text(1), query.text(2)});
+    }
+    return result;
+}
+
+QList<ProductPOSSummary> InventoryService::searchPOSProducts(const QString& term) const {
+    QList<ProductPOSSummary> result;
+    auto query = db_->prepare("SELECT id, name, sku, base_unit, stock_quantity, retail_price_paisa FROM products WHERE is_deleted=0 AND stock_quantity>0 AND (name LIKE ? OR COALESCE(sku,'') LIKE ? OR COALESCE(barcode,'') LIKE ?) ORDER BY name LIMIT 100");
+    const auto likeTerm = "%" + term.trimmed() + "%";
+    query.bind(1, likeTerm);
+    query.bind(2, likeTerm);
+    query.bind(3, likeTerm);
+    while (query.stepRow()) {
+        result.append({query.text(0), query.text(1), query.text(2), query.text(3), query.integer(4), query.integer(5)});
+    }
+    return result;
+}
+
+QList<ProductDisplayItem> InventoryService::searchProducts(const ProductSearchFilter& filter) const {
+    QList<ProductDisplayItem> result;
+    QString sql = "SELECT p.id, p.name, p.sku, p.barcode, p.category_id, c.name, p.brand_id, p.description, p.base_unit, p.purchase_price_paisa, p.retail_price_paisa, p.wholesale_price_paisa, p.dealer_price_paisa, p.stock_quantity, p.minimum_stock, p.track_batches, p.track_expiry, p.image_path FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.is_deleted=0";
+    
+    if (!filter.categoryId.isEmpty()) {
+        sql += " AND p.category_id = ?";
+    }
+    if (!filter.brandId.isEmpty()) {
+        sql += " AND p.brand_id = ?";
+    }
+    if (filter.lowStockOnly) {
+        sql += " AND p.stock_quantity <= p.minimum_stock AND p.stock_quantity > 0";
+    }
+    if (filter.outOfStockOnly) {
+        sql += " AND p.stock_quantity = 0";
+    }
+    if (!filter.text.trimmed().isEmpty()) {
+        sql += " AND (p.name LIKE ? OR COALESCE(p.sku,'') LIKE ? OR COALESCE(p.barcode,'') LIKE ?)";
+    }
+    sql += " ORDER BY p.name LIMIT 250";
+
+    auto query = db_->prepare(sql.toUtf8().constData());
+    int bindIdx = 1;
+    if (!filter.categoryId.isEmpty()) {
+        query.bind(bindIdx++, filter.categoryId);
+    }
+    if (!filter.brandId.isEmpty()) {
+        query.bind(bindIdx++, filter.brandId);
+    }
+    if (!filter.text.trimmed().isEmpty()) {
+        const auto likeTerm = "%" + filter.text.trimmed() + "%";
+        query.bind(bindIdx++, likeTerm);
+        query.bind(bindIdx++, likeTerm);
+        query.bind(bindIdx++, likeTerm);
+    }
+    
+    while (query.stepRow()) {
+        result.append({
+            query.text(0), query.text(1), query.text(2), query.text(3), query.text(4), query.text(5),
+            query.text(6), query.text(7), query.text(8), query.integer(9), query.integer(10), query.integer(11),
+            query.integer(12), query.integer(13), query.integer(14), query.integer(15) != 0, query.integer(16) != 0, query.text(17)
+        });
+    }
+    return result;
+}
+
+QList<ProductStockSummary> InventoryService::listLowStock(int limit) const {
+    QList<ProductStockSummary> result;
+    auto query = db_->prepare("SELECT name, stock_quantity, minimum_stock, base_unit FROM products WHERE is_deleted=0 AND stock_quantity<=minimum_stock ORDER BY stock_quantity ASC LIMIT ?");
+    query.bind(1, static_cast<qint64>(limit));
+    while (query.stepRow()) {
+        result.append({query.text(0), query.integer(1), query.integer(2), query.text(3)});
+    }
+    return result;
+}
+
+InventoryStats InventoryService::stats() const {
+    InventoryStats result;
+    auto q1 = db_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0"); q1.stepRow(); result.totalSkus = q1.integer(0);
+    auto q2 = db_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0 AND stock_quantity<=minimum_stock AND stock_quantity>0"); q2.stepRow(); result.lowStock = q2.integer(0);
+    auto q3 = db_->prepare("SELECT COUNT(*) FROM products WHERE is_deleted=0 AND stock_quantity=0"); q3.stepRow(); result.outOfStock = q3.integer(0);
+    auto q4 = db_->prepare("SELECT COALESCE(SUM(stock_quantity * retail_price_paisa), 0) FROM products WHERE is_deleted=0"); q4.stepRow(); result.totalValuation = q4.integer(0);
+    return result;
+}
+
+ProductDefinition InventoryService::findProduct(const QString& productId) const {
+    auto query = db_->prepare("SELECT name, sku, barcode, category_id, brand_id, description, base_unit, purchase_price_paisa, retail_price_paisa, wholesale_price_paisa, dealer_price_paisa, minimum_stock, track_batches, track_expiry, image_path FROM products WHERE id=? AND is_deleted=0");
+    query.bind(1, productId);
+    if (!query.stepRow()) throw DatabaseError("product not found");
+    return {
+        query.text(0), query.text(1), query.text(2), query.text(3), query.text(4), query.text(5),
+        query.text(6), query.integer(7), query.integer(8), query.integer(9), query.integer(10),
+        query.integer(11), query.integer(12) != 0, query.integer(13) != 0, query.text(14)
+    };
+}
+
+Quantity InventoryService::getStock(const QString& productId) const {
+    auto query = db_->prepare("SELECT stock_quantity FROM products WHERE id=? AND is_deleted=0");
+    query.bind(1, productId);
+    if (!query.stepRow()) return 0;
+    return query.integer(0);
+}
+
+QPair<QString, bool> InventoryService::getProductTrackingInfo(const QString& productId) const {
+    auto query = db_->prepare("SELECT base_unit, track_batches FROM products WHERE id=? AND is_deleted=0");
+    query.bind(1, productId);
+    if (!query.stepRow()) return {{}, false};
+    return {query.text(0), query.integer(1) != 0};
+}
 } // namespace pos

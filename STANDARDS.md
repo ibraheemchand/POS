@@ -14,3 +14,5 @@
 - Raw ESC/POS output must reject control characters in user text and validate barcode length/content before writing to a configured device path.
 - Run CMake build and CTest before declaring work complete; do not ignore warnings.
 - Never add FBR code or a network dependency; this product is offline-only.
+- UI page classes live under `src/ui/pages/`, one class per page; `MainWindow` only handles navigation and shell wiring.
+- Icons for in-app buttons must be bundled SVGs from `resources.qrc`, never `QStyle::standardIcon`.

@@ -58,11 +58,42 @@ if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_link_options(pos_core PUBLIC -fsanitize=address,undefined)
 endif()
 
+set(UI_PAGE_SOURCES
+    src/ui/pages/dashboard_page.cpp
+    src/ui/pages/dashboard_page.h
+    src/ui/pages/inventory_page.cpp
+    src/ui/pages/inventory_page.h
+    src/ui/pages/sales_pos_page.cpp
+    src/ui/pages/sales_pos_page.h
+    src/ui/pages/purchases_page.cpp
+    src/ui/pages/purchases_page.h
+    src/ui/pages/customers_page.cpp
+    src/ui/pages/customers_page.h
+    src/ui/pages/suppliers_page.cpp
+    src/ui/pages/suppliers_page.h
+    src/ui/pages/cash_management_page.cpp
+    src/ui/pages/cash_management_page.h
+    src/ui/pages/cheques_page.cpp
+    src/ui/pages/cheques_page.h
+    src/ui/pages/reports_page.cpp
+    src/ui/pages/reports_page.h
+    src/ui/pages/audit_log_page.cpp
+    src/ui/pages/audit_log_page.h
+    src/ui/pages/settings_page.cpp
+    src/ui/pages/settings_page.h
+    src/ui/pages/backup_restore_page.cpp
+    src/ui/pages/backup_restore_page.h
+    src/ui/pages/sales_trend_graph.cpp
+    src/ui/pages/sales_trend_graph.h
+    src/ui/pages/page_helper.h
+)
+
 add_executable(invento WIN32
     src/main.cpp
     src/ui/main_window.cpp
     src/ui/main_window.h
     src/ui/resources.qrc
+    ${UI_PAGE_SOURCES}
 )
 target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
 
@@ -87,7 +118,7 @@ if(POS_BUILD_TESTS)
       target_link_options(pos_core_tests PRIVATE -fsanitize=address,undefined)
     endif()
     add_test(NAME pos_core_tests COMMAND pos_core_tests)
-    add_executable(pos_ui_smoke_tests tests/ui_smoke_test.cpp src/ui/main_window.cpp src/ui/main_window.h)
+    add_executable(pos_ui_smoke_tests tests/ui_smoke_test.cpp src/ui/main_window.cpp src/ui/main_window.h ${UI_PAGE_SOURCES})
     target_link_libraries(pos_ui_smoke_tests PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport Qt6::Test)
     add_test(NAME pos_ui_smoke_tests COMMAND pos_ui_smoke_tests)
     set_tests_properties(pos_ui_smoke_tests PROPERTIES

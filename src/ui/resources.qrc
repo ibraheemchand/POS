@@ -3,4 +3,20 @@
     <file alias="logo">assets/logo.png</file>
     <file alias="app_icon">assets/app_icon.ico</file>
   </qresource>
+  <qresource prefix="/icons">
+    <file alias="dashboard.svg">assets/dashboard.svg</file>
+    <file alias="sales.svg">assets/sales.svg</file>
+    <file alias="inventory.svg">assets/inventory.svg</file>
+    <file alias="purchases.svg">assets/purchases.svg</file>
+    <file alias="customers.svg">assets/customers.svg</file>
+    <file alias="suppliers.svg">assets/suppliers.svg</file>
+    <file alias="cash.svg">assets/cash.svg</file>
+    <file alias="cheques.svg">assets/cheques.svg</file>
+    <file alias="reports.svg">assets/reports.svg</file>
+    <file alias="audit.svg">assets/audit.svg</file>
+    <file alias="settings.svg">assets/settings.svg</file>
+    <file alias="backup.svg">assets/backup.svg</file>
+    <file alias="edit.svg">assets/edit.svg</file>
+    <file alias="archive.svg">assets/archive.svg</file>
+  </qresource>
 </RCC>

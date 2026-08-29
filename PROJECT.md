@@ -5,7 +5,7 @@ Nexora POS is an offline-first Windows wholesale POS built with C++20, Qt 6 Widg
 ## Architecture
 
 - `src/core`: UI-independent database, migrations, transactional services, backup, reporting, audit, settings, security, suspended-sale persistence, notifications, inventory, POS, purchasing, payments, shifts, cheques, Excel export, seed data, thermal printing, and catalog services.
-- `src/ui`: Qt Widgets shell, QSS themes, live Inventory, Sales POS, Purchases, Customers, Suppliers, Cash Management, Cheques, Reports, Analytics, Audit Log, Settings, and Backup/Restore pages.
+- `src/ui`: Qt Widgets shell, QSS themes, and modular standalone page classes under `src/ui/pages/` (Dashboard, Inventory, Sales POS, Purchases, Customers, Suppliers, Cash Management, Cheques, Reports, Audit Log, Settings, and Backup/Restore).
 - `tests`: QtTest business-logic coverage plus `pos_ui_smoke_tests`, which constructs the operational widget shell and verifies key Inventory/Settings controls without business writes.
 - `third_party/sqlite`: vendored SQLite amalgamation.
 - `scripts/deploy.ps1` stages a clean Windows deployment with `windeployqt`; `installer/NexoraPOS.iss` packages the staged directory.
@@ -24,3 +24,36 @@ Product CRUD with atomic CSV import, inventory edit/archive controls, scanner re
 ## Known limitations
 
 Dedicated Returns UI is not yet exposed even though `ReturnService` provides atomic sales/purchase return logic. Cheque reversal accounting remains blocked until bounced/cleared cheque settlement rules and source-payment linkage are defined. SQLCipher and offline licensing remain blocked pending distribution and policy decisions. ESC/POS output writes validated raw receipt/Code128 bytes to the configured local device path. Settings persist an optional automatic backup interval (applied on restart), and verified backup retention pruning keeps the newest 30 snapshots by default. Backup UI supports choosing local/USB destinations and external restore files. Operational notifications are generated best-effort after sales, backups, and shift events. FBR is intentionally excluded from the product scope.
+
+## Design Reference
+
+The Nexora POS UI uses a unified theme structured around the **Stitch Design Token System**, implemented inside `src/ui/main_window.cpp` light and dark QSS stylesheets.
+
+### 1. Color Palette Tokens
+* **Dark Theme (Default)**
+  - Background Window: `#0C0E13` (deep slate black)
+  - Card & Panels: `#1E2025` (slate grey)
+  - Grid & Borders: `#33353A` / `#45464C`
+  - Accent / Highlights / Primary: `#E9C349` (muted warm gold)
+  - Positive / Success: `#E8C85B`
+  - Critical / Danger: `#FFB4AB`
+  - Typography: Primary `#E2E2E9`, Muted `#C6C6CC`
+* **Light Theme**
+  - Background Window: `#F7F8FA`
+  - Card & Panels: `#FFFFFF`
+  - Grid & Borders: `#E2E2E9`
+  - Primary / Accent: `#005C8A`
+  - Typography: Primary `#1A1C1C`, Muted `#5C5E62`
+
+### 2. Geometry & Spacing
+* **Rounding (Border-Radius)**: `12px` globally applied on cards, panel containers, buttons, and popups.
+* **Card & Form Spacing**: `16px` padding (margins) on main forms and detail panel layouts.
+* **Layout Margins**: Main layout margins set to `12px` to `16px` with custom spacing set to `10px` or `12px` to maintain high density without clutter.
+
+### 3. Typography Hierarchy
+* **Primary Fonts**: `"Manrope"`, `"Segoe UI"`, `"Inter"`, sans-serif.
+* **Sizes & Weights**:
+  - Main Page Titles: `28px`, ExtraBold (weight 800)
+  - Section Headers: `18px`, SemiBold
+  - Content Text: `13px` (base size)
+  - Table Headers & Captions: `11px` / `12px`, Bold / Regular.

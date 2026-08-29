@@ -3,7 +3,7 @@
 #include <memory>
 namespace pos {
 class Database;
-struct Supplier { QString id; QString name; QString contactPerson; QString phone; QString address; Money openingBalance{}; bool archived{}; };
+struct Supplier { QString id; QString name; QString contactPerson; QString phone; QString address; Money openingBalance{}; Money balance{}; bool archived{}; };
 struct SupplierLedgerEntry { QString entryType; QString referenceId; Money debit{}; Money credit{}; Money balance{}; QString createdAt; };
 class SupplierService {
 public:
@@ -12,6 +12,7 @@ public:
     void update(const Supplier& supplier);
     void archive(const QString& supplierId);
     Supplier find(const QString& supplierId) const;
+    QList<Supplier> listActive() const;
     QList<SupplierLedgerEntry> ledger(const QString& supplierId) const;
 private:
     std::shared_ptr<Database> db_;

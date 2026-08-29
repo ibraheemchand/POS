@@ -44,3 +44,32 @@
 - [x] Add a step-by-step user guide covering setup, operations, backups, printing, keyboard use, and QA data.
 - [ ] Add visible Sales Return and Purchase Return UI workflows backed by `ReturnService`.
 - [ ] [P1][blocked] Evaluate SQLCipher and offline licensing separately; dependencies: SQLCipher distribution/license choice and product licensing policy.
+
+## UI redesign and refactor
+
+- [x] Extract Stitch design tokens from `docs/design-reference/` and apply them to the Qt QSS theme.
+- [x] Rebuild Dashboard layout to match `kinetic_inventory_dashboard` mockup structure and density.
+- [x] Rebuild Inventory layout to match `kinetic_inventory_stock_list` mockup structure and density.
+- [x] Apply Stitch tokens and layout patterns to Sales POS, Purchases, Customers, Suppliers, Cash & Shifts, and Reports pages.
+- [x] Remove the standalone Analytics page; fold any unique KPI content into Dashboard or Reports.
+- [x] Move `stitch/` and `mainMenuSTITCH/` into `docs/design-reference/` and document them in `PROJECT.md`.
+- [x] Add bundled SVG action icons to `src/ui/assets/` and register them in `resources.qrc`.
+- [x] Replace all in-app `QApplication::style()->standardIcon` usage with bundled `QIcon(":/icons/...")` resources.
+- [x] Extract `makeDashboard()` into `src/ui/pages/dashboard_page.{h,cpp}`.
+- [x] Extract `makeInventory()` into `src/ui/pages/inventory_page.{h,cpp}`.
+- [x] Extract `makeSalesPos()` into `src/ui/pages/sales_pos_page.{h,cpp}`.
+- [x] Extract `makePurchases()` into `src/ui/pages/purchases_page.{h,cpp}`.
+- [x] Extract `makeCustomers()` into `src/ui/pages/customers_page.{h,cpp}`.
+- [x] Extract `makeSuppliers()` into `src/ui/pages/suppliers_page.{h,cpp}`.
+- [x] Extract `makeCashManagement()` into `src/ui/pages/cash_management_page.{h,cpp}`.
+- [x] Extract `makeCheques()` into `src/ui/pages/cheques_page.{h,cpp}`.
+- [x] Extract `makeReports()` into `src/ui/pages/reports_page.{h,cpp}`.
+- [x] Extract `makeAuditLog()` into `src/ui/pages/audit_log_page.{h,cpp}`.
+- [x] Extract `makeSettings()` into `src/ui/pages/settings_page.{h,cpp}`.
+- [x] Extract `makeBackupRestore()` into `src/ui/pages/backup_restore_page.{h,cpp}`.
+- [x] Reduce `main_window.cpp` to navigation shell, shortcut bar, and `DataChangeBus` wiring only.
+- [x] Add service read methods for UI table population; remove raw `database_->prepare` from UI page classes.
+- [x] Add Alt-mnemonics and explicit `setTabOrder()` on every primary page form.
+- [x] Make the shortcut hint bar fully dynamic per active page.
+- [x] Add arrow-key / Enter / Delete keyboard navigation to Customers, Suppliers, and Cheques table pages.
+- [x] Verify a full sale can be completed keyboard-only after the refactor.

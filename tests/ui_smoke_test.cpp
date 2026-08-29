@@ -25,10 +25,11 @@ void UiSmokeTest::mainWindowConstructsAllOperationalPages() {
     bool hasThermalTest = false;
     bool hasBackup = false;
     for (const auto* button : buttons) {
-        hasInventoryEdit |= button->text() == "Edit selected";
-        hasNotifications |= button->text() == "View notifications";
-        hasThermalTest |= button->text() == "Print test receipt";
-        hasBackup |= button->text() == "Create verified backup";
+        const auto txt = button->text().remove('&');
+        hasInventoryEdit |= txt == "Edit selected";
+        hasNotifications |= txt == "View notifications";
+        hasThermalTest |= txt == "Print test receipt";
+        hasBackup |= txt == "Create verified backup";
     }
     QVERIFY(hasInventoryEdit);
     QVERIFY(hasNotifications);

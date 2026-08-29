@@ -43,3 +43,7 @@
 - [x] Startup quick-check/schema compatibility handling is tested.
 - [x] Security review covers file paths, input validation, PIN-protected actions, and sensitive logs.
 - [x] Documentation reflects only delivered behavior; cheque reversal, sanitizer runtime, SQLCipher, and licensing remain explicitly listed as blocked backlog decisions.
+- [x] In-app action buttons use bundled SVG icons from resources.qrc instead of OS standard icons.
+- [x] Every UI page routes data reads through service methods rather than executing raw SQL in UI code.
+- [x] MainWindow is scoped to navigation and shell wiring; all operational pages are isolated under `src/ui/pages/`.
+- [x] UI forms enforce sequential tab order and Alt mnemonics; bottom shortcut bar dynamically adapts to active page.
