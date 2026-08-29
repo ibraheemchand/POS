@@ -28,21 +28,21 @@ void SalesTrendGraph::paintEvent(QPaintEvent*) {
 
     int w = width();
     int h = height();
-    int paddingLeft = 50;
-    int paddingRight = 20;
-    int paddingTop = 40;
-    int paddingBottom = 30;
+    int paddingLeft = 45;
+    int paddingRight = 15;
+    int paddingTop = 36;
+    int paddingBottom = 26;
 
     int chartW = w - paddingLeft - paddingRight;
     int chartH = h - paddingTop - paddingBottom;
 
     painter.setPen(titleColor);
-    painter.setFont(QFont("Arial", 10, QFont::Bold));
-    painter.drawText(QRect(10, 10, w - 20, 25), Qt::AlignLeft | Qt::AlignVCenter, "Sales Performance (7-Day Trend)");
+    painter.setFont(QFont("Arial", 9, QFont::Bold));
+    painter.drawText(QRect(10, 6, w - 20, 20), Qt::AlignLeft | Qt::AlignVCenter, "Sales Performance (7-Day Trend)");
 
     if (values_.isEmpty()) {
         painter.setPen(textColor);
-        painter.setFont(QFont("Arial", 10));
+        painter.setFont(QFont("Arial", 9));
         painter.drawText(QRect(paddingLeft, paddingTop, chartW, chartH), Qt::AlignCenter, "No sales recorded yet.");
         return;
     }
@@ -53,9 +53,9 @@ void SalesTrendGraph::paintEvent(QPaintEvent*) {
     }
 
     painter.setFont(QFont("Arial", 8));
-    for (int i = 0; i <= 4; ++i) {
-        double val = maxVal * i / 4.0;
-        int y = paddingTop + chartH - (chartH * i / 4);
+    for (int i = 0; i <= 3; ++i) {
+        double val = maxVal * i / 3.0;
+        int y = paddingTop + chartH - (chartH * i / 3);
         
         painter.setPen(gridColor);
         painter.drawLine(paddingLeft, y, w - paddingRight, y);
@@ -67,18 +67,18 @@ void SalesTrendGraph::paintEvent(QPaintEvent*) {
         } else {
             yLabel = QString::number(val, 'f', 0);
         }
-        painter.drawText(5, y - 8, paddingLeft - 10, 16, Qt::AlignRight | Qt::AlignVCenter, yLabel);
+        painter.drawText(2, y - 8, paddingLeft - 8, 16, Qt::AlignRight | Qt::AlignVCenter, yLabel);
     }
 
     int n = values_.size();
-    double barSpacing = 16.0;
+    double barSpacing = 8.0;
     double barW = (chartW - (barSpacing * (n - 1))) / n;
     if (barW < 4.0) barW = 4.0;
 
     for (int i = 0; i < n; ++i) {
         double val = values_[i];
-        double ratio = val / maxVal;
-        double barH = chartH * ratio;
+        double ratio = maxVal > 0 ? (val / maxVal) : 0.0;
+        double barH = std::max(2.0, chartH * ratio);
         double x = paddingLeft + i * (barW + barSpacing);
         double y = paddingTop + chartH - barH;
 
@@ -90,19 +90,20 @@ void SalesTrendGraph::paintEvent(QPaintEvent*) {
 
         painter.setPen(Qt::NoPen);
         painter.setBrush(gradient);
-        painter.drawRoundedRect(barRect, 6.0, 6.0);
+        painter.drawRoundedRect(barRect, 4.0, 4.0);
 
         if (val > 0) {
             painter.setPen(titleColor);
-            painter.setFont(QFont("Arial", 8, QFont::Bold));
+            painter.setFont(QFont("Arial", 7, QFont::Bold));
             QString valStr = val >= 1000.0 ? QString("%1k").arg(QString::number(val / 1000.0, 'f', 1)) : QString::number(val, 'f', 0);
-            painter.drawText(QRectF(x - 10, y - 20, barW + 20, 18), Qt::AlignCenter, valStr);
+            int labelY = std::max(static_cast<int>(y) - 15, paddingTop - 10);
+            painter.drawText(QRectF(x - 12, labelY, barW + 24, 14), Qt::AlignCenter, valStr);
         }
 
         if (i < labels_.size()) {
             painter.setPen(textColor);
-            painter.setFont(QFont("Arial", 8));
-            painter.drawText(QRectF(x - 10, h - paddingBottom + 5, barW + 20, 20), Qt::AlignCenter, labels_[i]);
+            painter.setFont(QFont("Arial", 7));
+            painter.drawText(QRectF(x - 12, h - paddingBottom + 4, barW + 24, 18), Qt::AlignCenter, labels_[i]);
         }
     }
 }

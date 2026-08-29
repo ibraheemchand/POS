@@ -12,7 +12,7 @@ option(POS_BUILD_TESTS "Build business-logic tests" ON)
 option(POS_ENABLE_FBR "Include the isolated FBR queue module" OFF)
 option(POS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport Svg)
 
 # Vendored official SQLite amalgamation. The business layer never relies on Qt's
 # SQLite plugin, keeping builds fully offline after the Qt toolchain is installed.
@@ -95,7 +95,7 @@ add_executable(invento WIN32
     src/ui/resources.qrc
     ${UI_PAGE_SOURCES}
 )
-target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
+target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport Qt6::Svg)
 
 if(WIN32)
   target_sources(invento PRIVATE src/ui/app_icon.rc)
@@ -118,8 +118,8 @@ if(POS_BUILD_TESTS)
       target_link_options(pos_core_tests PRIVATE -fsanitize=address,undefined)
     endif()
     add_test(NAME pos_core_tests COMMAND pos_core_tests)
-    add_executable(pos_ui_smoke_tests tests/ui_smoke_test.cpp src/ui/main_window.cpp src/ui/main_window.h ${UI_PAGE_SOURCES})
-    target_link_libraries(pos_ui_smoke_tests PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport Qt6::Test)
+    add_executable(pos_ui_smoke_tests tests/ui_smoke_test.cpp src/ui/main_window.cpp src/ui/main_window.h src/ui/resources.qrc ${UI_PAGE_SOURCES})
+    target_link_libraries(pos_ui_smoke_tests PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport Qt6::Svg Qt6::Test)
     add_test(NAME pos_ui_smoke_tests COMMAND pos_ui_smoke_tests)
     set_tests_properties(pos_ui_smoke_tests PROPERTIES
       ENVIRONMENT "PATH=$<TARGET_FILE_DIR:Qt6::Widgets>;$ENV{PATH}")

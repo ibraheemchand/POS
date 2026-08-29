@@ -95,7 +95,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     productsTable_ = new QTableWidget(productPanel);
     productsTable_->setColumnCount(5);
     productsTable_->setHorizontalHeaderLabels({"Product", "SKU", "Stock", "Price", "Unit"});
-    productsTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    productsTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    productsTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    productsTable_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    productsTable_->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    productsTable_->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
     productsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     productsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     productsTable_->setAlternatingRowColors(true);
@@ -245,13 +249,19 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     cartLayout->addLayout(primaryRow);
     cartLayout->addLayout(secondaryRow);
     cartLayout->addWidget(feedbackLabel_);
-
     columns->addWidget(cartPanel, 2);
     layout->addLayout(columns, 1);
 
     // Initial setups
     reloadCustomerCombo();
     QTimer::singleShot(0, this, [this] { load(); });
+
+    // Auto update wiring
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::inventoryChanged, this, &SalesPosPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::customersChanged, this, [this] {
+        reloadCustomerCombo();
+        load();
+    });
 
     // Connections
     connect(search_, &QLineEdit::textChanged, this, [this] { load(); });
@@ -390,7 +400,7 @@ void SalesPosPage::load() {
             productsTable_->setItem(row, 1, new QTableWidgetItem(item.sku));
             productsTable_->setItem(row, 2, new QTableWidgetItem(QString::number(item.stock)));
             
-            auto* priceItem = new QTableWidgetItem(pos::formatPaisa(item.retailPrice));
+            auto* priceItem = new QTableWidgetItem("PKR " + pos::formatPaisa(item.retailPrice));
             priceItem->setData(Qt::UserRole + 2, item.retailPrice);
             productsTable_->setItem(row, 3, priceItem);
             

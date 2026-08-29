@@ -90,7 +90,11 @@ void ReportsPage::load() {
         const auto r = pos::ReportService(database_).summary(from_->date(), to_->date());
         const QList<qint64> values = {r.sales, r.purchases, r.receivables, r.payables, r.inventoryValue, r.lowStock};
         for (int row = 0; row < values.size(); ++row) {
-            summary_->setItem(row, 1, new QTableWidgetItem(QString::number(values[row])));
+            if (row == 5) {
+                summary_->setItem(row, 1, new QTableWidgetItem(QString::number(values[row])));
+            } else {
+                summary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(values[row])));
+            }
         }
     } catch (const std::exception& error) {
         QMessageBox::critical(this, "Could not run report", error.what());
@@ -110,7 +114,11 @@ void ReportsPage::exportReport() {
         QTextStream stream(&file);
         stream << "Metric,Value\n";
         for (int row = 0; row < labels.size(); ++row) {
-            stream << labels[row] << "," << values[row] << "\n";
+            if (row == 5) {
+                stream << labels[row] << "," << values[row] << "\n";
+            } else {
+                stream << labels[row] << ",\"PKR " << pos::formatPaisa(values[row]) << "\"\n";
+            }
         }
         file.close();
         QMessageBox::information(this, "Report exported", "The report was exported to CSV.");
@@ -137,13 +145,14 @@ void ReportsPage::exportPdfFile() {
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;
         for (int row = 0; row < labels.size(); ++row) {
-            painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(values[row]));
-            y += 28;
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(valStr));
+            y += 30;
         }
         painter.end();
-        QMessageBox::information(this, "Report exported", "The report was exported to PDF.");
+        QMessageBox::information(this, "PDF exported", "The report was exported to PDF.");
     } catch (const std::exception& error) {
-        QMessageBox::critical(this, "Could not export report", error.what());
+        QMessageBox::critical(this, "Could not export PDF", error.what());
     }
 }
 
@@ -157,7 +166,8 @@ void ReportsPage::exportExcelFile() {
 
         QList<QStringList> rows;
         for (int row = 0; row < labels.size(); ++row) {
-            rows.append({labels[row], QString::number(values[row])});
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            rows.append({labels[row], valStr});
         }
         pos::ExcelExportService::writeWorkbook(fileName, {"Metric", "Value"}, rows);
         QMessageBox::information(this, "Report exported", "The report was exported to Excel.");
@@ -183,7 +193,8 @@ void ReportsPage::printReport() {
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;
         for (int row = 0; row < labels.size(); ++row) {
-            painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(values[row]));
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(valStr));
             y += 28;
         }
         painter.end();

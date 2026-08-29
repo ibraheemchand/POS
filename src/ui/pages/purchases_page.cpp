@@ -39,7 +39,7 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
     supRow->addWidget(supplierCombo_, 1);
     layout->addLayout(supRow);
 
-    auto* controls = new QHBoxLayout;
+    auto* controls1 = new QHBoxLayout;
     productCombo_ = new QComboBox(this);
     productCombo_->setObjectName("purchaseProduct");
     productCombo_->setPlaceholderText("Select product");
@@ -55,13 +55,22 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
 
     priceSpin_ = new QSpinBox(this);
     priceSpin_->setRange(0, 1000000000);
-    priceSpin_->setPrefix("Cost paisa: ");
+    priceSpin_->setSuffix(" paisa");
     
-    auto* costLabel = new QLabel("Unit &Cost:", this);
+    auto* costLabel = new QLabel("Unit &Cost (paisa):", this);
     costLabel->setBuddy(priceSpin_);
 
+    controls1->addWidget(productLabel);
+    controls1->addWidget(productCombo_, 3);
+    controls1->addWidget(quantityLabel);
+    controls1->addWidget(quantitySpin_, 1);
+    controls1->addWidget(costLabel);
+    controls1->addWidget(priceSpin_, 2);
+    layout->addLayout(controls1);
+
+    auto* controls2 = new QHBoxLayout;
     batchInput_ = new QLineEdit(this);
-    batchInput_->setPlaceholderText("Batch (if tracked)");
+    batchInput_->setPlaceholderText("Batch number (optional)");
     
     auto* batchLabel = new QLabel("&Batch:", this);
     batchLabel->setBuddy(batchInput_);
@@ -72,20 +81,15 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
     auto* expiryLabel = new QLabel("&Expiry:", this);
     expiryLabel->setBuddy(expiryEdit_);
 
-    addBtn_ = new QPushButton("Add item", this);
+    addBtn_ = new QPushButton("Add to cart", this);
+    addBtn_->setObjectName("primary");
 
-    controls->addWidget(productLabel);
-    controls->addWidget(productCombo_, 2);
-    controls->addWidget(quantityLabel);
-    controls->addWidget(quantitySpin_);
-    controls->addWidget(costLabel);
-    controls->addWidget(priceSpin_);
-    controls->addWidget(batchLabel);
-    controls->addWidget(batchInput_);
-    controls->addWidget(expiryLabel);
-    controls->addWidget(expiryEdit_);
-    controls->addWidget(addBtn_);
-    layout->addLayout(controls);
+    controls2->addWidget(batchLabel);
+    controls2->addWidget(batchInput_, 2);
+    controls2->addWidget(expiryLabel);
+    controls2->addWidget(expiryEdit_, 2);
+    controls2->addWidget(addBtn_, 1);
+    layout->addLayout(controls2);
 
     cartTable_ = new QTableWidget(this);
     cartTable_->setColumnCount(5);
@@ -137,7 +141,9 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
         name->setData(Qt::UserRole + 1, trackInfo.first); // base unit
         cartTable_->setItem(row, 0, name);
         cartTable_->setItem(row, 1, new QTableWidgetItem(QString::number(quantitySpin_->value())));
-        cartTable_->setItem(row, 2, new QTableWidgetItem(QString::number(priceSpin_->value())));
+        auto* costItem = new QTableWidgetItem("PKR " + pos::formatPaisa(priceSpin_->value()));
+        costItem->setData(Qt::UserRole, static_cast<qint64>(priceSpin_->value()));
+        cartTable_->setItem(row, 2, costItem);
         cartTable_->setItem(row, 3, new QTableWidgetItem(batchInput_->text().trimmed()));
         cartTable_->setItem(row, 4, new QTableWidgetItem(expiryEdit_->date().toString(Qt::ISODate)));
         batchInput_->clear();
@@ -167,7 +173,7 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
                 request.lines.append({
                     nameItem->data(Qt::UserRole).toString(),
                     cartTable_->item(row, 1)->text().toLongLong(),
-                    cartTable_->item(row, 2)->text().toLongLong(),
+                    cartTable_->item(row, 2)->data(Qt::UserRole).toLongLong(),
                     0, 0,
                     nameItem->data(Qt::UserRole + 1).toString(),
                     cartTable_->item(row, 3)->text(),

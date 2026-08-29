@@ -258,10 +258,16 @@ void DashboardPage::load() {
         try {
             QVector<double> trendValues;
             QStringList trendLabels;
-            const auto trend = reportService.salesTrend(today.addDays(-6), today);
-            for (const auto& pair : trend) {
-                trendValues.append(static_cast<double>(pair.second) / 100.0);
-                trendLabels.append(QDate::fromString(pair.first, Qt::ISODate).toString("dd MMM"));
+            const auto rawTrend = reportService.salesTrend(today.addDays(-6), today);
+            QMap<QString, double> trendMap;
+            for (const auto& pair : rawTrend) {
+                trendMap[pair.first] = static_cast<double>(pair.second) / 100.0;
+            }
+            for (int d = -6; d <= 0; ++d) {
+                const auto dt = today.addDays(d);
+                const auto key = dt.toString(Qt::ISODate);
+                trendValues.append(trendMap.value(key, 0.0));
+                trendLabels.append(dt.toString("dd MMM"));
             }
             chart_->setData(trendValues, trendLabels);
         } catch (...) {}

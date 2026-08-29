@@ -65,7 +65,7 @@ CashManagementPage::CashManagementPage(std::shared_ptr<pos::Database> database, 
         try {
             const auto result = pos::ShiftService(database_).close(id, counted);
             load();
-            QMessageBox::information(this, "Shift closed", QString("Expected: %1 paisa\nDifference: %2 paisa").arg(result.expected).arg(result.difference));
+            QMessageBox::information(this, "Shift closed", QString("Expected: PKR %1\nDifference: PKR %2").arg(pos::formatPaisa(result.expected), pos::formatPaisa(result.difference)));
         } catch (const std::exception& error) {
             QMessageBox::critical(this, "Could not close shift", error.what());
         }
@@ -81,6 +81,18 @@ CashManagementPage::CashManagementPage(std::shared_ptr<pos::Database> database, 
 void CashManagementPage::load() {
     try {
         const auto id = pos::activeShiftId(*database_);
-        statusLabel_->setText(id.isEmpty() ? "Till status: CLOSED" : "Till status: OPEN\nShift: " + id);
+        if (id.isEmpty()) {
+            statusLabel_->setText("Till status: CLOSED (No active shift)");
+        } else {
+            auto q = database_->prepare("SELECT opening_cash_paisa, opened_at FROM shift_sessions WHERE id=?");
+            q.bind(1, id);
+            qint64 openingPaisa = 0;
+            QString openedAt;
+            if (q.stepRow()) {
+                openingPaisa = q.integer(0);
+                openedAt = q.text(1);
+            }
+            statusLabel_->setText(QString("Till status: OPEN\nActive shift: %1\nOpened at: %2\nOpening cash: PKR %3").arg(id, openedAt, pos::formatPaisa(openingPaisa)));
+        }
     } catch (...) {}
 }

@@ -142,10 +142,10 @@ QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-c
 #recentList::item { border-radius: 8px; padding: 8px 10px; color: #55433b; border-bottom: 1px solid #eeeeee; }
 #pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
-#summaryBox { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 12px; }
-#sumLabel { color: #55433b; font-weight: 700; }
-#sumValue { font-weight: 800; font-size: 14px; color: #1a1c1c; }
-#posTotal { font-size: 28px; font-weight: 800; color: #99461f; }
+#summaryBox { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 12px; padding: 6px 10px; }
+#sumLabel { color: #55433b; font-weight: 700; font-size: 11px; }
+#sumValue { font-weight: 800; font-size: 13px; color: #1a1c1c; }
+#posTotal { font-size: 18px; font-weight: 800; color: #99461f; }
 QStatusBar { background: #eeeeee; color: #55433b; border-top: 1px solid #dbc1b7; padding-left: 12px; }
 QToolTip { background: #ffffff; color: #1a1c1c; border: 1px solid #dbc1b7; border-radius: 8px; padding: 6px 9px; }
 QMessageBox { background: #ffffff; color: #1a1c1c; }
@@ -175,9 +175,9 @@ QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; borde
 #recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #C6C6CC; border-bottom: 1px solid #33353A; }
 #pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
-#summaryBox { background: #1E2025; border: 1px solid #45464C; border-radius: 12px; }
-#sumLabel { color: #C6C6CC; font-weight: 700; } #sumValue { font-weight: 800; font-size: 14px; color: #E2E2E9; }
-#posTotal { font-size: 28px; font-weight: 800; color: #E9C349; }
+#summaryBox { background: #1E2025; border: 1px solid #45464C; border-radius: 12px; padding: 6px 10px; }
+#sumLabel { color: #C6C6CC; font-weight: 700; font-size: 11px; } #sumValue { font-weight: 800; font-size: 13px; color: #E2E2E9; }
+#posTotal { font-size: 18px; font-weight: 800; color: #E9C349; }
 QStatusBar { background: #0C0E13; color: #C6C6CC; border-top: 1px solid #45464C; padding-left: 12px; }
 QToolTip { background: #0C0E13; color: #E2E2E9; border: 1px solid #45464C; border-radius: 8px; padding: 6px 9px; }
 QMessageBox { background: #1E2025; color: #E2E2E9; }
@@ -219,6 +219,7 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 
 MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QMainWindow(parent), database_(std::move(database)) {
+    Q_INIT_RESOURCE(resources);
     setWindowTitle("Nexora POS"); 
     setWindowIcon(QIcon(":/branding/app_icon")); 
     setMinimumSize(1180, 720); 

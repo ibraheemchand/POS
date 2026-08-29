@@ -53,19 +53,65 @@ void SeedService::seedDemoData() {
         customerId = customers.create({{}, "Demo Customer", "03111111111", 100000, 30, false});
     }
 
-    // Seed shift session if none active
-    auto shiftQ = db_->prepare("SELECT id FROM shift_sessions WHERE status='open' LIMIT 1");
-    QString shiftId;
-    if (shiftQ.stepRow()) {
-        shiftId = shiftQ.text(0);
-    } else {
-        shiftId = uuid();
+    // Seed shift session
+    QString shiftId = uuid();
+    auto now = utcNow();
+    auto shiftCheck = db_->prepare("SELECT COUNT(*) FROM shift_sessions WHERE status='open'");
+    if (shiftCheck.stepRow() && shiftCheck.integer(0) == 0) {
         auto insertShift = db_->prepare("INSERT INTO shift_sessions(id,opened_at,opening_cash_paisa,status) VALUES(?,?,?,?)");
         insertShift.bind(1, shiftId);
-        insertShift.bind(2, utcNow());
+        insertShift.bind(2, now);
         insertShift.bind(3, static_cast<qint64>(500000));
         insertShift.bind(4, "open");
         insertShift.execute();
+    } else {
+        auto existing = db_->prepare("SELECT id FROM shift_sessions WHERE status='open' LIMIT 1");
+        if(existing.stepRow()) shiftId = existing.text(0);
+    }
+
+    // Seed 3 distinct days of completed sales for 7-day trend
+    auto saleCheck = db_->prepare("SELECT COUNT(*) FROM sales WHERE status!='voided'");
+    saleCheck.stepRow();
+    if (saleCheck.integer(0) == 0) {
+        struct SeedSale {
+            QString inv;
+            int dayOffset;
+            qint64 total;
+        };
+        const SeedSale demoSales[] = {
+            {"INV-DEMO-001", -3, 320000}, // 3 days ago: PKR 3,200.00
+            {"INV-DEMO-002", -1, 580000}, // 1 day ago: PKR 5,800.00
+            {"INV-DEMO-003", 0, 440000}   // today: PKR 4,400.00
+        };
+        for (const auto& s : demoSales) {
+            const auto saleId = uuid();
+            const auto saleTime = QDate::currentDate().addDays(s.dayOffset).toString(Qt::ISODate) + "T14:30:00Z";
+            auto insSale = db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal_paisa,discount_paisa,total_paisa,paid_paisa,due_paisa,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            insSale.bind(1, saleId);
+            insSale.bind(2, s.inv);
+            insSale.bind(3, customerId);
+            insSale.bind(4, shiftId);
+            insSale.bind(5, "completed");
+            insSale.bind(6, "cash");
+            insSale.bind(7, s.total);
+            insSale.bind(8, static_cast<qint64>(0));
+            insSale.bind(9, s.total);
+            insSale.bind(10, s.total);
+            insSale.bind(11, static_cast<qint64>(0));
+            insSale.bind(12, "Demo Counter Sale");
+            insSale.bind(13, saleTime);
+            insSale.execute();
+
+            auto insCash = db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)");
+            insCash.bind(1, uuid());
+            insCash.bind(2, shiftId);
+            insCash.bind(3, saleId);
+            insCash.bind(4, "cash_in");
+            insCash.bind(5, s.total);
+            insCash.bind(6, "Counter payment for " + s.inv);
+            insCash.bind(7, saleTime);
+            insCash.execute();
+        }
     }
 
     settings.setValue("seed.demo.version", "1");
