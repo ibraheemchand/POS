@@ -72,6 +72,20 @@ invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/resources.qrc
 invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: CMakeFiles/invento_autogen.dir/AutoRcc_resources_YPKJ5OE7LN_Info.json
 invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/app_icon.ico
 invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/logo.png
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/dashboard.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/archive.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/cheques.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/backup.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/settings.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/edit.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/sales.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/suppliers.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/purchases.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/audit.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/reports.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/customers.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/cash.svg
+invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: E:/pos--2/src/ui/assets/inventory.svg
 invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: C:/Qt/6.11.1/mingw_64/bin/rcc.exe
 invento_autogen/YPKJ5OE7LN/qrc_resources.cpp: C:/Qt/6.11.1/mingw_64/bin/rcc.exe
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic RCC for src/ui/resources.qrc"
@@ -122,16 +136,211 @@ CMakeFiles/invento.dir/src/ui/main_window.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/main_window.cpp.s"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\main_window.cpp -o CMakeFiles\invento.dir\src\ui\main_window.cpp.s
 
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj: E:/pos--2/src/ui/pages/dashboard_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\dashboard_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\dashboard_page.cpp.obj -c E:\pos--2\src\ui\pages\dashboard_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\dashboard_page.cpp > CMakeFiles\invento.dir\src\ui\pages\dashboard_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\dashboard_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\dashboard_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj: E:/pos--2/src/ui/pages/inventory_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\inventory_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\inventory_page.cpp.obj -c E:\pos--2\src\ui\pages\inventory_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\inventory_page.cpp > CMakeFiles\invento.dir\src\ui\pages\inventory_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\inventory_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\inventory_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj: E:/pos--2/src/ui/pages/sales_pos_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\sales_pos_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\sales_pos_page.cpp.obj -c E:\pos--2\src\ui\pages\sales_pos_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\sales_pos_page.cpp > CMakeFiles\invento.dir\src\ui\pages\sales_pos_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\sales_pos_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\sales_pos_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj: E:/pos--2/src/ui/pages/purchases_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\purchases_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\purchases_page.cpp.obj -c E:\pos--2\src\ui\pages\purchases_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\purchases_page.cpp > CMakeFiles\invento.dir\src\ui\pages\purchases_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\purchases_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\purchases_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj: E:/pos--2/src/ui/pages/customers_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\customers_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\customers_page.cpp.obj -c E:\pos--2\src\ui\pages\customers_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\customers_page.cpp > CMakeFiles\invento.dir\src\ui\pages\customers_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\customers_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\customers_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj: E:/pos--2/src/ui/pages/suppliers_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\suppliers_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\suppliers_page.cpp.obj -c E:\pos--2\src\ui\pages\suppliers_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\suppliers_page.cpp > CMakeFiles\invento.dir\src\ui\pages\suppliers_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\suppliers_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\suppliers_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj: E:/pos--2/src/ui/pages/cash_management_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\cash_management_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\cash_management_page.cpp.obj -c E:\pos--2\src\ui\pages\cash_management_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\cash_management_page.cpp > CMakeFiles\invento.dir\src\ui\pages\cash_management_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\cash_management_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\cash_management_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj: E:/pos--2/src/ui/pages/cheques_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\cheques_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\cheques_page.cpp.obj -c E:\pos--2\src\ui\pages\cheques_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\cheques_page.cpp > CMakeFiles\invento.dir\src\ui\pages\cheques_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\cheques_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\cheques_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj: E:/pos--2/src/ui/pages/reports_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\reports_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\reports_page.cpp.obj -c E:\pos--2\src\ui\pages\reports_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\reports_page.cpp > CMakeFiles\invento.dir\src\ui\pages\reports_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\reports_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\reports_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj: E:/pos--2/src/ui/pages/audit_log_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\audit_log_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\audit_log_page.cpp.obj -c E:\pos--2\src\ui\pages\audit_log_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\audit_log_page.cpp > CMakeFiles\invento.dir\src\ui\pages\audit_log_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\audit_log_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\audit_log_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj: E:/pos--2/src/ui/pages/settings_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\settings_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\settings_page.cpp.obj -c E:\pos--2\src\ui\pages\settings_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\settings_page.cpp > CMakeFiles\invento.dir\src\ui\pages\settings_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\settings_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\settings_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj: E:/pos--2/src/ui/pages/backup_restore_page.cpp
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\backup_restore_page.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\backup_restore_page.cpp.obj -c E:\pos--2\src\ui\pages\backup_restore_page.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\backup_restore_page.cpp > CMakeFiles\invento.dir\src\ui\pages\backup_restore_page.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\backup_restore_page.cpp -o CMakeFiles\invento.dir\src\ui\pages\backup_restore_page.cpp.s
+
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/invento.dir/flags.make
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj: E:/pos--2/src/ui/pages/sales_trend_graph.cpp
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj -MF CMakeFiles\invento.dir\src\ui\pages\sales_trend_graph.cpp.obj.d -o CMakeFiles\invento.dir\src\ui\pages\sales_trend_graph.cpp.obj -c E:\pos--2\src\ui\pages\sales_trend_graph.cpp
+
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\sales_trend_graph.cpp > CMakeFiles\invento.dir\src\ui\pages\sales_trend_graph.cpp.i
+
+CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\sales_trend_graph.cpp -o CMakeFiles\invento.dir\src\ui\pages\sales_trend_graph.cpp.s
+
 CMakeFiles/invento.dir/src/ui/app_icon.rc.obj: CMakeFiles/invento.dir/flags.make
 CMakeFiles/invento.dir/src/ui/app_icon.rc.obj: E:/pos--2/src/ui/app_icon.rc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building RC object CMakeFiles/invento.dir/src/ui/app_icon.rc.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building RC object CMakeFiles/invento.dir/src/ui/app_icon.rc.obj"
 	C:\Qt\Tools\mingw1310_64\bin\windres.exe -O coff $(RC_DEFINES) $(RC_INCLUDES) $(RC_FLAGS) E:\pos--2\src\ui\app_icon.rc CMakeFiles\invento.dir\src\ui\app_icon.rc.obj
 
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj: CMakeFiles/invento.dir/flags.make
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj: CMakeFiles/invento.dir/includes_CXX.rsp
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj: invento_autogen/YPKJ5OE7LN/qrc_resources.cpp
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj: CMakeFiles/invento.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj -MF CMakeFiles\invento.dir\invento_autogen\YPKJ5OE7LN\qrc_resources.cpp.obj.d -o CMakeFiles\invento.dir\invento_autogen\YPKJ5OE7LN\qrc_resources.cpp.obj -c E:\pos--2\build-ui\invento_autogen\YPKJ5OE7LN\qrc_resources.cpp
 
 CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.i: cmake_force
@@ -147,6 +356,19 @@ invento_OBJECTS = \
 "CMakeFiles/invento.dir/invento_autogen/mocs_compilation.cpp.obj" \
 "CMakeFiles/invento.dir/src/main.cpp.obj" \
 "CMakeFiles/invento.dir/src/ui/main_window.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj" \
+"CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj" \
 "CMakeFiles/invento.dir/src/ui/app_icon.rc.obj" \
 "CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj"
 
@@ -156,6 +378,19 @@ invento_EXTERNAL_OBJECTS =
 invento.exe: CMakeFiles/invento.dir/invento_autogen/mocs_compilation.cpp.obj
 invento.exe: CMakeFiles/invento.dir/src/main.cpp.obj
 invento.exe: CMakeFiles/invento.dir/src/ui/main_window.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj
+invento.exe: CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj
 invento.exe: CMakeFiles/invento.dir/src/ui/app_icon.rc.obj
 invento.exe: CMakeFiles/invento.dir/invento_autogen/YPKJ5OE7LN/qrc_resources.cpp.obj
 invento.exe: CMakeFiles/invento.dir/build.make
@@ -170,7 +405,7 @@ invento.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6EntryPoint.a
 invento.exe: CMakeFiles/invento.dir/linkLibs.rsp
 invento.exe: CMakeFiles/invento.dir/objects1.rsp
 invento.exe: CMakeFiles/invento.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable invento.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Linking CXX executable invento.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\invento.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

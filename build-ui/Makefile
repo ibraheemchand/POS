@@ -1463,6 +1463,357 @@ src/ui/main_window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.s
 .PHONY : src/ui/main_window.cpp.s
 
+src/ui/pages/audit_log_page.obj: src/ui/pages/audit_log_page.cpp.obj
+.PHONY : src/ui/pages/audit_log_page.obj
+
+# target to build an object file
+src/ui/pages/audit_log_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj
+.PHONY : src/ui/pages/audit_log_page.cpp.obj
+
+src/ui/pages/audit_log_page.i: src/ui/pages/audit_log_page.cpp.i
+.PHONY : src/ui/pages/audit_log_page.i
+
+# target to preprocess a source file
+src/ui/pages/audit_log_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.i
+.PHONY : src/ui/pages/audit_log_page.cpp.i
+
+src/ui/pages/audit_log_page.s: src/ui/pages/audit_log_page.cpp.s
+.PHONY : src/ui/pages/audit_log_page.s
+
+# target to generate assembly for a file
+src/ui/pages/audit_log_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/audit_log_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.s
+.PHONY : src/ui/pages/audit_log_page.cpp.s
+
+src/ui/pages/backup_restore_page.obj: src/ui/pages/backup_restore_page.cpp.obj
+.PHONY : src/ui/pages/backup_restore_page.obj
+
+# target to build an object file
+src/ui/pages/backup_restore_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj
+.PHONY : src/ui/pages/backup_restore_page.cpp.obj
+
+src/ui/pages/backup_restore_page.i: src/ui/pages/backup_restore_page.cpp.i
+.PHONY : src/ui/pages/backup_restore_page.i
+
+# target to preprocess a source file
+src/ui/pages/backup_restore_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.i
+.PHONY : src/ui/pages/backup_restore_page.cpp.i
+
+src/ui/pages/backup_restore_page.s: src/ui/pages/backup_restore_page.cpp.s
+.PHONY : src/ui/pages/backup_restore_page.s
+
+# target to generate assembly for a file
+src/ui/pages/backup_restore_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/backup_restore_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.s
+.PHONY : src/ui/pages/backup_restore_page.cpp.s
+
+src/ui/pages/cash_management_page.obj: src/ui/pages/cash_management_page.cpp.obj
+.PHONY : src/ui/pages/cash_management_page.obj
+
+# target to build an object file
+src/ui/pages/cash_management_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj
+.PHONY : src/ui/pages/cash_management_page.cpp.obj
+
+src/ui/pages/cash_management_page.i: src/ui/pages/cash_management_page.cpp.i
+.PHONY : src/ui/pages/cash_management_page.i
+
+# target to preprocess a source file
+src/ui/pages/cash_management_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.i
+.PHONY : src/ui/pages/cash_management_page.cpp.i
+
+src/ui/pages/cash_management_page.s: src/ui/pages/cash_management_page.cpp.s
+.PHONY : src/ui/pages/cash_management_page.s
+
+# target to generate assembly for a file
+src/ui/pages/cash_management_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cash_management_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.s
+.PHONY : src/ui/pages/cash_management_page.cpp.s
+
+src/ui/pages/cheques_page.obj: src/ui/pages/cheques_page.cpp.obj
+.PHONY : src/ui/pages/cheques_page.obj
+
+# target to build an object file
+src/ui/pages/cheques_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj
+.PHONY : src/ui/pages/cheques_page.cpp.obj
+
+src/ui/pages/cheques_page.i: src/ui/pages/cheques_page.cpp.i
+.PHONY : src/ui/pages/cheques_page.i
+
+# target to preprocess a source file
+src/ui/pages/cheques_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.i
+.PHONY : src/ui/pages/cheques_page.cpp.i
+
+src/ui/pages/cheques_page.s: src/ui/pages/cheques_page.cpp.s
+.PHONY : src/ui/pages/cheques_page.s
+
+# target to generate assembly for a file
+src/ui/pages/cheques_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/cheques_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.s
+.PHONY : src/ui/pages/cheques_page.cpp.s
+
+src/ui/pages/customers_page.obj: src/ui/pages/customers_page.cpp.obj
+.PHONY : src/ui/pages/customers_page.obj
+
+# target to build an object file
+src/ui/pages/customers_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj
+.PHONY : src/ui/pages/customers_page.cpp.obj
+
+src/ui/pages/customers_page.i: src/ui/pages/customers_page.cpp.i
+.PHONY : src/ui/pages/customers_page.i
+
+# target to preprocess a source file
+src/ui/pages/customers_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.i
+.PHONY : src/ui/pages/customers_page.cpp.i
+
+src/ui/pages/customers_page.s: src/ui/pages/customers_page.cpp.s
+.PHONY : src/ui/pages/customers_page.s
+
+# target to generate assembly for a file
+src/ui/pages/customers_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/customers_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.s
+.PHONY : src/ui/pages/customers_page.cpp.s
+
+src/ui/pages/dashboard_page.obj: src/ui/pages/dashboard_page.cpp.obj
+.PHONY : src/ui/pages/dashboard_page.obj
+
+# target to build an object file
+src/ui/pages/dashboard_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj
+.PHONY : src/ui/pages/dashboard_page.cpp.obj
+
+src/ui/pages/dashboard_page.i: src/ui/pages/dashboard_page.cpp.i
+.PHONY : src/ui/pages/dashboard_page.i
+
+# target to preprocess a source file
+src/ui/pages/dashboard_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.i
+.PHONY : src/ui/pages/dashboard_page.cpp.i
+
+src/ui/pages/dashboard_page.s: src/ui/pages/dashboard_page.cpp.s
+.PHONY : src/ui/pages/dashboard_page.s
+
+# target to generate assembly for a file
+src/ui/pages/dashboard_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/dashboard_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.s
+.PHONY : src/ui/pages/dashboard_page.cpp.s
+
+src/ui/pages/inventory_page.obj: src/ui/pages/inventory_page.cpp.obj
+.PHONY : src/ui/pages/inventory_page.obj
+
+# target to build an object file
+src/ui/pages/inventory_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj
+.PHONY : src/ui/pages/inventory_page.cpp.obj
+
+src/ui/pages/inventory_page.i: src/ui/pages/inventory_page.cpp.i
+.PHONY : src/ui/pages/inventory_page.i
+
+# target to preprocess a source file
+src/ui/pages/inventory_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.i
+.PHONY : src/ui/pages/inventory_page.cpp.i
+
+src/ui/pages/inventory_page.s: src/ui/pages/inventory_page.cpp.s
+.PHONY : src/ui/pages/inventory_page.s
+
+# target to generate assembly for a file
+src/ui/pages/inventory_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/inventory_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.s
+.PHONY : src/ui/pages/inventory_page.cpp.s
+
+src/ui/pages/purchases_page.obj: src/ui/pages/purchases_page.cpp.obj
+.PHONY : src/ui/pages/purchases_page.obj
+
+# target to build an object file
+src/ui/pages/purchases_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj
+.PHONY : src/ui/pages/purchases_page.cpp.obj
+
+src/ui/pages/purchases_page.i: src/ui/pages/purchases_page.cpp.i
+.PHONY : src/ui/pages/purchases_page.i
+
+# target to preprocess a source file
+src/ui/pages/purchases_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.i
+.PHONY : src/ui/pages/purchases_page.cpp.i
+
+src/ui/pages/purchases_page.s: src/ui/pages/purchases_page.cpp.s
+.PHONY : src/ui/pages/purchases_page.s
+
+# target to generate assembly for a file
+src/ui/pages/purchases_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/purchases_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.s
+.PHONY : src/ui/pages/purchases_page.cpp.s
+
+src/ui/pages/reports_page.obj: src/ui/pages/reports_page.cpp.obj
+.PHONY : src/ui/pages/reports_page.obj
+
+# target to build an object file
+src/ui/pages/reports_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj
+.PHONY : src/ui/pages/reports_page.cpp.obj
+
+src/ui/pages/reports_page.i: src/ui/pages/reports_page.cpp.i
+.PHONY : src/ui/pages/reports_page.i
+
+# target to preprocess a source file
+src/ui/pages/reports_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.i
+.PHONY : src/ui/pages/reports_page.cpp.i
+
+src/ui/pages/reports_page.s: src/ui/pages/reports_page.cpp.s
+.PHONY : src/ui/pages/reports_page.s
+
+# target to generate assembly for a file
+src/ui/pages/reports_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/reports_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.s
+.PHONY : src/ui/pages/reports_page.cpp.s
+
+src/ui/pages/sales_pos_page.obj: src/ui/pages/sales_pos_page.cpp.obj
+.PHONY : src/ui/pages/sales_pos_page.obj
+
+# target to build an object file
+src/ui/pages/sales_pos_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj
+.PHONY : src/ui/pages/sales_pos_page.cpp.obj
+
+src/ui/pages/sales_pos_page.i: src/ui/pages/sales_pos_page.cpp.i
+.PHONY : src/ui/pages/sales_pos_page.i
+
+# target to preprocess a source file
+src/ui/pages/sales_pos_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.i
+.PHONY : src/ui/pages/sales_pos_page.cpp.i
+
+src/ui/pages/sales_pos_page.s: src/ui/pages/sales_pos_page.cpp.s
+.PHONY : src/ui/pages/sales_pos_page.s
+
+# target to generate assembly for a file
+src/ui/pages/sales_pos_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_pos_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.s
+.PHONY : src/ui/pages/sales_pos_page.cpp.s
+
+src/ui/pages/sales_trend_graph.obj: src/ui/pages/sales_trend_graph.cpp.obj
+.PHONY : src/ui/pages/sales_trend_graph.obj
+
+# target to build an object file
+src/ui/pages/sales_trend_graph.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj
+.PHONY : src/ui/pages/sales_trend_graph.cpp.obj
+
+src/ui/pages/sales_trend_graph.i: src/ui/pages/sales_trend_graph.cpp.i
+.PHONY : src/ui/pages/sales_trend_graph.i
+
+# target to preprocess a source file
+src/ui/pages/sales_trend_graph.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.i
+.PHONY : src/ui/pages/sales_trend_graph.cpp.i
+
+src/ui/pages/sales_trend_graph.s: src/ui/pages/sales_trend_graph.cpp.s
+.PHONY : src/ui/pages/sales_trend_graph.s
+
+# target to generate assembly for a file
+src/ui/pages/sales_trend_graph.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/sales_trend_graph.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.s
+.PHONY : src/ui/pages/sales_trend_graph.cpp.s
+
+src/ui/pages/settings_page.obj: src/ui/pages/settings_page.cpp.obj
+.PHONY : src/ui/pages/settings_page.obj
+
+# target to build an object file
+src/ui/pages/settings_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj
+.PHONY : src/ui/pages/settings_page.cpp.obj
+
+src/ui/pages/settings_page.i: src/ui/pages/settings_page.cpp.i
+.PHONY : src/ui/pages/settings_page.i
+
+# target to preprocess a source file
+src/ui/pages/settings_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.i
+.PHONY : src/ui/pages/settings_page.cpp.i
+
+src/ui/pages/settings_page.s: src/ui/pages/settings_page.cpp.s
+.PHONY : src/ui/pages/settings_page.s
+
+# target to generate assembly for a file
+src/ui/pages/settings_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/settings_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.s
+.PHONY : src/ui/pages/settings_page.cpp.s
+
+src/ui/pages/suppliers_page.obj: src/ui/pages/suppliers_page.cpp.obj
+.PHONY : src/ui/pages/suppliers_page.obj
+
+# target to build an object file
+src/ui/pages/suppliers_page.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj
+.PHONY : src/ui/pages/suppliers_page.cpp.obj
+
+src/ui/pages/suppliers_page.i: src/ui/pages/suppliers_page.cpp.i
+.PHONY : src/ui/pages/suppliers_page.i
+
+# target to preprocess a source file
+src/ui/pages/suppliers_page.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.i
+.PHONY : src/ui/pages/suppliers_page.cpp.i
+
+src/ui/pages/suppliers_page.s: src/ui/pages/suppliers_page.cpp.s
+.PHONY : src/ui/pages/suppliers_page.s
+
+# target to generate assembly for a file
+src/ui/pages/suppliers_page.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\invento.dir\build.make CMakeFiles/invento.dir/src/ui/pages/suppliers_page.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\pos_ui_smoke_tests.dir\build.make CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.s
+.PHONY : src/ui/pages/suppliers_page.cpp.s
+
 tests/pos_service_test.obj: tests/pos_service_test.cpp.obj
 .PHONY : tests/pos_service_test.obj
 
@@ -1684,6 +2035,45 @@ help:
 	@echo ... src/ui/main_window.obj
 	@echo ... src/ui/main_window.i
 	@echo ... src/ui/main_window.s
+	@echo ... src/ui/pages/audit_log_page.obj
+	@echo ... src/ui/pages/audit_log_page.i
+	@echo ... src/ui/pages/audit_log_page.s
+	@echo ... src/ui/pages/backup_restore_page.obj
+	@echo ... src/ui/pages/backup_restore_page.i
+	@echo ... src/ui/pages/backup_restore_page.s
+	@echo ... src/ui/pages/cash_management_page.obj
+	@echo ... src/ui/pages/cash_management_page.i
+	@echo ... src/ui/pages/cash_management_page.s
+	@echo ... src/ui/pages/cheques_page.obj
+	@echo ... src/ui/pages/cheques_page.i
+	@echo ... src/ui/pages/cheques_page.s
+	@echo ... src/ui/pages/customers_page.obj
+	@echo ... src/ui/pages/customers_page.i
+	@echo ... src/ui/pages/customers_page.s
+	@echo ... src/ui/pages/dashboard_page.obj
+	@echo ... src/ui/pages/dashboard_page.i
+	@echo ... src/ui/pages/dashboard_page.s
+	@echo ... src/ui/pages/inventory_page.obj
+	@echo ... src/ui/pages/inventory_page.i
+	@echo ... src/ui/pages/inventory_page.s
+	@echo ... src/ui/pages/purchases_page.obj
+	@echo ... src/ui/pages/purchases_page.i
+	@echo ... src/ui/pages/purchases_page.s
+	@echo ... src/ui/pages/reports_page.obj
+	@echo ... src/ui/pages/reports_page.i
+	@echo ... src/ui/pages/reports_page.s
+	@echo ... src/ui/pages/sales_pos_page.obj
+	@echo ... src/ui/pages/sales_pos_page.i
+	@echo ... src/ui/pages/sales_pos_page.s
+	@echo ... src/ui/pages/sales_trend_graph.obj
+	@echo ... src/ui/pages/sales_trend_graph.i
+	@echo ... src/ui/pages/sales_trend_graph.s
+	@echo ... src/ui/pages/settings_page.obj
+	@echo ... src/ui/pages/settings_page.i
+	@echo ... src/ui/pages/settings_page.s
+	@echo ... src/ui/pages/suppliers_page.obj
+	@echo ... src/ui/pages/suppliers_page.i
+	@echo ... src/ui/pages/suppliers_page.s
 	@echo ... tests/pos_service_test.obj
 	@echo ... tests/pos_service_test.i
 	@echo ... tests/pos_service_test.s

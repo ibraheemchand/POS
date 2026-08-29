@@ -113,11 +113,219 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.s"
 	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\main_window.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\main_window.cpp.s
 
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj: E:/pos--2/src/ui/pages/dashboard_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\dashboard_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\dashboard_page.cpp.obj -c E:\pos--2\src\ui\pages\dashboard_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\dashboard_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\dashboard_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\dashboard_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\dashboard_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj: E:/pos--2/src/ui/pages/inventory_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\inventory_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\inventory_page.cpp.obj -c E:\pos--2\src\ui\pages\inventory_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\inventory_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\inventory_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\inventory_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\inventory_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj: E:/pos--2/src/ui/pages/sales_pos_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_pos_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_pos_page.cpp.obj -c E:\pos--2\src\ui\pages\sales_pos_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\sales_pos_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_pos_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\sales_pos_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_pos_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj: E:/pos--2/src/ui/pages/purchases_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\purchases_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\purchases_page.cpp.obj -c E:\pos--2\src\ui\pages\purchases_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\purchases_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\purchases_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\purchases_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\purchases_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj: E:/pos--2/src/ui/pages/customers_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\customers_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\customers_page.cpp.obj -c E:\pos--2\src\ui\pages\customers_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\customers_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\customers_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\customers_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\customers_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj: E:/pos--2/src/ui/pages/suppliers_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\suppliers_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\suppliers_page.cpp.obj -c E:\pos--2\src\ui\pages\suppliers_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\suppliers_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\suppliers_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\suppliers_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\suppliers_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj: E:/pos--2/src/ui/pages/cash_management_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cash_management_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cash_management_page.cpp.obj -c E:\pos--2\src\ui\pages\cash_management_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\cash_management_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cash_management_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\cash_management_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cash_management_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj: E:/pos--2/src/ui/pages/cheques_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cheques_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cheques_page.cpp.obj -c E:\pos--2\src\ui\pages\cheques_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\cheques_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cheques_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\cheques_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\cheques_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj: E:/pos--2/src/ui/pages/reports_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\reports_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\reports_page.cpp.obj -c E:\pos--2\src\ui\pages\reports_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\reports_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\reports_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\reports_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\reports_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj: E:/pos--2/src/ui/pages/audit_log_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\audit_log_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\audit_log_page.cpp.obj -c E:\pos--2\src\ui\pages\audit_log_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\audit_log_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\audit_log_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\audit_log_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\audit_log_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj: E:/pos--2/src/ui/pages/settings_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\settings_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\settings_page.cpp.obj -c E:\pos--2\src\ui\pages\settings_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\settings_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\settings_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\settings_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\settings_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj: E:/pos--2/src/ui/pages/backup_restore_page.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\backup_restore_page.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\backup_restore_page.cpp.obj -c E:\pos--2\src\ui\pages\backup_restore_page.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\backup_restore_page.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\backup_restore_page.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\backup_restore_page.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\backup_restore_page.cpp.s
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/flags.make
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/includes_CXX.rsp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj: E:/pos--2/src/ui/pages/sales_trend_graph.cpp
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj: CMakeFiles/pos_ui_smoke_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj -MF CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_trend_graph.cpp.obj.d -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_trend_graph.cpp.obj -c E:\pos--2\src\ui\pages\sales_trend_graph.cpp
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.i"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\pos--2\src\ui\pages\sales_trend_graph.cpp > CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_trend_graph.cpp.i
+
+CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.s"
+	C:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\pos--2\src\ui\pages\sales_trend_graph.cpp -o CMakeFiles\pos_ui_smoke_tests.dir\src\ui\pages\sales_trend_graph.cpp.s
+
 # Object files for target pos_ui_smoke_tests
 pos_ui_smoke_tests_OBJECTS = \
 "CMakeFiles/pos_ui_smoke_tests.dir/pos_ui_smoke_tests_autogen/mocs_compilation.cpp.obj" \
 "CMakeFiles/pos_ui_smoke_tests.dir/tests/ui_smoke_test.cpp.obj" \
-"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj"
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj" \
+"CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj"
 
 # External object files for target pos_ui_smoke_tests
 pos_ui_smoke_tests_EXTERNAL_OBJECTS =
@@ -125,6 +333,19 @@ pos_ui_smoke_tests_EXTERNAL_OBJECTS =
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/pos_ui_smoke_tests_autogen/mocs_compilation.cpp.obj
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/tests/ui_smoke_test.cpp.obj
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/dashboard_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/inventory_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_pos_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/purchases_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/customers_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/suppliers_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cash_management_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/cheques_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/reports_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/audit_log_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/settings_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/backup_restore_page.cpp.obj
+pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/src/ui/pages/sales_trend_graph.cpp.obj
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/build.make
 pos_ui_smoke_tests.exe: libpos_core.a
 pos_ui_smoke_tests.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6Sql.a
@@ -137,7 +358,7 @@ pos_ui_smoke_tests.exe: C:/Qt/6.11.1/mingw_64/lib/libQt6Core.a
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/linkLibs.rsp
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/objects1.rsp
 pos_ui_smoke_tests.exe: CMakeFiles/pos_ui_smoke_tests.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable pos_ui_smoke_tests.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\pos--2\build-ui\CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Linking CXX executable pos_ui_smoke_tests.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\pos_ui_smoke_tests.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -413,6 +413,90 @@
 			"MU",
 			"YPKJ5OE7LN/moc_main_window.cpp",
 			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/audit_log_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_audit_log_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/backup_restore_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_backup_restore_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/cash_management_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_cash_management_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/cheques_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_cheques_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/customers_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_customers_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/dashboard_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_dashboard_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/inventory_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_inventory_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/page_helper.h",
+			"MU",
+			"4PIRG7OLBM/moc_page_helper.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/purchases_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_purchases_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/reports_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_reports_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/sales_pos_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_sales_pos_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/sales_trend_graph.h",
+			"MU",
+			"4PIRG7OLBM/moc_sales_trend_graph.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/settings_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_settings_page.cpp",
+			null
+		],
+		[
+			"E:/pos--2/src/ui/pages/suppliers_page.h",
+			"MU",
+			"4PIRG7OLBM/moc_suppliers_page.cpp",
+			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -498,7 +582,20 @@
 	"SOURCES" : 
 	[
 		[ "E:/pos--2/src/main.cpp", "MU", null ],
-		[ "E:/pos--2/src/ui/main_window.cpp", "MU", null ]
+		[ "E:/pos--2/src/ui/main_window.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/audit_log_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/backup_restore_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/cash_management_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/cheques_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/customers_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/dashboard_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/inventory_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/purchases_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/reports_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/sales_pos_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/sales_trend_graph.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/settings_page.cpp", "MU", null ],
+		[ "E:/pos--2/src/ui/pages/suppliers_page.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],

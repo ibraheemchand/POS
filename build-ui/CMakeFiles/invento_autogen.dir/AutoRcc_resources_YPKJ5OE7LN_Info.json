@@ -10,7 +10,21 @@
 	"INPUTS" : 
 	[
 		"E:/pos--2/src/ui/assets/app_icon.ico",
-		"E:/pos--2/src/ui/assets/logo.png"
+		"E:/pos--2/src/ui/assets/logo.png",
+		"E:/pos--2/src/ui/assets/dashboard.svg",
+		"E:/pos--2/src/ui/assets/archive.svg",
+		"E:/pos--2/src/ui/assets/cheques.svg",
+		"E:/pos--2/src/ui/assets/backup.svg",
+		"E:/pos--2/src/ui/assets/settings.svg",
+		"E:/pos--2/src/ui/assets/edit.svg",
+		"E:/pos--2/src/ui/assets/sales.svg",
+		"E:/pos--2/src/ui/assets/suppliers.svg",
+		"E:/pos--2/src/ui/assets/purchases.svg",
+		"E:/pos--2/src/ui/assets/audit.svg",
+		"E:/pos--2/src/ui/assets/reports.svg",
+		"E:/pos--2/src/ui/assets/customers.svg",
+		"E:/pos--2/src/ui/assets/cash.svg",
+		"E:/pos--2/src/ui/assets/inventory.svg"
 	],
 	"LOCK_FILE" : "E:/pos--2/build-ui/CMakeFiles/invento_autogen.dir/AutoRcc_resources_YPKJ5OE7LN_Lock.lock",
 	"MULTI_CONFIG" : false,

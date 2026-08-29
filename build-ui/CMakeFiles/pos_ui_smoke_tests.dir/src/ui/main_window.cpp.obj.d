@@ -575,4 +575,18 @@ CMakeFiles/pos_ui_smoke_tests.dir/src/ui/main_window.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
  C:/Qt/6.11.1/mingw_64/include/QtGui/QShortcut \
  C:/Qt/6.11.1/mingw_64/include/QtGui/qshortcut.h \
- C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence
+ C:/Qt/6.11.1/mingw_64/include/QtGui/QKeySequence \
+ E:/pos--2/src/ui/pages/dashboard_page.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
+ E:/pos--2/src/ui/pages/inventory_page.h \
+ E:/pos--2/src/ui/pages/sales_pos_page.h \
+ E:/pos--2/src/ui/pages/purchases_page.h \
+ E:/pos--2/src/ui/pages/customers_page.h \
+ E:/pos--2/src/ui/pages/suppliers_page.h \
+ E:/pos--2/src/ui/pages/cash_management_page.h \
+ E:/pos--2/src/ui/pages/cheques_page.h \
+ E:/pos--2/src/ui/pages/reports_page.h \
+ E:/pos--2/src/ui/pages/audit_log_page.h \
+ E:/pos--2/src/ui/pages/settings_page.h \
+ E:/pos--2/src/ui/pages/backup_restore_page.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStyle

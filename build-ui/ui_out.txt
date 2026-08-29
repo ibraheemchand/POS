@@ -1,0 +1,56 @@
+********* Start testing of UiSmokeTest *********
+Config: Using QtTest library 6.11.1, Qt 6.11.1 (x86_64-little_endian-llp64 shared (dynamic) release build; by GCC 13.1.0), windows 11
+PASS   : UiSmokeTest::initTestCase()
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() QPixmap::scaled: Pixmap is a null pixmap
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/dashboard.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/sales.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/inventory.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/purchases.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/customers.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/suppliers.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/cash.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/cheques.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/reports.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/audit.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/settings.svg', because: No such file or directory
+QWARN  : UiSmokeTest::mainWindowConstructsAllOperationalPages() qt.svg: Cannot open file ':/icons/backup.svg', because: No such file or directory
+PASS   : UiSmokeTest::mainWindowConstructsAllOperationalPages()
+QWARN  : UiSmokeTest::inspectDashboardPage() QPixmap::scaled: Pixmap is a null pixmap
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/dashboard.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/sales.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/inventory.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/purchases.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/customers.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/suppliers.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/cash.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/cheques.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/reports.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/audit.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/settings.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/backup.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/edit.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/archive.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/edit.svg', because: No such file or directory
+QWARN  : UiSmokeTest::inspectDashboardPage() qt.svg: Cannot open file ':/icons/archive.svg', because: No such file or directory
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 0 Value: "PKR 0.00" Geometry: QRect(13,30 291x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 1 Value: "PKR 0.00" Geometry: QRect(13,30 292x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 2 Value: "PKR 3600.00" Geometry: QRect(13,30 291x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 3 Value: "1" Geometry: QRect(13,30 291x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 4 Value: "PKR 0.00" Geometry: QRect(13,30 292x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Dashboard Metric 5 Value: "1" Geometry: QRect(13,30 291x24)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 0 : "New Sale (F2)" Geometry: QRect(15,93 85x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 1 : "New Purchase (F4)" Geometry: QRect(106,93 110x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 2 : "Add Product" Geometry: QRect(222,93 86x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 3 : "Add Customer" Geometry: QRect(314,93 106x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 4 : "Add Supplier" Geometry: QRect(426,93 98x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 5 : "Receive Payment (F9)" Geometry: QRect(530,93 125x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 6 : "Cash In/Out" Geometry: QRect(15,137 85x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 7 : "Stock List (F3)" Geometry: QRect(106,137 110x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 8 : "Sales Register" Geometry: QRect(222,137 86x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 9 : "Purchase Register" Geometry: QRect(314,137 106x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 10 : "Receivables Due" Geometry: QRect(426,137 98x38)
+QDEBUG : UiSmokeTest::inspectDashboardPage() Quick button 11 : "View Reports" Geometry: QRect(530,137 125x38)
+PASS   : UiSmokeTest::inspectDashboardPage()
+PASS   : UiSmokeTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 2997ms
+********* Finished testing of UiSmokeTest *********

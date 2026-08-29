@@ -771,12 +771,16 @@ CMakeFiles/pos_ui_smoke_tests.dir/tests/ui_smoke_test.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractbutton.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlabel.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/qframe.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qpicture.h \
+ C:/Qt/6.11.1/mingw_64/include/QtGui/qtextdocument.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidget \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlistwidget.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlistview.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractitemview.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractscrollarea.h \
- C:/Qt/6.11.1/mingw_64/include/QtWidgets/qframe.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstyleoption.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractspinbox.h \
@@ -790,10 +794,14 @@ CMakeFiles/pos_ui_smoke_tests.dir/tests/ui_smoke_test.cpp.obj: \
  E:/pos--2/src/core/database.h E:/pos--2/third_party/sqlite/sqlite3.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QStringList \
+ E:/pos--2/src/core/seed_service.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QtGlobal \
  E:/pos--2/src/ui/main_window.h \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmainwindow.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QVector \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QMultiHash \
+ E:/pos--2/src/ui/pages/dashboard_page.h \
+ C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
  E:/pos--2/build-ui/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qtmochelpers.h
