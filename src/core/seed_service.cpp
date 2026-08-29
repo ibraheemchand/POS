@@ -21,25 +21,53 @@ void SeedService::seedDemoData() {
         return query.stepRow() ? query.text(0) : QString();
     };
     auto rice = findProduct("DEMO-RICE");
-    if (rice.isEmpty()) rice = inventory.createProduct({"Demo Rice", "DEMO-RICE", "990000000001", {}, {}, "Demo seed product", "kg", 9000, 11000, 10000, 9500, 5, false, false, {}});
+    if (rice.isEmpty()) rice = inventory.createProduct({"Demo Basmati Rice", "DEMO-RICE", "990000000001", {}, {}, "Demo seed product", "kg", 9000, 11000, 10000, 9500, 5, false, false, {}});
     auto soap = findProduct("DEMO-SOAP");
-    if (soap.isEmpty()) soap = inventory.createProduct({"Demo Soap", "DEMO-SOAP", "990000000002", {}, {}, "Demo seed product", "piece", 5000, 7500, 7000, 6500, 3, false, false, {}});
+    if (soap.isEmpty()) soap = inventory.createProduct({"Demo Beauty Soap", "DEMO-SOAP", "990000000002", {}, {}, "Demo seed product", "piece", 5000, 7500, 7000, 6500, 15, true, true, {}});
+
     auto stock = db_->prepare("SELECT stock_quantity FROM products WHERE id=?");
     stock.bind(1, rice);
     if (stock.stepRow() && stock.integer(0) == 0) inventory.receiveStock({rice, 25, 9000, "kg", {}, {}, "Demo seed"});
+    
     auto soapStock = db_->prepare("SELECT stock_quantity FROM products WHERE id=?");
     soapStock.bind(1, soap);
-    if (soapStock.stepRow() && soapStock.integer(0) == 0) inventory.receiveStock({soap, 12, 5000, "piece", {}, {}, "Demo seed"});
+    if (soapStock.stepRow() && soapStock.integer(0) == 0) inventory.receiveStock({soap, 12, 5000, "piece", "DEMO-B01", QDate::currentDate().addDays(20), "Demo seed"});
 
     SupplierService suppliers(db_);
-    auto supplier = db_->prepare("SELECT id FROM suppliers WHERE name=? AND is_archived=0 LIMIT 1");
-    supplier.bind(1, "Demo Supplier");
-    if (!supplier.stepRow()) suppliers.create({{}, "Demo Supplier", "Support", "03000000000", "Demo address", 0, false});
+    auto supQuery = db_->prepare("SELECT id FROM suppliers WHERE name=? AND is_archived=0 LIMIT 1");
+    supQuery.bind(1, "Demo Wholesalers");
+    QString supplierId;
+    if (supQuery.stepRow()) {
+        supplierId = supQuery.text(0);
+    } else {
+        supplierId = suppliers.create({{}, "Demo Wholesalers", "Tariq Khan", "03001234567", "Circular Road, Lahore", 250000, false});
+    }
 
     CustomerService customers(db_);
-    auto customer = db_->prepare("SELECT id FROM customers WHERE name=? AND is_deleted=0 LIMIT 1");
-    customer.bind(1, "Demo Customer");
-    if (!customer.stepRow()) customers.create({{}, "Demo Customer", "03111111111", 100000, 30, false});
+    auto custQuery = db_->prepare("SELECT id FROM customers WHERE name=? AND is_deleted=0 LIMIT 1");
+    custQuery.bind(1, "Demo Customer");
+    QString customerId;
+    if (custQuery.stepRow()) {
+        customerId = custQuery.text(0);
+    } else {
+        customerId = customers.create({{}, "Demo Customer", "03111111111", 100000, 30, false});
+    }
+
+    // Seed shift session if none active
+    auto shiftQ = db_->prepare("SELECT id FROM shift_sessions WHERE status='open' LIMIT 1");
+    QString shiftId;
+    if (shiftQ.stepRow()) {
+        shiftId = shiftQ.text(0);
+    } else {
+        shiftId = uuid();
+        auto insertShift = db_->prepare("INSERT INTO shift_sessions(id,opened_at,opening_cash_paisa,status) VALUES(?,?,?,?)");
+        insertShift.bind(1, shiftId);
+        insertShift.bind(2, utcNow());
+        insertShift.bind(3, static_cast<qint64>(500000));
+        insertShift.bind(4, "open");
+        insertShift.execute();
+    }
+
     settings.setValue("seed.demo.version", "1");
 }
 

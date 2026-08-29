@@ -16,6 +16,8 @@ class PurchasesPage : public QWidget {
 public:
     explicit PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
     void reloadLists();
+public slots:
+    void load() { reloadLists(); }
 private:
     std::shared_ptr<pos::Database> database_;
     QComboBox* supplierCombo_{};

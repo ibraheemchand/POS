@@ -13,6 +13,7 @@ class DashboardPage : public QWidget {
     Q_OBJECT
 public:
     explicit DashboardPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
+public slots:
     void load();
 signals:
     void requestNavigation(const QString& pageName);

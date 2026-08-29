@@ -5,6 +5,7 @@
 #include "core/report_service.h"
 #include "core/inventory_service.h"
 #include "core/customer_service.h"
+#include "core/data_change_bus.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -16,8 +17,8 @@
 DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QWidget(parent), database_(std::move(database)) {
     auto* l = new QVBoxLayout(this);
-    l->setContentsMargins(0, 12, 0, 0);
-    l->setSpacing(14);
+    l->setContentsMargins(0, 4, 0, 0);
+    l->setSpacing(10);
 
     auto* heading = new QHBoxLayout;
     auto* title = new QLabel(this);
@@ -44,8 +45,8 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     metricValues_.resize(6);
     metricCaptions_.resize(6);
     auto* metrics = new QGridLayout;
-    metrics->setHorizontalSpacing(14);
-    metrics->setVerticalSpacing(14);
+    metrics->setHorizontalSpacing(10);
+    metrics->setVerticalSpacing(8);
 
     const QList<QString> accents = {"#2563EB", "#22C55E", "#F59E0B", "#EF4444", "#7C3AED", "#EA580C"};
     const QList<QString> labels = {"Today's sales", "Today's cash", "Receivables", "Low stock", "Today's purchases", "Expiring batches"};
@@ -53,20 +54,22 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     for (int i = 0; i < 6; ++i) {
         auto* card = new QFrame(this);
         card->setObjectName("metric");
-        card->setMinimumHeight(108);
+        card->setMinimumHeight(84);
         auto* cardLayout = new QVBoxLayout(card);
-        cardLayout->setContentsMargins(16, 15, 16, 15);
-        cardLayout->setSpacing(6);
+        cardLayout->setContentsMargins(12, 8, 12, 8);
+        cardLayout->setSpacing(2);
 
         auto* label = new QLabel(labels[i], card);
         label->setObjectName("metricLabel");
+        label->setStyleSheet("font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;");
 
-        auto* value = new QLabel("—", card);
+        auto* value = new QLabel(i == 3 || i == 5 ? "0" : "PKR 0.00", card);
         value->setObjectName("metricValue");
-        value->setStyleSheet("color:" + accents[i] + ";");
+        value->setStyleSheet("color:" + accents[i] + "; font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', 'Segoe UI', monospace;");
 
-        auto* caption = new QLabel("", card);
+        auto* caption = new QLabel("Updated live", card);
         caption->setObjectName("metricCaption");
+        caption->setStyleSheet("font-size: 10.5px;");
 
         cardLayout->addWidget(label);
         cardLayout->addWidget(value);
@@ -79,13 +82,14 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     l->addLayout(metrics);
 
     auto* middle = new QHBoxLayout;
-    middle->setSpacing(16);
+    middle->setSpacing(10);
 
     auto* quickPanel = new QFrame(this);
     quickPanel->setObjectName("panel");
+    quickPanel->setMinimumHeight(115);
     auto* ql = new QVBoxLayout(quickPanel);
-    ql->setContentsMargins(20, 18, 20, 18);
-    ql->setSpacing(12);
+    ql->setContentsMargins(14, 10, 14, 10);
+    ql->setSpacing(6);
 
     auto* qt = new QLabel("Quick actions", quickPanel);
     qt->setObjectName("sectionTitle");
@@ -95,34 +99,35 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     ql->addWidget(qhint);
 
     const QStringList actions = {
-        "New sale", "New purchase", "Add product", "Add customer", 
-        "Add supplier", "Receive payment", "Cash entry", "Current stock", 
-        "Sales register", "Purchase register", "Receivables due", "Reports"
+        "New Sale (F2)", "New Purchase (F4)", "Add Product", "Add Customer", "Add Supplier", "Receive Payment (F9)",
+        "Cash In/Out", "Stock List (F3)", "Sales Register", "Purchase Register", "Receivables Due", "View Reports"
     };
     const QStringList targets = {
-        "Sales POS", "Purchases", "Inventory", "Customers", 
-        "Suppliers", "Customers", "Cash & Shifts", "Inventory", 
-        "Reports", "Reports", "Customers", "Reports"
+        "Sales POS", "Purchases", "Inventory", "Customers", "Suppliers", "Customers",
+        "Cash & Shifts", "Inventory", "Reports", "Reports", "Customers", "Reports"
     };
 
     auto* grid = new QGridLayout;
-    grid->setSpacing(10);
+    grid->setHorizontalSpacing(6);
+    grid->setVerticalSpacing(6);
     for (int i = 0; i < actions.size(); ++i) {
         auto* b = new QPushButton(actions[i], quickPanel);
         b->setObjectName("quick");
+        b->setStyleSheet("padding: 5px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; min-height: 26px;");
         const auto target = targets[i];
         connect(b, &QPushButton::clicked, this, [this, target] {
             emit requestNavigation(target);
         });
-        grid->addWidget(b, i / 4, i % 4);
+        grid->addWidget(b, i / 6, i % 6);
     }
     ql->addLayout(grid);
     middle->addWidget(quickPanel, 3);
 
     auto* graphPanel = new QFrame(this);
     graphPanel->setObjectName("panel");
+    graphPanel->setMinimumHeight(115);
     auto* gl = new QVBoxLayout(graphPanel);
-    gl->setContentsMargins(12, 12, 12, 12);
+    gl->setContentsMargins(12, 8, 12, 8);
 
     chart_ = new SalesTrendGraph(graphPanel);
     gl->addWidget(chart_);
@@ -130,13 +135,14 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     l->addLayout(middle);
 
     auto* lower = new QHBoxLayout;
-    lower->setSpacing(16);
+    lower->setSpacing(10);
 
     auto* activity = new QFrame(this);
     activity->setObjectName("panel");
+    activity->setMinimumHeight(110);
     auto* al = new QVBoxLayout(activity);
-    al->setContentsMargins(20, 18, 20, 18);
-    al->setSpacing(10);
+    al->setContentsMargins(14, 10, 14, 10);
+    al->setSpacing(6);
     auto* at = new QLabel("Recent activity", activity);
     at->setObjectName("sectionTitle");
     al->addWidget(at);
@@ -149,9 +155,10 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
 
     auto* lowStockAlerts = new QFrame(this);
     lowStockAlerts->setObjectName("panel");
+    lowStockAlerts->setMinimumHeight(110);
     auto* nl = new QVBoxLayout(lowStockAlerts);
-    nl->setContentsMargins(20, 18, 20, 18);
-    nl->setSpacing(10);
+    nl->setContentsMargins(14, 10, 14, 10);
+    nl->setSpacing(6);
     auto* nt = new QLabel("Low Stock Alerts", lowStockAlerts);
     nt->setObjectName("sectionTitle");
     nl->addWidget(nt);
@@ -163,6 +170,17 @@ DashboardPage::DashboardPage(std::shared_ptr<pos::Database> database, QWidget* p
     lower->addWidget(lowStockAlerts, 2);
 
     l->addLayout(lower, 1);
+
+    // Live update connections
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::salesChanged, this, &DashboardPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::inventoryChanged, this, &DashboardPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::cashChanged, this, &DashboardPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::purchasesChanged, this, &DashboardPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::customersChanged, this, &DashboardPage::load);
+    connect(&pos::DataChangeBus::instance(), &pos::DataChangeBus::suppliersChanged, this, &DashboardPage::load);
+
+    // Initial load
+    load();
 
     // Set tab order
     setTabOrder(backup, quickPanel);
@@ -176,62 +194,98 @@ void DashboardPage::load() {
         pos::CustomerService customerService(database_);
 
         // 1. Today's sales
-        const auto salesVal = reportService.summary(today, today).sales;
-        metricValues_[0]->setText("PKR " + pos::formatPaisa(salesVal));
-        const auto count = reportService.salesCount(today);
-        metricCaptions_[0]->setText(QString("%1 completed invoices").arg(count));
+        try {
+            const auto salesVal = reportService.summary(today, today).sales;
+            metricValues_[0]->setText("PKR " + pos::formatPaisa(salesVal));
+            const auto count = reportService.salesCount(today);
+            metricCaptions_[0]->setText(QString("%1 completed invoices").arg(count));
+        } catch (...) {
+            metricValues_[0]->setText("PKR 0.00");
+            metricCaptions_[0]->setText("0 completed invoices");
+        }
 
         // 2. Today's cash
-        const auto cashVal = reportService.todayCashSales(today);
-        metricValues_[1]->setText("PKR " + pos::formatPaisa(cashVal));
-        metricCaptions_[1]->setText("Cash payments received");
+        try {
+            const auto cashVal = reportService.todayCashSales(today);
+            metricValues_[1]->setText("PKR " + pos::formatPaisa(cashVal));
+            metricCaptions_[1]->setText("Cash payments received");
+        } catch (...) {
+            metricValues_[1]->setText("PKR 0.00");
+            metricCaptions_[1]->setText("Cash payments received");
+        }
 
         // 3. Receivables
-        const auto recVal = customerService.totalReceivables();
-        metricValues_[2]->setText("PKR " + pos::formatPaisa(recVal));
-        metricCaptions_[2]->setText("Unpaid customer balances");
+        try {
+            const auto recVal = customerService.totalReceivables();
+            metricValues_[2]->setText("PKR " + pos::formatPaisa(recVal));
+            metricCaptions_[2]->setText("Unpaid customer balances");
+        } catch (...) {
+            metricValues_[2]->setText("PKR 0.00");
+            metricCaptions_[2]->setText("Unpaid customer balances");
+        }
 
         // 4. Low stock
-        const auto lowStockAlertsList = inventoryService.lowStock();
-        metricValues_[3]->setText(QString::number(lowStockAlertsList.size()));
-        metricCaptions_[3]->setText("Products below threshold");
+        try {
+            const auto lowStockAlertsList = inventoryService.lowStock();
+            metricValues_[3]->setText(QString::number(lowStockAlertsList.size()));
+            metricCaptions_[3]->setText("Products below threshold");
+        } catch (...) {
+            metricValues_[3]->setText("0");
+            metricCaptions_[3]->setText("Products below threshold");
+        }
 
         // 5. Today's purchases
-        const auto purVal = reportService.summary(today, today).purchases;
-        metricValues_[4]->setText("PKR " + pos::formatPaisa(purVal));
-        metricCaptions_[4]->setText("Received stock value");
+        try {
+            const auto purVal = reportService.summary(today, today).purchases;
+            metricValues_[4]->setText("PKR " + pos::formatPaisa(purVal));
+            metricCaptions_[4]->setText("Received stock value");
+        } catch (...) {
+            metricValues_[4]->setText("PKR 0.00");
+            metricCaptions_[4]->setText("Received stock value");
+        }
 
         // 6. Expiring batches
-        const auto expiringVal = reportService.expiringBatchesCount(today, today.addDays(30));
-        metricValues_[5]->setText(QString::number(expiringVal));
-        metricCaptions_[5]->setText("Batches expiring within 30 days");
+        try {
+            const auto expiringVal = reportService.expiringBatchesCount(today, today.addDays(30));
+            metricValues_[5]->setText(QString::number(expiringVal));
+            metricCaptions_[5]->setText("Batches expiring within 30 days");
+        } catch (...) {
+            metricValues_[5]->setText("0");
+            metricCaptions_[5]->setText("Batches expiring within 30 days");
+        }
 
         // 7. Trend chart
-        QVector<double> trendValues;
-        QStringList trendLabels;
-        const auto trend = reportService.salesTrend(today.addDays(-6), today);
-        for (const auto& pair : trend) {
-            trendValues.append(static_cast<double>(pair.second) / 100.0);
-            trendLabels.append(QDate::fromString(pair.first, Qt::ISODate).toString("dd MMM"));
-        }
-        chart_->setData(trendValues, trendLabels);
+        try {
+            QVector<double> trendValues;
+            QStringList trendLabels;
+            const auto trend = reportService.salesTrend(today.addDays(-6), today);
+            for (const auto& pair : trend) {
+                trendValues.append(static_cast<double>(pair.second) / 100.0);
+                trendLabels.append(QDate::fromString(pair.first, Qt::ISODate).toString("dd MMM"));
+            }
+            chart_->setData(trendValues, trendLabels);
+        } catch (...) {}
 
         // 8. Recent Activity
-        recent_->clear();
-        const auto sales = reportService.recentSales(4);
-        for (const auto& item : sales) {
-            recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
-        }
-        const auto purchases = reportService.recentPurchases(4);
-        for (const auto& item : purchases) {
-            recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
-        }
+        try {
+            recent_->clear();
+            const auto sales = reportService.recentSales(4);
+            for (const auto& item : sales) {
+                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+            }
+            const auto purchases = reportService.recentPurchases(4);
+            for (const auto& item : purchases) {
+                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+            }
+        } catch (...) {}
 
         // 9. Low Stock list
-        lowStockList_->clear();
-        const auto lowStockItems = inventoryService.listLowStock(10);
-        for (const auto& item : lowStockItems) {
-            lowStockList_->addItem(QString("%1 — %2 / %3 %4").arg(item.name).arg(item.quantity).arg(item.minimumStock).arg(item.baseUnit));
-        }
+        try {
+            lowStockList_->clear();
+            const auto lowStockItems = inventoryService.listLowStock(10);
+            for (const auto& item : lowStockItems) {
+                lowStockList_->addItem(QString("%1 — %2 / %3 %4").arg(item.name).arg(item.quantity).arg(item.minimumStock).arg(item.baseUnit));
+            }
+        } catch (...) {}
     } catch (...) {}
 }

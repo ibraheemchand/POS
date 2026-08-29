@@ -16,6 +16,7 @@ class SalesPosPage : public QWidget {
 public:
     explicit SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
     ~SalesPosPage() override;
+public slots:
     void load();
 signals:
     void requestNavigation(const QString& pageName);

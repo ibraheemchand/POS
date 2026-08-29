@@ -15,9 +15,10 @@ class MainWindow final : public QMainWindow {
 public:
     explicit MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent=nullptr);
     ~MainWindow() override;
-private:
+public slots:
     void goToPage(const QString& pageName);
     void switchTheme();
+private:
     std::shared_ptr<pos::Database> database_;
     QStackedWidget* pages_{};
     QListWidget* navigation_{};

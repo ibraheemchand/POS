@@ -12,6 +12,7 @@ class AuditLogPage : public QWidget {
     Q_OBJECT
 public:
     explicit AuditLogPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
+public slots:
     void load();
 private:
     std::shared_ptr<pos::Database> database_;

@@ -128,14 +128,14 @@ QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #ffffff; borde
 QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #88726a; }
 #metric, #inventoryMetric { min-width: 190px; }
 #metricLabel { color: #55433b; font-weight: 700; }
-#metricValue { font-family: "JetBrains Mono", monospace; font-size: 25px; font-weight: 800; }
+#metricValue { font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 800; }
 #metricCaption { color: #88726a; font-size: 11px; }
 #pageTitle { font-size: 27px; font-weight: 800; color: #1a1c1c; }
 #sectionTitle { font-size: 16px; font-weight: 800; color: #1a1c1c; }
 #footerCard { background: #eeeeee; border: 1px solid #dbc1b7; border-radius: 12px; margin: 0 12px 6px; }
 #footerStore { color: #1a1c1c; font-weight: 750; font-size: 12px; }
 #footerStatus { color: #99461f; font-size: 11px; font-weight: 600; }
-#quick { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 12px; padding: 12px 14px; font-weight: 700; }
+#quick { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 8px; padding: 5px 6px; font-weight: 700; font-size: 11px; }
 #quick:hover { border-color: #99461f; color: #99461f; background: #ffdbcd; }
 #quick:pressed { background: #ffb597; }
 #recentList { background: transparent; border: 0; }
@@ -169,9 +169,9 @@ QTableWidget { background: #1E2025; alternate-background-color: #1A1B21; border:
 QHeaderView::section { background: #0C0E13; color: #C6C6CC; border: 0; border-bottom: 1px solid #45464C; padding: 11px 10px; font-size: 11px; font-weight: 800; } QHeaderView::section:hover { color: #E9C349; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; } QScrollBar::handle:vertical { background: #33353A; border-radius: 5px; min-height: 28px; } QScrollBar::handle:vertical:hover { background: #45464C; }
 QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QScrollBar::handle:horizontal { background: #33353A; border-radius: 5px; min-width: 28px; } QScrollBar::handle:horizontal:hover { background: #45464C; }
-QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; border: 1px solid #45464C; border-radius: 14px; } QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #909096; } #metric, #inventoryMetric { min-width: 190px; } #metricLabel { font-weight: 700; color: #C6C6CC; } #metricValue { font-family: "JetBrains Mono", monospace; font-size: 25px; font-weight: 800; } #metricCaption { font-size: 11px; color: #C6C6CC; } #pageTitle { font-size: 27px; font-weight: 800; color: #E2E2E9; } #sectionTitle { font-size: 16px; font-weight: 800; color: #E2E2E9; }
+QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; border: 1px solid #45464C; border-radius: 14px; } QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #909096; } #metric, #inventoryMetric { min-width: 190px; } #metricLabel { font-weight: 700; color: #C6C6CC; } #metricValue { font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 800; } #metricCaption { font-size: 11px; color: #C6C6CC; } #pageTitle { font-size: 27px; font-weight: 800; color: #E2E2E9; } #sectionTitle { font-size: 16px; font-weight: 800; color: #E2E2E9; }
 #footerCard { background: #1A1B21; border: 1px solid #45464C; border-radius: 12px; margin: 0 12px 6px; } #footerStore { color: #E2E2E9; font-weight: 750; font-size: 12px; } #footerStatus { color: #78D6A7; font-size: 11px; font-weight: 600; }
-#quick { background: #1E2025; border: 1px solid #45464C; border-radius: 12px; padding: 12px 14px; font-weight: 700; } #quick:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; } #quick:pressed { background: #33353A; }
+#quick { background: #1E2025; border: 1px solid #45464C; border-radius: 8px; padding: 5px 6px; font-weight: 700; font-size: 11px; } #quick:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; } #quick:pressed { background: #33353A; }
 #recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #C6C6CC; border-bottom: 1px solid #33353A; }
 #pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
@@ -446,6 +446,14 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     connect(navigation, &QListWidget::currentRowChanged, this, updateShortcutBar);
     updateShortcutBar(navigation->currentRow());
+
+    auto* initialWidget = pages_->currentWidget();
+    if (auto* scroller = qobject_cast<QScrollArea*>(initialWidget)) {
+        initialWidget = scroller->widget();
+    }
+    if (initialWidget) {
+        QMetaObject::invokeMethod(initialWidget, "load");
+    }
 
     auto* f2 = new QShortcut(QKeySequence(Qt::Key_F2), this); 
     connect(f2, &QShortcut::activated, this, [this]{ goToPage("Sales POS"); });
