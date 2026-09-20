@@ -91,7 +91,7 @@ QListWidget { background: transparent; border: 0; color: #55433b; outline: 0; pa
 QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; }
 QListWidget::item:hover { background: #e8e8e8; color: #99461f; }
 QListWidget::item:selected { background: #ffdbcd; color: #360f00; font-weight: 700; }
-QListWidget::item:disabled { background: transparent; color: #88726a; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
+QListWidget::item:disabled { background: transparent; color: #88726a; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 12px; margin: 0; border: 0; }
 QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #ffdbcd; selection-color: #360f00; }
 QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #88726a; }
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #99461f; padding: 8px 11px; }
@@ -138,6 +138,11 @@ QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-c
 #quick { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 8px; padding: 5px 6px; font-weight: 700; font-size: 11px; }
 #quick:hover { border-color: #99461f; color: #99461f; background: #ffdbcd; }
 #quick:pressed { background: #ffb597; }
+#quickAccessCaption { color: #88726a; padding: 12px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
+#quickGrid { background: transparent; border: 0; padding: 0 14px 4px; }
+#sideQuick { background: transparent; border: 1px solid #dbc1b7; border-radius: 8px; padding: 5px 8px; font-weight: 600; font-size: 10.5px; color: #55433b; text-align: left; min-height: 14px; }
+#sideQuick:hover { border-color: #99461f; color: #99461f; background: #ffdbcd; }
+#sideQuick:pressed { background: #ffb597; }
 #recentList { background: transparent; border: 0; }
 #recentList::item { border-radius: 8px; padding: 8px 10px; color: #55433b; border-bottom: 1px solid #eeeeee; }
 #pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
@@ -157,7 +162,7 @@ QMainWindow, #content { background: #111318; } #sidebar { background: #1A1B21; m
 #brand { color: #E9C349; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; } #subtitle { color: #C6C6CC; padding: 0 22px 12px; font-size: 11px; font-weight: 600; } #navCaption { color: #909096; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
 #workspaceTitle { font-size: 21px; font-weight: 800; color: #E2E2E9; } #workspaceHint, #muted, #metricLabel, #metricCaption { color: #C6C6CC; } #statusChip { background: #123A30; color: #78D6A7; border: 1px solid #205B49; border-radius: 12px; padding: 5px 11px; font-weight: 700; } #shortcutBar { background: #1A1B21; color: #C6C6CC; border: 1px solid #45464C; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 600; }
 QListWidget { background: transparent; border: 0; color: #C6C6CC; outline: 0; padding: 2px 12px 12px; } QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; } QListWidget::item:hover { background: #1E2025; color: #E2E2E9; } QListWidget::item:selected { background: #33353A; color: #E9C349; font-weight: 700; }
-QListWidget::item:disabled { background: transparent; color: #909096; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 14px 12px 3px; margin: 0; border: 0; }
+QListWidget::item:disabled { background: transparent; color: #909096; font-weight: 800; font-size: 10px; letter-spacing: 1px; padding: 12px; margin: 0; border: 0; }
 QLineEdit, QComboBox, QSpinBox, QDateEdit { background: #1E2025; border: 1px solid #45464C; border-radius: 10px; padding: 9px 12px; min-height: 18px; selection-background-color: #E9C349; selection-color: #241a00; } QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDateEdit:hover { border-color: #909096; } QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus { border: 2px solid #E9C349; padding: 8px 11px; } QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDateEdit:disabled { background: #1A1B21; color: #909096; }
 QComboBox::drop-down, QDateEdit::drop-down, QSpinBox::up-button, QSpinBox::down-button { border: 0; width: 26px; }
 QComboBox QAbstractItemView { background: #1E2025; color: #E2E2E9; border: 1px solid #45464C; border-radius: 8px; padding: 4px; selection-background-color: #E9C349; selection-color: #241a00; }
@@ -172,6 +177,11 @@ QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QS
 QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; border: 1px solid #45464C; border-radius: 14px; } QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-color: #909096; } #metric, #inventoryMetric { min-width: 190px; } #metricLabel { font-weight: 700; color: #C6C6CC; } #metricValue { font-family: "JetBrains Mono", monospace; font-size: 18px; font-weight: 800; } #metricCaption { font-size: 11px; color: #C6C6CC; } #pageTitle { font-size: 27px; font-weight: 800; color: #E2E2E9; } #sectionTitle { font-size: 16px; font-weight: 800; color: #E2E2E9; }
 #footerCard { background: #1A1B21; border: 1px solid #45464C; border-radius: 12px; margin: 0 12px 6px; } #footerStore { color: #E2E2E9; font-weight: 750; font-size: 12px; } #footerStatus { color: #78D6A7; font-size: 11px; font-weight: 600; }
 #quick { background: #1E2025; border: 1px solid #45464C; border-radius: 8px; padding: 5px 6px; font-weight: 700; font-size: 11px; } #quick:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; } #quick:pressed { background: #33353A; }
+#quickAccessCaption { color: #909096; padding: 12px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
+#quickGrid { background: transparent; border: 0; padding: 0 14px 4px; }
+#sideQuick { background: transparent; border: 1px solid #45464C; border-radius: 8px; padding: 5px 8px; font-weight: 600; font-size: 10.5px; color: #C6C6CC; text-align: left; min-height: 14px; }
+#sideQuick:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; }
+#sideQuick:pressed { background: #33353A; }
 #recentList { background: transparent; border: 0; } #recentList::item { border-radius: 8px; padding: 8px 10px; color: #C6C6CC; border-bottom: 1px solid #33353A; }
 #pageScroll, #pageScroll > QWidget, #pageScroll > QWidget > QWidget { background: transparent; border: 0; }
 #posSearch { font-size: 15px; min-height: 22px; border-radius: 12px; padding: 12px 14px; }
@@ -188,6 +198,7 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #include "core/database.h"
 #include "core/settings_service.h"
 #include "core/backup_service.h"
+#include "ui/pages/main_page.h"
 #include "ui/pages/dashboard_page.h"
 #include "ui/pages/inventory_page.h"
 #include "ui/pages/sales_pos_page.h"
@@ -251,7 +262,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     sideLayout->addWidget(sub);
 
     const QList<QPair<QString,QStringList>> navGroups = {
-        {"MAIN", {"Dashboard", "Sales POS", "Inventory"}},
+        {"MAIN", {"Main", "Sales POS", "Inventory"}},
         {"BUSINESS", {"Purchases", "Customers", "Suppliers"}},
         {"FINANCE", {"Cash & Shifts", "Cheques"}},
         {"ANALYTICS", {"Reports", "Audit log"}},
@@ -259,6 +270,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     };
 
     const QHash<QString,QIcon> navIcons = {
+        {"Main", QIcon(":/icons/dashboard.svg")},
         {"Dashboard", QIcon(":/icons/dashboard.svg")},
         {"Sales POS", QIcon(":/icons/sales.svg")},
         {"Inventory", QIcon(":/icons/inventory.svg")},
@@ -331,7 +343,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* top = new QHBoxLayout; 
     auto* workspace = new QVBoxLayout; 
-    auto* workspaceTitle = new QLabel("Dashboard", content); 
+    auto* workspaceTitle = new QLabel("Main", content);
     workspaceTitle->setObjectName("workspaceTitle"); 
     auto* workspaceHint = new QLabel("Monitor the health of your operation and move quickly to the next task.", content); 
     workspaceHint->setObjectName("workspaceHint"); 
@@ -356,7 +368,8 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     pages_ = new QStackedWidget(content);
     const auto makePage = [this](const QString& n) -> QWidget* {
         QWidget* page = nullptr;
-        if (n == "Dashboard") {
+        if (n == "Main") page = new MainPage(database_);
+        else if (n == "Dashboard") {
             auto* p = new DashboardPage(database_);
             connect(p, &DashboardPage::requestNavigation, this, &MainWindow::goToPage);
             page = p;
@@ -377,7 +390,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         else if (n == "Settings") page = new SettingsPage(database_);
         else if (n == "Backup & Restore") page = new BackupRestorePage(database_);
         
-        const QStringList fixedViewportPages = {"Dashboard", "Inventory", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
+        const QStringList fixedViewportPages = {"Main", "Dashboard", "Inventory", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
         return fixedViewportPages.contains(n) ? page : pageScroller(page);
     };
 
@@ -388,13 +401,14 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* shortcutBar = new QLabel(content);
     shortcutBar->setObjectName("shortcutBar");
-    shortcutBar->setText("F2 New Sale  |  F3 Find Product  |  F4 New Purchase  |  F5 Refresh  |  F9 Payment  |  Ctrl+F Search  |  Esc Cancel");
+shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Refresh  |  F9 Payment  |  Ctrl+F Search  |  Esc Cancel");
     shortcutBar->setAlignment(Qt::AlignCenter);
     contentLayout->addWidget(shortcutBar);
     layout->addWidget(content, 1);
     setCentralWidget(root);
 
     const QHash<QString,QString> hints = {
+        {"Main", "Monitor the health of your operation and move quickly to the next task."},
         {"Dashboard", "Monitor the health of your operation and move quickly to the next task."},
         {"Sales POS", "Build a sale from product search through payment, without losing your place."},
         {"Inventory", "Find products fast and keep stock levels healthy."},
@@ -457,7 +471,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     }
 
     auto* f2 = new QShortcut(QKeySequence(Qt::Key_F2), this); 
-    connect(f2, &QShortcut::activated, this, [this]{ goToPage("Sales POS"); });
+    connect(f2, &QShortcut::activated, this, [this]{ goToPage("Main"); });
     
     auto* f3 = new QShortcut(QKeySequence(Qt::Key_F3), this); 
     connect(f3, &QShortcut::activated, this, [this]{ 
@@ -484,8 +498,8 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     
     auto* esc = new QShortcut(QKeySequence(Qt::Key_Escape), this); 
     connect(esc, &QShortcut::activated, this, [this]{ 
-        if (QMessageBox::question(this, "Cancel", "Cancel the current action and return to Dashboard?") == QMessageBox::Yes) 
-            goToPage("Dashboard"); 
+        if (QMessageBox::question(this, "Cancel", "Cancel the current action and return to Main?") == QMessageBox::Yes)
+            goToPage("Main");
     });
 
     auto* ctrlF = new QShortcut(QKeySequence::Find, this); 
