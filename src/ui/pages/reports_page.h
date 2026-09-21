@@ -24,6 +24,7 @@ private:
     QDateEdit* from_{};
     QDateEdit* to_{};
     QTableWidget* summary_{};
+    QTableWidget* commissionSummary_{};
     QPushButton* refreshBtn_{};
     QPushButton* exportCsvBtn_{};
     QPushButton* exportPdfBtn_{};

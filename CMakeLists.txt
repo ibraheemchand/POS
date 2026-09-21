@@ -49,6 +49,8 @@ add_library(pos_core
     src/core/thermal_print_service.cpp
     src/core/seed_service.cpp
     src/core/data_change_bus.cpp
+    src/core/commission_service.cpp
+    src/core/bundle_service.cpp
 )
 target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
@@ -77,6 +79,8 @@ set(UI_PAGE_SOURCES
     src/ui/pages/cheques_page.h
     src/ui/pages/reports_page.cpp
     src/ui/pages/reports_page.h
+    src/ui/pages/courses_page.cpp
+    src/ui/pages/courses_page.h
     src/ui/pages/audit_log_page.cpp
     src/ui/pages/audit_log_page.h
     src/ui/pages/settings_page.cpp
