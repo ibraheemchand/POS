@@ -26,10 +26,14 @@ private:
     void refreshDue(qint64 grand);
     void refresh();
     void addToCart();
+    void addCartRow(const QString& productId, const QString& productName, const QString& unitName, qint64 quantity, qint64 unitPrice, qint64 discount, bool discountOverrideApproved);
+    void updateLineTotal(int row);
     void completeSale(bool printReceipt);
     void holdSale();
     void resumeSale();
     void clearCart();
+    void editLineDiscount();
+    void loadCourse();
 
     std::shared_ptr<pos::Database> database_;
     std::unique_ptr<pos::PosService> posService_;
@@ -40,11 +44,13 @@ private:
     QTableWidget* productsTable_{};
     QSpinBox* quantitySpin_{};
     QPushButton* addToCartBtn_{};
+    QPushButton* loadCourseBtn_{};
 
     QTableWidget* cartTable_{};
     QPushButton* minusBtn_{};
     QPushButton* plusBtn_{};
     QPushButton* removeLineBtn_{};
+    QPushButton* lineDiscountBtn_{};
     QSpinBox* discountSpin_{};
 
     QLabel* subtotalValue_{};

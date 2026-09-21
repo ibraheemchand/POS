@@ -3,6 +3,7 @@
 #include "core/shift_service.h"
 #include "core/notification_service.h"
 #include "core/data_change_bus.h"
+#include "core/commission_service.h"
 #include <algorithm>
 #include <QStringList>
 
@@ -86,7 +87,12 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     const QString id=uuid(); const QString invoice=QString("INV-%1-%2").arg(QDate::currentDate().toString("yyyyMMdd"), id.left(6).toUpper());
     auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal_paisa,discount_paisa,total_paisa,paid_paisa,due_paisa,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
     sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
+    CommissionService commission(db_);
+    const auto commissionSettings = commission.settings();
     for (const auto& line: request.lines) {
+        // Validates the point-of-sale discount against the flexible commission
+        // margin once per line (throws unless a manager override was approved).
+        const auto lineBreakdown = commission.computeBreakdown(line.quantity*line.unitPrice, line.discount, line.discountOverrideApproved, commissionSettings);
         const auto allocations=allocateBatches(line,id,"POS");
         Money discountRemaining=line.discount;
         for (int index=0; index<allocations.size(); ++index) {
@@ -94,8 +100,15 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
             const Money allocationDiscount=index==allocations.size()-1 ? discountRemaining : (line.discount*allocation.quantity)/line.quantity;
             discountRemaining-=allocationDiscount;
             const Money allocationTotal=allocation.quantity*line.unitPrice-allocationDiscount;
+            const QString itemId=uuid();
             auto item=db_->prepare("INSERT INTO sale_items(id,sale_id,product_id,batch_id,quantity,unit_name,unit_price_paisa,discount_paisa,line_total_paisa) VALUES(?,?,?,?,?,?,?,?,?)");
-            item.bind(1,uuid()); item.bind(2,id); item.bind(3,line.productId); if(allocation.batchId.isEmpty()) item.bindNull(4); else item.bind(4,allocation.batchId); item.bind(5,allocation.quantity); item.bind(6,line.unitName); item.bind(7,line.unitPrice); item.bind(8,allocationDiscount); item.bind(9,allocationTotal); item.execute();
+            item.bind(1,itemId); item.bind(2,id); item.bind(3,line.productId); if(allocation.batchId.isEmpty()) item.bindNull(4); else item.bind(4,allocation.batchId); item.bind(5,allocation.quantity); item.bind(6,line.unitName); item.bind(7,line.unitPrice); item.bind(8,allocationDiscount); item.bind(9,allocationTotal); item.execute();
+
+            // The per-line cap was already enforced above; the fragment-level call
+            // (forced overrideApproved=true) only derives amounts, never re-throws.
+            const auto fragment = commission.computeBreakdown(allocation.quantity*line.unitPrice, allocationDiscount, true, commissionSettings);
+            auto commissionRow=db_->prepare("INSERT INTO sale_item_commissions(id,sale_item_id,sale_id,product_id,retail_amount_paisa,commission_rate_bp,commission_amount_paisa,partner_rate_bp,partner_amount_paisa,discount_amount_paisa,owner_amount_paisa,overridden,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            commissionRow.bind(1,uuid()); commissionRow.bind(2,itemId); commissionRow.bind(3,id); commissionRow.bind(4,line.productId); commissionRow.bind(5,fragment.retailAmount); commissionRow.bind(6,commissionSettings.commissionRateBp); commissionRow.bind(7,fragment.commissionAmount); commissionRow.bind(8,commissionSettings.partnerShareBp); commissionRow.bind(9,fragment.partnerAmount); commissionRow.bind(10,fragment.discountAmount); commissionRow.bind(11,fragment.ownerAmount); commissionRow.bind(12,lineBreakdown.overridden?1:0); commissionRow.bind(13,utcNow()); commissionRow.execute();
         }
     }
     if (!request.customerId.isEmpty() && due>0) {

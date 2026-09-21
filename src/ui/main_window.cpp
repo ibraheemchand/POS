@@ -201,6 +201,7 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #include "ui/pages/main_page.h"
 #include "ui/pages/dashboard_page.h"
 #include "ui/pages/inventory_page.h"
+#include "ui/pages/courses_page.h"
 #include "ui/pages/sales_pos_page.h"
 #include "ui/pages/purchases_page.h"
 #include "ui/pages/customers_page.h"
@@ -262,7 +263,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     sideLayout->addWidget(sub);
 
     const QList<QPair<QString,QStringList>> navGroups = {
-        {"MAIN", {"Main", "Sales POS", "Inventory"}},
+        {"MAIN", {"Main", "Sales POS", "Inventory", "Courses"}},
         {"BUSINESS", {"Purchases", "Customers", "Suppliers"}},
         {"FINANCE", {"Cash & Shifts", "Cheques"}},
         {"ANALYTICS", {"Reports", "Audit log"}},
@@ -274,6 +275,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         {"Dashboard", QIcon(":/icons/dashboard.svg")},
         {"Sales POS", QIcon(":/icons/sales.svg")},
         {"Inventory", QIcon(":/icons/inventory.svg")},
+        {"Courses", QIcon(":/icons/inventory.svg")},
         {"Purchases", QIcon(":/icons/purchases.svg")},
         {"Customers", QIcon(":/icons/customers.svg")},
         {"Suppliers", QIcon(":/icons/suppliers.svg")},
@@ -375,6 +377,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
             page = p;
         }
         else if (n == "Inventory") page = new InventoryPage(database_);
+        else if (n == "Courses") page = new CoursesPage(database_);
         else if (n == "Sales POS") {
             auto* p = new SalesPosPage(database_);
             connect(p, &SalesPosPage::requestNavigation, this, &MainWindow::goToPage);
@@ -390,7 +393,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         else if (n == "Settings") page = new SettingsPage(database_);
         else if (n == "Backup & Restore") page = new BackupRestorePage(database_);
         
-        const QStringList fixedViewportPages = {"Main", "Dashboard", "Inventory", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
+        const QStringList fixedViewportPages = {"Main", "Dashboard", "Inventory", "Courses", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
         return fixedViewportPages.contains(n) ? page : pageScroller(page);
     };
 
@@ -412,6 +415,7 @@ shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Ref
         {"Dashboard", "Monitor the health of your operation and move quickly to the next task."},
         {"Sales POS", "Build a sale from product search through payment, without losing your place."},
         {"Inventory", "Find products fast and keep stock levels healthy."},
+        {"Courses", "Build grade/course book bundles for one-click loading in Sales POS."},
         {"Purchases", "Receive stock from suppliers and manage payables."},
         {"Customers", "Manage customers, balances and receive payments."},
         {"Suppliers", "Manage suppliers, payables and purchasing history."},

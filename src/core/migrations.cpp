@@ -108,6 +108,14 @@ SELECT 1;
 R"SQL(
 CREATE TABLE IF NOT EXISTS sale_payments (id TEXT PRIMARY KEY, sale_id TEXT NOT NULL REFERENCES sales(id), method TEXT NOT NULL, amount_paisa INTEGER NOT NULL CHECK(amount_paisa>0), created_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS sale_payments_sale ON sale_payments(sale_id);
+)SQL",
+R"SQL(
+CREATE TABLE bundles (id TEXT PRIMARY KEY, name TEXT NOT NULL, grade_label TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '', is_archived INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+CREATE TABLE bundle_items (id TEXT PRIMARY KEY, bundle_id TEXT NOT NULL REFERENCES bundles(id), product_id TEXT NOT NULL REFERENCES products(id), quantity INTEGER NOT NULL CHECK(quantity>0), sort_order INTEGER NOT NULL DEFAULT 0, UNIQUE(bundle_id,product_id));
+CREATE INDEX bundle_items_bundle ON bundle_items(bundle_id, sort_order);
+CREATE TABLE sale_item_commissions (id TEXT PRIMARY KEY, sale_item_id TEXT NOT NULL REFERENCES sale_items(id), sale_id TEXT NOT NULL REFERENCES sales(id), product_id TEXT NOT NULL REFERENCES products(id), retail_amount_paisa INTEGER NOT NULL, commission_rate_bp INTEGER NOT NULL, commission_amount_paisa INTEGER NOT NULL, partner_rate_bp INTEGER NOT NULL, partner_amount_paisa INTEGER NOT NULL, discount_amount_paisa INTEGER NOT NULL, owner_amount_paisa INTEGER NOT NULL, overridden INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+CREATE INDEX sale_item_commissions_sale ON sale_item_commissions(sale_id, created_at);
+CREATE INDEX sale_item_commissions_product ON sale_item_commissions(product_id, created_at);
 )SQL"};
     if (version>0 && static_cast<size_t>(version)<migrations.size()) {
         // The live connection is backed up before any schema change. This remains

@@ -2,6 +2,7 @@
 #include "ui/pages/page_helper.h"
 #include "core/database.h"
 #include "core/report_service.h"
+#include "core/commission_service.h"
 #include "core/excel_export_service.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -65,6 +66,23 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
     }
     layout->addWidget(summary_, 1);
 
+    auto* commissionTitle = new QLabel("Book commission split", this);
+    commissionTitle->setObjectName("sectionTitle");
+    layout->addWidget(commissionTitle);
+
+    commissionSummary_ = new QTableWidget(this);
+    commissionSummary_->setColumnCount(2);
+    commissionSummary_->setRowCount(6);
+    commissionSummary_->setHorizontalHeaderLabels({"Metric", "Value"});
+    commissionSummary_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    commissionSummary_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    const QStringList commissionLabels = {"Revenue (net of discounts)", "Commission pool", "Partner accrued", "Owner profit", "Discounts given", "Manager overrides used"};
+    for (int row = 0; row < commissionLabels.size(); ++row) {
+        commissionSummary_->setItem(row, 0, new QTableWidgetItem(commissionLabels[row]));
+    }
+    layout->addWidget(commissionSummary_, 1);
+
     // Initial setups
     QTimer::singleShot(0, this, [this] { load(); });
 
@@ -94,6 +112,16 @@ void ReportsPage::load() {
                 summary_->setItem(row, 1, new QTableWidgetItem(QString::number(values[row])));
             } else {
                 summary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(values[row])));
+            }
+        }
+
+        const auto c = pos::CommissionService(database_).totals(from_->date(), to_->date());
+        const QList<qint64> commissionValues = {c.revenue, c.commissionPool, c.partnerAccrued, c.ownerProfit, c.discountsGiven, c.overrideCount};
+        for (int row = 0; row < commissionValues.size(); ++row) {
+            if (row == 5) {
+                commissionSummary_->setItem(row, 1, new QTableWidgetItem(QString::number(commissionValues[row])));
+            } else {
+                commissionSummary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(commissionValues[row])));
             }
         }
     } catch (const std::exception& error) {

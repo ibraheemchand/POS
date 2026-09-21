@@ -17,6 +17,9 @@ struct SaleLine {
     Money unitPrice{};
     Money discount{};
     QString unitName;
+    // Set only after a manager/owner PIN confirms a discount beyond the commission
+    // flexible-margin cap; PosService still re-derives and enforces the cap itself.
+    bool discountOverrideApproved{false};
 };
 
 struct SaleRequest {

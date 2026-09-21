@@ -9,6 +9,8 @@
 #include "core/settings_service.h"
 #include "core/thermal_print_service.h"
 #include "core/data_change_bus.h"
+#include "core/commission_service.h"
+#include "core/bundle_service.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFrame>
@@ -113,9 +115,12 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     addToCartBtn_ = new QPushButton("Add to cart", productPanel);
     addToCartBtn_->setObjectName("primary");
 
+    loadCourseBtn_ = new QPushButton("Load course…", productPanel);
+
     auto* addRow = new QHBoxLayout;
     addRow->addWidget(quantitySpin_, 1);
     addRow->addWidget(addToCartBtn_, 2);
+    addRow->addWidget(loadCourseBtn_, 2);
 
     productLayout->addWidget(productHeading);
     productLayout->addWidget(productHint);
@@ -138,8 +143,8 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     cartHint->setObjectName("muted");
 
     cartTable_ = new QTableWidget(cartPanel);
-    cartTable_->setColumnCount(4);
-    cartTable_->setHorizontalHeaderLabels({"Product", "Quantity", "Unit price", "Line total"});
+    cartTable_->setColumnCount(5);
+    cartTable_->setHorizontalHeaderLabels({"Product", "Quantity", "Unit price", "Discount", "Line total"});
     cartTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     cartTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     cartTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -150,10 +155,12 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     plusBtn_ = new QPushButton("+1", cartPanel);
     removeLineBtn_ = new QPushButton("Remove line", cartPanel);
     removeLineBtn_->setObjectName("danger");
+    lineDiscountBtn_ = new QPushButton("Discount line…", cartPanel);
 
     auto* rowActions = new QHBoxLayout;
     rowActions->addWidget(minusBtn_);
     rowActions->addWidget(plusBtn_);
+    rowActions->addWidget(lineDiscountBtn_);
     rowActions->addWidget(removeLineBtn_);
     rowActions->addStretch();
 
@@ -278,7 +285,7 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
         const int row = cartTable_->currentRow();
         if (row < 0) return;
         const auto id = cartTable_->item(row, 0)->data(Qt::UserRole).toString();
-        
+
         pos::InventoryService inv(database_);
         const auto stock = inv.getStock(id);
         const auto newQuantity = cartTable_->item(row, 1)->text().toLongLong() + 1;
@@ -287,9 +294,7 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
             return;
         }
         cartTable_->item(row, 1)->setText(QString::number(newQuantity));
-        const auto price = cartTable_->item(row, 2)->data(Qt::UserRole + 2).toLongLong();
-        cartTable_->item(row, 3)->setText(pos::formatPaisa(newQuantity * price));
-        cartTable_->item(row, 3)->setData(Qt::UserRole, newQuantity * price);
+        updateLineTotal(row);
         feedbackLabel_->clear();
         refresh();
     });
@@ -303,10 +308,8 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
             refresh();
             return;
         }
-        const auto price = cartTable_->item(row, 2)->data(Qt::UserRole + 2).toLongLong();
         cartTable_->item(row, 1)->setText(QString::number(current - 1));
-        cartTable_->item(row, 3)->setText(pos::formatPaisa((current - 1) * price));
-        cartTable_->item(row, 3)->setData(Qt::UserRole, (current - 1) * price);
+        updateLineTotal(row);
         refresh();
     });
 
@@ -317,6 +320,15 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
             refresh();
         }
     });
+
+    connect(lineDiscountBtn_, &QPushButton::clicked, this, &SalesPosPage::editLineDiscount);
+    connect(cartTable_, &QTableWidget::cellDoubleClicked, this, [this](int row, int column) {
+        if (column == 3) {
+            cartTable_->setCurrentCell(row, column);
+            editLineDiscount();
+        }
+    });
+    connect(loadCourseBtn_, &QPushButton::clicked, this, &SalesPosPage::loadCourse);
 
     connect(discountSpin_, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
         const auto grand = computeTotal();
@@ -361,8 +373,10 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     setTabOrder(search_, productsTable_);
     setTabOrder(productsTable_, quantitySpin_);
     setTabOrder(quantitySpin_, addToCartBtn_);
-    setTabOrder(addToCartBtn_, cartTable_);
-    setTabOrder(cartTable_, discountSpin_);
+    setTabOrder(addToCartBtn_, loadCourseBtn_);
+    setTabOrder(loadCourseBtn_, cartTable_);
+    setTabOrder(cartTable_, lineDiscountBtn_);
+    setTabOrder(lineDiscountBtn_, discountSpin_);
     setTabOrder(discountSpin_, receivedSpin_);
     setTabOrder(receivedSpin_, savePrintBtn_);
     setTabOrder(savePrintBtn_, saveBtn_);
@@ -412,7 +426,7 @@ void SalesPosPage::load() {
 qint64 SalesPosPage::computeTotal() {
     qint64 subtotal{};
     for (int row = 0; row < cartTable_->rowCount(); ++row) {
-        subtotal += cartTable_->item(row, 3)->data(Qt::UserRole).toLongLong();
+        subtotal += cartTable_->item(row, 4)->data(Qt::UserRole).toLongLong();
     }
     const qint64 disc = discountSpin_->value();
     const qint64 grand = subtotal - disc;
@@ -461,8 +475,7 @@ void SalesPosPage::addToCart() {
                 return;
             }
             cartTable_->item(current, 1)->setText(QString::number(newQuantity));
-            cartTable_->item(current, 3)->setText(pos::formatPaisa(newQuantity * price));
-            cartTable_->item(current, 3)->setData(Qt::UserRole, newQuantity * price);
+            updateLineTotal(current);
             feedbackLabel_->clear();
             refresh();
             return;
@@ -474,24 +487,139 @@ void SalesPosPage::addToCart() {
         return;
     }
 
-    const int target = cartTable_->rowCount();
-    cartTable_->insertRow(target);
-    auto* name = new QTableWidgetItem(productsTable_->item(row, 0)->text());
-    name->setData(Qt::UserRole, id);
-    name->setData(Qt::UserRole + 1, productsTable_->item(row, 4)->text()); // base unit
-    cartTable_->setItem(target, 0, name);
-    cartTable_->setItem(target, 1, new QTableWidgetItem(QString::number(count)));
-    
-    auto* priceItem = new QTableWidgetItem(pos::formatPaisa(price));
-    priceItem->setData(Qt::UserRole + 2, price);
-    cartTable_->setItem(target, 2, priceItem);
-
-    auto* amountItem = new QTableWidgetItem(pos::formatPaisa(count * price));
-    amountItem->setData(Qt::UserRole, count * price);
-    cartTable_->setItem(target, 3, amountItem);
-    
+    addCartRow(id, productsTable_->item(row, 0)->text(), productsTable_->item(row, 4)->text(), count, price, 0, false);
     feedbackLabel_->clear();
     refresh();
+}
+
+void SalesPosPage::addCartRow(const QString& productId, const QString& productName, const QString& unitName, qint64 quantity, qint64 unitPrice, qint64 discount, bool discountOverrideApproved) {
+    const int target = cartTable_->rowCount();
+    cartTable_->insertRow(target);
+
+    auto* name = new QTableWidgetItem(productName);
+    name->setData(Qt::UserRole, productId);
+    name->setData(Qt::UserRole + 1, unitName);
+    cartTable_->setItem(target, 0, name);
+
+    cartTable_->setItem(target, 1, new QTableWidgetItem(QString::number(quantity)));
+
+    auto* priceItem = new QTableWidgetItem(pos::formatPaisa(unitPrice));
+    priceItem->setData(Qt::UserRole + 2, unitPrice);
+    cartTable_->setItem(target, 2, priceItem);
+
+    auto* discountItem = new QTableWidgetItem(pos::formatPaisa(discount));
+    discountItem->setData(Qt::UserRole, discount);
+    discountItem->setData(Qt::UserRole + 1, discountOverrideApproved);
+    cartTable_->setItem(target, 3, discountItem);
+
+    auto* amountItem = new QTableWidgetItem;
+    cartTable_->setItem(target, 4, amountItem);
+
+    updateLineTotal(target);
+}
+
+void SalesPosPage::updateLineTotal(int row) {
+    if (row < 0 || row >= cartTable_->rowCount()) return;
+    const auto quantity = cartTable_->item(row, 1)->text().toLongLong();
+    const auto price = cartTable_->item(row, 2)->data(Qt::UserRole + 2).toLongLong();
+    auto* discountItem = cartTable_->item(row, 3);
+    auto discount = discountItem->data(Qt::UserRole).toLongLong();
+    const auto retail = quantity * price;
+    if (discount > retail) {
+        // Quantity dropped below what the existing discount assumed; clamp so the
+        // line total can never go negative. PosService still re-validates the cap.
+        discount = retail;
+        discountItem->setData(Qt::UserRole, discount);
+    }
+    discountItem->setText(pos::formatPaisa(discount));
+    auto* amountItem = cartTable_->item(row, 4);
+    const auto net = retail - discount;
+    amountItem->setText(pos::formatPaisa(net));
+    amountItem->setData(Qt::UserRole, net);
+}
+
+void SalesPosPage::editLineDiscount() {
+    const int row = cartTable_->currentRow();
+    if (row < 0) {
+        QMessageBox::information(this, "Discount line", "Select a cart line first.");
+        return;
+    }
+    const auto quantity = cartTable_->item(row, 1)->text().toLongLong();
+    const auto price = cartTable_->item(row, 2)->data(Qt::UserRole + 2).toLongLong();
+    const auto retail = quantity * price;
+    auto* discountItem = cartTable_->item(row, 3);
+    const auto currentDiscount = discountItem->data(Qt::UserRole).toLongLong();
+
+    pos::Money cap = 0;
+    try {
+        pos::CommissionService commission(database_);
+        cap = commission.flexibleCap(retail, commission.settings());
+    } catch (...) {}
+
+    bool ok = false;
+    const auto discount = QInputDialog::getInt(this, "Discount line", QString("Discount for this line (paisa). Up to PKR %1 without a manager override.").arg(pos::formatPaisa(cap)), static_cast<int>(currentDiscount), 0, static_cast<int>(retail), 1, &ok);
+    if (!ok) return;
+
+    bool overrideApproved = false;
+    if (discount > cap) {
+        if (!pos::authorizeSensitiveAction(this, database_, "give a discount beyond the flexible commission margin")) return;
+        overrideApproved = true;
+    }
+
+    discountItem->setData(Qt::UserRole, static_cast<qint64>(discount));
+    discountItem->setData(Qt::UserRole + 1, overrideApproved);
+    updateLineTotal(row);
+    refresh();
+}
+
+void SalesPosPage::loadCourse() {
+    try {
+        const auto bundles = pos::BundleService(database_).listBundles();
+        if (bundles.isEmpty()) {
+            QMessageBox::information(this, "Load course", "No courses are set up yet. Add one from the Courses page.");
+            return;
+        }
+        QStringList choices;
+        for (const auto& bundle : bundles) {
+            choices.append(QString("%1 — %2 (%3 books)").arg(bundle.name, bundle.gradeLabel).arg(bundle.itemCount));
+        }
+        bool ok = false;
+        const auto selected = QInputDialog::getItem(this, "Load course", "Course:", choices, 0, false, &ok);
+        if (!ok) return;
+        const auto bundle = bundles.at(choices.indexOf(selected));
+
+        const auto items = pos::BundleService(database_).resolveItems(bundle.id);
+        QStringList outOfStock;
+        int added = 0;
+        for (const auto& item : items) {
+            if (item.stock < item.quantity) {
+                outOfStock.append(QString("%1 (need %2, have %3)").arg(item.productName).arg(item.quantity).arg(item.stock));
+                continue;
+            }
+            bool merged = false;
+            for (int row = 0; row < cartTable_->rowCount(); ++row) {
+                if (cartTable_->item(row, 0)->data(Qt::UserRole).toString() == item.productId) {
+                    const auto newQuantity = cartTable_->item(row, 1)->text().toLongLong() + item.quantity;
+                    cartTable_->item(row, 1)->setText(QString::number(newQuantity));
+                    updateLineTotal(row);
+                    merged = true;
+                    break;
+                }
+            }
+            if (!merged) {
+                addCartRow(item.productId, item.productName, item.baseUnit, item.quantity, item.retailPrice, 0, false);
+            }
+            ++added;
+        }
+        refresh();
+        if (!outOfStock.isEmpty()) {
+            feedbackLabel_->setText(QString("Loaded %1 book(s) from %2. Skipped (out of stock): %3").arg(added).arg(bundle.name, outOfStock.join(", ")));
+        } else {
+            feedbackLabel_->setText(QString("Loaded %1 book(s) from %2. Review the cart before checkout.").arg(added).arg(bundle.name));
+        }
+    } catch (const std::exception& error) {
+        QMessageBox::critical(this, "Could not load course", error.what());
+    }
 }
 
 void SalesPosPage::completeSale(bool printReceipt) {
@@ -509,14 +637,17 @@ void SalesPosPage::completeSale(bool printReceipt) {
         for (int row = 0; row < cartTable_->rowCount(); ++row) {
             const auto count = cartTable_->item(row, 1)->text().toLongLong();
             const auto price = cartTable_->item(row, 2)->data(Qt::UserRole + 2).toLongLong();
-            subtotal += count * price;
+            const auto discount = cartTable_->item(row, 3)->data(Qt::UserRole).toLongLong();
+            const auto discountOverrideApproved = cartTable_->item(row, 3)->data(Qt::UserRole + 1).toBool();
+            subtotal += count * price - discount;
             request.lines.append({
                 cartTable_->item(row, 0)->data(Qt::UserRole).toString(),
                 {},
                 count,
                 price,
-                0,
-                cartTable_->item(row, 0)->data(Qt::UserRole + 1).toString()
+                discount,
+                cartTable_->item(row, 0)->data(Qt::UserRole + 1).toString(),
+                discountOverrideApproved
             });
         }
 
@@ -555,7 +686,7 @@ void SalesPosPage::completeSale(bool printReceipt) {
 
         QList<pos::ThermalReceiptItem> receiptItems;
         for (int row = 0; row < cartTable_->rowCount(); ++row) {
-            receiptItems.append({cartTable_->item(row, 0)->text(), cartTable_->item(row, 1)->text().toLongLong(), cartTable_->item(row, 3)->data(Qt::UserRole).toLongLong()});
+            receiptItems.append({cartTable_->item(row, 0)->text(), cartTable_->item(row, 1)->text().toLongLong(), cartTable_->item(row, 4)->data(Qt::UserRole).toLongLong()});
         }
 
         const auto sale = posService_->completeSale(request);
@@ -626,30 +757,14 @@ void SalesPosPage::resumeSale() {
         
         const auto sale = pos::SuspendedSaleService(database_).load(saved.at(choices.indexOf(selected)).id);
         cartTable_->setRowCount(0);
-        
-        pos::InventoryService inv(database_);
+
         for (const auto& line : sale.lines) {
             auto product = database_->prepare("SELECT name, stock_quantity FROM products WHERE id=? AND is_deleted=0");
             product.bind(1, line.productId);
             if (!product.stepRow() || product.integer(1) < line.quantity) {
                 throw pos::DatabaseError("a held product is unavailable or out of stock");
             }
-            const int row = cartTable_->rowCount();
-            cartTable_->insertRow(row);
-            
-            auto* name = new QTableWidgetItem(product.text(0));
-            name->setData(Qt::UserRole, line.productId);
-            name->setData(Qt::UserRole + 1, line.unit);
-            cartTable_->setItem(row, 0, name);
-            cartTable_->setItem(row, 1, new QTableWidgetItem(QString::number(line.quantity)));
-            
-            auto* price = new QTableWidgetItem(pos::formatPaisa(line.unitPrice));
-            price->setData(Qt::UserRole + 2, line.unitPrice);
-            cartTable_->setItem(row, 2, price);
-            
-            auto* amount = new QTableWidgetItem(pos::formatPaisa(line.quantity * line.unitPrice));
-            amount->setData(Qt::UserRole, line.quantity * line.unitPrice);
-            cartTable_->setItem(row, 3, amount);
+            addCartRow(line.productId, product.text(0), line.unit, line.quantity, line.unitPrice, 0, false);
         }
         pos::SuspendedSaleService(database_).remove(sale.id);
         refresh();

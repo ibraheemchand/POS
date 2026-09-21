@@ -5,6 +5,7 @@
 #include "core/security_service.h"
 #include "core/notification_service.h"
 #include "core/thermal_print_service.h"
+#include "core/commission_service.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -12,6 +13,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QTimer>
+#include <QtGlobal>
 
 SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QWidget(parent), database_(database) {
@@ -120,6 +122,68 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     securityLayout->addWidget(testLabelBtn_);
     securityLayout->addWidget(pinStatusLabel_);
     layout->addWidget(securityCard);
+
+    // Commission Split Frame
+    auto* commissionCard = new QFrame(this);
+    commissionCard->setObjectName("panel");
+    auto* commissionLayout = new QVBoxLayout(commissionCard);
+    commissionLayout->setContentsMargins(20, 18, 20, 18);
+    commissionLayout->setSpacing(12);
+
+    auto* commissionTitle = new QLabel("Book commission split", commissionCard);
+    commissionTitle->setObjectName("sectionTitle");
+    auto* commissionHint = new QLabel("Commission is a percentage of each book's retail price. The partner's and owner's minimum shares are fixed; the rest is the margin a salesman may discount on the spot.", commissionCard);
+    commissionHint->setObjectName("muted");
+    commissionHint->setWordWrap(true);
+    commissionLayout->addWidget(commissionTitle);
+    commissionLayout->addWidget(commissionHint);
+
+    commissionRateSpin_ = new QDoubleSpinBox(commissionCard);
+    commissionRateSpin_->setRange(0, 100);
+    commissionRateSpin_->setDecimals(2);
+    commissionRateSpin_->setSuffix(" %");
+
+    partnerShareSpin_ = new QDoubleSpinBox(commissionCard);
+    partnerShareSpin_->setRange(0, 100);
+    partnerShareSpin_->setDecimals(2);
+    partnerShareSpin_->setSuffix(" %");
+
+    ownerMinShareSpin_ = new QDoubleSpinBox(commissionCard);
+    ownerMinShareSpin_->setRange(0, 100);
+    ownerMinShareSpin_->setDecimals(2);
+    ownerMinShareSpin_->setSuffix(" %");
+
+    auto* commissionForm = new QGridLayout;
+    commissionForm->setHorizontalSpacing(14);
+    commissionForm->setVerticalSpacing(12);
+    commissionForm->setColumnStretch(1, 1);
+
+    auto* rateLabel = new QLabel("Total commission rate", commissionCard);
+    rateLabel->setBuddy(commissionRateSpin_);
+    auto* partnerLabel = new QLabel("Partner's fixed share", commissionCard);
+    partnerLabel->setBuddy(partnerShareSpin_);
+    auto* ownerLabel = new QLabel("Owner's minimum share", commissionCard);
+    ownerLabel->setBuddy(ownerMinShareSpin_);
+
+    commissionForm->addWidget(rateLabel, 0, 0);
+    commissionForm->addWidget(commissionRateSpin_, 0, 1);
+    commissionForm->addWidget(partnerLabel, 1, 0);
+    commissionForm->addWidget(partnerShareSpin_, 1, 1);
+    commissionForm->addWidget(ownerLabel, 2, 0);
+    commissionForm->addWidget(ownerMinShareSpin_, 2, 1);
+    commissionLayout->addLayout(commissionForm);
+
+    flexibleShareLabel_ = new QLabel(commissionCard);
+    flexibleShareLabel_->setObjectName("muted");
+    commissionLayout->addWidget(flexibleShareLabel_);
+
+    saveCommissionBtn_ = new QPushButton("Save commission split", commissionCard);
+    saveCommissionBtn_->setObjectName("primary");
+    auto* commissionSaveRow = new QHBoxLayout;
+    commissionSaveRow->addWidget(saveCommissionBtn_);
+    commissionSaveRow->addStretch();
+    commissionLayout->addLayout(commissionSaveRow);
+    layout->addWidget(commissionCard);
     layout->addStretch();
 
     // Initial setups
@@ -209,6 +273,23 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
         }
     });
 
+    connect(commissionRateSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) { refreshFlexibleLabel(); });
+    connect(partnerShareSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) { refreshFlexibleLabel(); });
+    connect(ownerMinShareSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) { refreshFlexibleLabel(); });
+
+    connect(saveCommissionBtn_, &QPushButton::clicked, this, [this] {
+        try {
+            pos::CommissionSettings settings;
+            settings.commissionRateBp = qRound(commissionRateSpin_->value() * 100);
+            settings.partnerShareBp = qRound(partnerShareSpin_->value() * 100);
+            settings.ownerMinShareBp = qRound(ownerMinShareSpin_->value() * 100);
+            pos::CommissionService(database_).setSettings(settings);
+            QMessageBox::information(this, "Commission split saved", "The commission rate and split now apply to new sales.");
+        } catch (const std::exception& error) {
+            QMessageBox::critical(this, "Could not save commission split", error.what());
+        }
+    });
+
     // Set tab order
     setTabOrder(businessNameInput_, phoneInput_);
     setTabOrder(phoneInput_, currencyInput_);
@@ -221,6 +302,19 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     setTabOrder(clearPinBtn_, viewNotificationsBtn_);
     setTabOrder(viewNotificationsBtn_, testReceiptBtn_);
     setTabOrder(testReceiptBtn_, testLabelBtn_);
+    setTabOrder(testLabelBtn_, commissionRateSpin_);
+    setTabOrder(commissionRateSpin_, partnerShareSpin_);
+    setTabOrder(partnerShareSpin_, ownerMinShareSpin_);
+    setTabOrder(ownerMinShareSpin_, saveCommissionBtn_);
+}
+
+void SettingsPage::refreshFlexibleLabel() {
+    const auto flexible = commissionRateSpin_->value() - partnerShareSpin_->value() - ownerMinShareSpin_->value();
+    if (flexible < 0) {
+        flexibleShareLabel_->setText(QString("Partner + owner shares exceed the commission rate by %1 pts — saving will be rejected.").arg(-flexible, 0, 'f', 2));
+    } else {
+        flexibleShareLabel_->setText(QString("Flexible margin available for on-the-spot discounts: %1% of each book's retail price.").arg(flexible, 0, 'f', 2));
+    }
 }
 
 void SettingsPage::load() {
@@ -235,5 +329,11 @@ void SettingsPage::load() {
         
         const bool pinConfigured = pos::SecurityService(database_).hasPin();
         pinStatusLabel_->setText(pinConfigured ? "Sensitive-action PIN: configured" : "Sensitive-action PIN: not configured");
+
+        const auto commission = pos::CommissionService(database_).settings();
+        commissionRateSpin_->setValue(commission.commissionRateBp / 100.0);
+        partnerShareSpin_->setValue(commission.partnerShareBp / 100.0);
+        ownerMinShareSpin_->setValue(commission.ownerMinShareBp / 100.0);
+        refreshFlexibleLabel();
     } catch (...) {}
 }
