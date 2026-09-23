@@ -138,9 +138,9 @@ InventoryPage::InventoryPage(std::shared_ptr<pos::Database> database, QWidget* p
     // Pagination Footer
     auto* paginationRow = new QHBoxLayout;
     paginationText_ = new QLabel("Showing 1-250 of 250 items", tablePanel); paginationText_->setObjectName("muted");
-    auto* prevBtn = new QPushButton("◀", tablePanel); prevBtn->setFixedWidth(36);
+    auto* prevBtn = new QPushButton("◀", tablePanel); prevBtn->setMinimumWidth(36);
     pageNum_ = new QLabel("Page 1 of 1", tablePanel); pageNum_->setObjectName("muted");
-    auto* nextBtn = new QPushButton("▶", tablePanel); nextBtn->setFixedWidth(36);
+    auto* nextBtn = new QPushButton("▶", tablePanel); nextBtn->setMinimumWidth(36);
     paginationRow->addWidget(paginationText_); paginationRow->addStretch();
     paginationRow->addWidget(prevBtn); paginationRow->addWidget(pageNum_); paginationRow->addWidget(nextBtn);
     tableLayout->addLayout(paginationRow);
@@ -162,7 +162,7 @@ InventoryPage::InventoryPage(std::shared_ptr<pos::Database> database, QWidget* p
         if (!ok || name.trimmed().isEmpty()) return;
         const auto unit = QInputDialog::getText(this, "New product", "Base unit:", QLineEdit::Normal, "piece", &ok);
         if (!ok) return;
-        const auto retail = QInputDialog::getInt(this, "New product", "Retail price (paisa):", 0, 0, 1000000000, 1, &ok);
+        const auto retail = pos::askMoney(this, "New product", "Retail price", 0, &ok);
         if (!ok) return;
         try {
             pos::InventoryService inventory(database_);
@@ -188,9 +188,9 @@ InventoryPage::InventoryPage(std::shared_ptr<pos::Database> database, QWidget* p
             if (!ok) return;
             const auto unit = QInputDialog::getText(this, "Edit product", "Base unit:", QLineEdit::Normal, query.baseUnit, &ok);
             if (!ok) return;
-            const auto purchase = QInputDialog::getInt(this, "Edit product", "Purchase price (paisa):", query.purchasePrice, 0, 1000000000, 1, &ok);
+            const auto purchase = pos::askMoney(this, "Edit product", "Purchase price", query.purchasePrice, &ok);
             if (!ok) return;
-            const auto retail = QInputDialog::getInt(this, "Edit product", "Retail price (paisa):", query.retailPrice, 0, 1000000000, 1, &ok);
+            const auto retail = pos::askMoney(this, "Edit product", "Retail price", query.retailPrice, &ok);
             if (!ok) return;
             const auto minimum = QInputDialog::getInt(this, "Edit product", "Minimum stock:", query.minimumStock, 0, 1000000000, 1, &ok);
             if (!ok) return;
@@ -279,7 +279,7 @@ InventoryPage::InventoryPage(std::shared_ptr<pos::Database> database, QWidget* p
 
             const auto header = parse(stream.readLine());
             if (header.size() < 4 || header.at(0).compare("name", Qt::CaseInsensitive) != 0 || header.at(1).compare("base_unit", Qt::CaseInsensitive) != 0) {
-                throw pos::DatabaseError("CSV header must start with name,base_unit,purchase_price_paisa,retail_price_paisa");
+                throw pos::DatabaseError("CSV header must start with name,base_unit,purchase_price,retail_price");
             }
 
             QList<pos::ProductDefinition> products;
@@ -350,7 +350,7 @@ void InventoryPage::load() {
     val1_->setText(QString::number(stats.totalSkus));
     val2_->setText(QString::number(stats.lowStock));
     val3_->setText(QString::number(stats.outOfStock));
-    val4_->setText("PKR " + pos::formatPaisa(stats.totalValuation));
+    val4_->setText("PKR " + pos::formatMoney(stats.totalValuation));
 
     // Load table rows
     table_->setRowCount(0);
@@ -394,12 +394,12 @@ void InventoryPage::load() {
             stockItem->setForeground(stockFg);
             table_->setItem(row, 3, stockItem);
             
-            auto* priceItem = new QTableWidgetItem("PKR " + pos::formatPaisa(product.retailPrice));
+            auto* priceItem = new QTableWidgetItem("PKR " + pos::formatMoney(product.retailPrice));
             priceItem->setFont(QFont("JetBrains Mono", 9));
             priceItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             table_->setItem(row, 4, priceItem);
             
-            auto* totalValueItem = new QTableWidgetItem("PKR " + pos::formatPaisa(product.stock * product.retailPrice));
+            auto* totalValueItem = new QTableWidgetItem("PKR " + pos::formatMoney(product.stock * product.retailPrice));
             totalValueItem->setFont(QFont("JetBrains Mono", 9));
             totalValueItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             table_->setItem(row, 5, totalValueItem);
@@ -413,7 +413,7 @@ void InventoryPage::load() {
             edit->setIcon(QIcon(":/icons/edit.svg"));
             edit->setToolTip("Edit product details");
             edit->setFlat(true);
-            edit->setFixedSize(32, 32);
+            edit->setMinimumSize(32, 32);
             connect(edit, &QPushButton::clicked, table_, [this, row]() {
                 table_->setCurrentCell(row, 0);
                 editBtn_->click();
@@ -423,7 +423,7 @@ void InventoryPage::load() {
             archive->setIcon(QIcon(":/icons/archive.svg"));
             archive->setToolTip("Archive product");
             archive->setFlat(true);
-            archive->setFixedSize(32, 32);
+            archive->setMinimumSize(32, 32);
             connect(archive, &QPushButton::clicked, table_, [this, row]() {
                 table_->setCurrentCell(row, 0);
                 archiveBtn_->click();

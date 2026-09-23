@@ -58,11 +58,7 @@
 #include <QKeySequence>
 
 namespace {
-QString formatPaisa(pos::Money value) {
-    const auto sign = value < 0 ? "-" : "";
-    const auto absolute = value < 0 ? -value : value;
-    return QString("%1%2.%3").arg(sign).arg(absolute / 100).arg(absolute % 100, 2, 10, QChar('0'));
-}
+using pos::formatMoney; // defined in core/types.h
 
 QWidget* pageScroller(QWidget* content) {
     if (!content) return nullptr;
@@ -77,9 +73,9 @@ QWidget* pageScroller(QWidget* content) {
 }
 
 const char* lightStyle = R"QSS(
-* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #1a1c1c; font-size: 13px; }
+* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #1a1c1c; }
 QMainWindow, #content { background: #f9f9f9; }
-#sidebar { background: #f3f3f3; min-width: 262px; max-width: 262px; border-right: 1px solid #dbc1b7; }
+#sidebar { background: #f3f3f3; border-right: 1px solid #dbc1b7; }
 #brand { color: #99461f; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; }
 #subtitle { color: #55433b; padding: 0 22px 12px; font-size: 11px; font-weight: 600; }
 #navCaption { color: #88726a; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
@@ -154,11 +150,15 @@ QFrame#metric:hover, QFrame#inventoryMetric:hover, QFrame#panel:hover { border-c
 QStatusBar { background: #eeeeee; color: #55433b; border-top: 1px solid #dbc1b7; padding-left: 12px; }
 QToolTip { background: #ffffff; color: #1a1c1c; border: 1px solid #dbc1b7; border-radius: 8px; padding: 6px 9px; }
 QMessageBox { background: #ffffff; color: #1a1c1c; }
+#quickCard { background: #ffffff; border: 1px solid #dbc1b7; border-radius: 14px; padding: 10px 12px; text-align: left; color: #1a1c1c; font-weight: 700; font-size: 12px; }
+#quickCard:hover { border-color: #99461f; color: #99461f; background: #ffdbcd; }
+#quickCard:pressed { background: #ffb597; }
+#quickCard:focus { border: 2px solid #99461f; padding: 9px 11px; }
 )QSS";
 
 const char* darkStyle = R"QSS(
-* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #E2E2E9; font-size: 13px; }
-QMainWindow, #content { background: #111318; } #sidebar { background: #1A1B21; min-width: 262px; max-width: 262px; }
+* { font-family: "Manrope", "Segoe UI", "Inter", sans-serif; color: #E2E2E9; }
+QMainWindow, #content { background: #111318; } #sidebar { background: #1A1B21; }
 #brand { color: #E9C349; font-weight: 800; font-size: 21px; padding: 16px 22px 2px; letter-spacing: 1px; } #subtitle { color: #C6C6CC; padding: 0 22px 12px; font-size: 11px; font-weight: 600; } #navCaption { color: #909096; padding: 14px 22px 4px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; }
 #workspaceTitle { font-size: 21px; font-weight: 800; color: #E2E2E9; } #workspaceHint, #muted, #metricLabel, #metricCaption { color: #C6C6CC; } #statusChip { background: #123A30; color: #78D6A7; border: 1px solid #205B49; border-radius: 12px; padding: 5px 11px; font-weight: 700; } #shortcutBar { background: #1A1B21; color: #C6C6CC; border: 1px solid #45464C; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 600; }
 QListWidget { background: transparent; border: 0; color: #C6C6CC; outline: 0; padding: 2px 12px 12px; } QListWidget::item { border-radius: 10px; padding: 11px 12px; margin: 2px 0; } QListWidget::item:hover { background: #1E2025; color: #E2E2E9; } QListWidget::item:selected { background: #33353A; color: #E9C349; font-weight: 700; }
@@ -191,6 +191,10 @@ QFrame#metric, QFrame#inventoryMetric, QFrame#panel { background: #1E2025; borde
 QStatusBar { background: #0C0E13; color: #C6C6CC; border-top: 1px solid #45464C; padding-left: 12px; }
 QToolTip { background: #0C0E13; color: #E2E2E9; border: 1px solid #45464C; border-radius: 8px; padding: 6px 9px; }
 QMessageBox { background: #1E2025; color: #E2E2E9; }
+#quickCard { background: #1E2025; border: 1px solid #45464C; border-radius: 14px; padding: 10px 12px; text-align: left; color: #E2E2E9; font-weight: 700; font-size: 12px; }
+#quickCard:hover { border-color: #E9C349; color: #E9C349; background: #282A2F; }
+#quickCard:pressed { background: #33353A; }
+#quickCard:focus { border: 2px solid #E9C349; padding: 9px 11px; }
 )QSS";
 }
 
@@ -216,6 +220,7 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #include "ui/pages/partners_page.h"
 #include "ui/pages/profit_report_page.h"
 #include "ui/pages/page_helper.h"
+#include "ui/pages/nav_catalog.h"
 #include "core/auth_session.h"
 #include "core/data_change_bus.h"
 #include <QHBoxLayout>
@@ -233,13 +238,16 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #include <QScrollArea>
 #include <QApplication>
 #include <QStyle>
+#include <QResizeEvent>
 
 MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QMainWindow(parent), database_(std::move(database)) {
     Q_INIT_RESOURCE(resources);
     setWindowTitle("Nexora POS"); 
     setWindowIcon(QIcon(":/branding/app_icon")); 
-    setMinimumSize(1180, 720); 
+    // Keep the minimum small enough to fit a 1366x768 laptop at 150% scaling
+    // (~910x512 logical px); showMaximized() picks the real size.
+    setMinimumSize(720, 480);
     resize(1600, 900);
 
     auto* root = new QWidget(this); 
@@ -247,9 +255,11 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     layout->setContentsMargins(0,0,0,0); 
     layout->setSpacing(0);
 
-    auto* sidebar = new QFrame(root); 
-    sidebar->setObjectName("sidebar"); 
-    auto* sideLayout = new QVBoxLayout(sidebar); 
+    auto* sidebar = new QFrame(root);
+    sidebar->setObjectName("sidebar");
+    sidebar->setFixedWidth(262); // width is now driven from code so it can collapse
+    sidebar_ = sidebar;
+    auto* sideLayout = new QVBoxLayout(sidebar);
     sideLayout->setContentsMargins(0,0,0,18); 
     sideLayout->setSpacing(0);
 
@@ -260,10 +270,12 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     logo->setAccessibleName("Nexora POS logo"); 
     sideLayout->addWidget(logo, 0, Qt::AlignHCenter);
 
-    auto* brand = new QLabel("Nexora POS", sidebar); 
-    brand->setObjectName("brand"); 
-    auto* sub = new QLabel("Enterprise Edition", sidebar); 
-    sub->setObjectName("subtitle"); 
+    auto* brand = new QLabel("Nexora POS", sidebar);
+    brand->setObjectName("brand");
+    brand_ = brand;
+    auto* sub = new QLabel("Enterprise Edition", sidebar);
+    sub->setObjectName("subtitle");
+    subtitle_ = sub;
     sideLayout->addWidget(brand); 
     sideLayout->addWidget(sub);
 
@@ -327,8 +339,9 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     navigation->setCurrentRow(1); 
     sideLayout->addWidget(navigation, 1);
 
-    auto* footerFrame = new QFrame(sidebar); 
-    footerFrame->setObjectName("footerCard"); 
+    auto* footerFrame = new QFrame(sidebar);
+    footerFrame->setObjectName("footerCard");
+    footerFrame_ = footerFrame;
     footerFrame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed); 
     auto* footerLayout = new QVBoxLayout(footerFrame); 
     footerLayout->setContentsMargins(14,12,14,12); 
@@ -379,7 +392,11 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     pages_ = new QStackedWidget(content);
     const auto makePage = [this](const QString& n) -> QWidget* {
         QWidget* page = nullptr;
-        if (n == "Main") page = new MainPage(database_);
+        if (n == "Main") {
+            auto* p = new MainPage(database_);
+            connect(p, &MainPage::requestNavigation, this, &MainWindow::goToPage);
+            page = p;
+        }
         else if (n == "Dashboard") {
             auto* p = new DashboardPage(database_);
             connect(p, &DashboardPage::requestNavigation, this, &MainWindow::goToPage);
@@ -405,7 +422,9 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         else if (n == "Settings") page = new SettingsPage(database_);
         else if (n == "Backup & Restore") page = new BackupRestorePage(database_);
         
-        const QStringList fixedViewportPages = {"Main", "Dashboard", "Inventory", "Courses", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
+        // "Main" is intentionally NOT here: it wraps in a vertical scroll area so
+        // its cards/quick-access scroll instead of squeezing on small screens.
+        const QStringList fixedViewportPages = {"Dashboard", "Inventory", "Courses", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
         return fixedViewportPages.contains(n) ? page : pageScroller(page);
     };
 
@@ -414,11 +433,31 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     }
     contentLayout->addWidget(pages_, 1);
 
+    // Compact bar (never overflows) + a button that lists every shortcut.
+    const QString compactBar = "F2 Main   ·   F3 Inventory   ·   F4 Purchases   ·   F9 Customers   ·   Esc Cancel";
+    QStringList allParts = {"F2 — Main", "F3 — Inventory (Find Product)", "F4 — Purchases (New Purchase)",
+                            "F5 — Refresh current page", "F9 — Customers (Payment)", "Ctrl+F — Search", "Esc — Cancel"};
+    for (const auto& entry : pos::navCatalog())
+        if (entry.shortcut.startsWith("Ctrl")) allParts << (entry.shortcut + " — " + entry.name + (entry.gated ? "  (PIN)" : ""));
+    const QString allShortcutsText = allParts.join("\n");
+
+    auto* shortcutRow = new QHBoxLayout;
     auto* shortcutBar = new QLabel(content);
     shortcutBar->setObjectName("shortcutBar");
-shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Refresh  |  F9 Payment  |  Ctrl+F Search  |  Esc Cancel");
+    shortcutBar->setText(compactBar);
     shortcutBar->setAlignment(Qt::AlignCenter);
-    contentLayout->addWidget(shortcutBar);
+    shortcutBar->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred); // let it shrink, never force width
+    auto* allShortcutsBtn = new QPushButton("?  All shortcuts", content);
+    allShortcutsBtn->setToolTip("Show every keyboard shortcut");
+    connect(allShortcutsBtn, &QPushButton::clicked, this, [this, allShortcutsText] {
+        QMessageBox box(this);
+        box.setWindowTitle("Keyboard shortcuts");
+        box.setText(allShortcutsText);
+        box.exec();
+    });
+    shortcutRow->addWidget(shortcutBar, 1);
+    shortcutRow->addWidget(allShortcutsBtn, 0);
+    contentLayout->addLayout(shortcutRow);
     layout->addWidget(content, 1);
     setCentralWidget(root);
 
@@ -480,15 +519,15 @@ shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Ref
     dark_ = false; 
     statusBar()->showMessage("Ready — local data is available offline");
 
-    const auto updateShortcutBar = [this, shortcutBar, navigation](int row) {
+    const auto updateShortcutBar = [this, shortcutBar, navigation, compactBar](int row) {
         if (row < 0 || row >= navRowToPage_.size()) return;
         const int pageIndex = navRowToPage_.value(row);
         if (pageIndex < 0) return;
         const auto page = pageNames_.value(pageIndex);
-        if (page == "Sales POS") shortcutBar->setText("F2 New Sale  |  F3 Find Product  |  F5 Refresh  |  Ctrl+S Save  |  Ctrl+P Print  |  Esc Cancel");
-        else if (page == "Inventory") shortcutBar->setText("F3 Find Product  |  F5 Refresh  |  Enter Edit  |  Del Archive  |  Ctrl+F Search");
-        else if (page == "Purchases") shortcutBar->setText("F4 New Purchase  |  F5 Refresh Lists  |  Ctrl+S Receive  |  Esc Clear");
-        else shortcutBar->setText("F2 New Sale  |  F3 Find Product  |  F4 New Purchase  |  F5 Refresh  |  F9 Payment  |  Ctrl+F Search  |  Esc Cancel");
+        if (page == "Sales POS") shortcutBar->setText("F3 Find Product   ·   F5 Refresh   ·   Ctrl+S Save   ·   Ctrl+P Print   ·   Esc Cancel");
+        else if (page == "Inventory") shortcutBar->setText("F3 Find Product   ·   F5 Refresh   ·   Enter Edit   ·   Del Archive   ·   Ctrl+F Search");
+        else if (page == "Purchases") shortcutBar->setText("F4 New Purchase   ·   F5 Refresh Lists   ·   Ctrl+S Receive   ·   Esc Clear");
+        else shortcutBar->setText(compactBar);
     };
 
     connect(navigation, &QListWidget::currentRowChanged, this, updateShortcutBar);
@@ -528,11 +567,21 @@ shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Ref
     auto* f9 = new QShortcut(QKeySequence(Qt::Key_F9), this); 
     connect(f9, &QShortcut::activated, this, [this]{ goToPage("Customers"); });
     
-    auto* esc = new QShortcut(QKeySequence(Qt::Key_Escape), this); 
-    connect(esc, &QShortcut::activated, this, [this]{ 
+    auto* esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    connect(esc, &QShortcut::activated, this, [this]{
         if (QMessageBox::question(this, "Cancel", "Cancel the current action and return to Main?") == QMessageBox::Yes)
             goToPage("Main");
     });
+
+    // Ctrl-based page shortcuts (the F-keys above already cover Main/Inventory/
+    // Purchases/Customers). These work from any page; owner pages still prompt for
+    // the PIN because goToPage routes through the gated navigation handler.
+    for (const auto& entry : pos::navCatalog()) {
+        if (!entry.shortcut.startsWith("Ctrl")) continue;
+        const auto target = entry.name;
+        auto* sc = new QShortcut(QKeySequence(entry.shortcut), this);
+        connect(sc, &QShortcut::activated, this, [this, target]{ goToPage(target); });
+    }
 
     auto* ctrlF = new QShortcut(QKeySequence::Find, this); 
     connect(ctrlF, &QShortcut::activated, this, [this]{ 
@@ -578,4 +627,31 @@ void MainWindow::goToPage(const QString& pageName) {
 void MainWindow::switchTheme() {
     dark_ = !dark_;
     qApp->setStyleSheet(dark_ ? darkStyle : lightStyle);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    // Collapse the sidebar to icons on narrow windows so it never clips the menu.
+    const bool collapsed = width() < 1000;
+    if (collapsed != sidebarCollapsed_ || navItemTexts_.isEmpty())
+        applySidebarMode(collapsed);
+}
+
+void MainWindow::applySidebarMode(bool collapsed) {
+    if (!navigation_ || !sidebar_) return;
+    if (navItemTexts_.isEmpty())
+        for (int r = 0; r < navigation_->count(); ++r) navItemTexts_ << navigation_->item(r)->text();
+    sidebarCollapsed_ = collapsed;
+    sidebar_->setFixedWidth(collapsed ? 66 : 262);
+    if (brand_) brand_->setVisible(!collapsed);
+    if (subtitle_) subtitle_->setVisible(!collapsed);
+    if (footerFrame_) footerFrame_->setVisible(!collapsed);
+    navigation_->setIconSize(collapsed ? QSize(24, 24) : QSize(20, 20));
+    for (int r = 0; r < navigation_->count(); ++r) {
+        auto* item = navigation_->item(r);
+        const auto full = navItemTexts_.value(r);
+        item->setText(collapsed ? QString() : full);
+        item->setToolTip(collapsed ? full : QString());
+        item->setTextAlignment(collapsed ? Qt::AlignCenter : (Qt::AlignLeft | Qt::AlignVCenter));
+    }
 }

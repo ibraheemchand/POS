@@ -58,7 +58,7 @@ void SeedService::seedDemoData() {
     auto now = utcNow();
     auto shiftCheck = db_->prepare("SELECT COUNT(*) FROM shift_sessions WHERE status='open'");
     if (shiftCheck.stepRow() && shiftCheck.integer(0) == 0) {
-        auto insertShift = db_->prepare("INSERT INTO shift_sessions(id,opened_at,opening_cash_paisa,status) VALUES(?,?,?,?)");
+        auto insertShift = db_->prepare("INSERT INTO shift_sessions(id,opened_at,opening_cash,status) VALUES(?,?,?,?)");
         insertShift.bind(1, shiftId);
         insertShift.bind(2, now);
         insertShift.bind(3, static_cast<qint64>(500000));
@@ -86,7 +86,7 @@ void SeedService::seedDemoData() {
         for (const auto& s : demoSales) {
             const auto saleId = uuid();
             const auto saleTime = QDate::currentDate().addDays(s.dayOffset).toString(Qt::ISODate) + "T14:30:00Z";
-            auto insSale = db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal_paisa,discount_paisa,total_paisa,paid_paisa,due_paisa,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            auto insSale = db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal,discount,total,paid,due,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
             insSale.bind(1, saleId);
             insSale.bind(2, s.inv);
             insSale.bind(3, customerId);
@@ -102,7 +102,7 @@ void SeedService::seedDemoData() {
             insSale.bind(13, saleTime);
             insSale.execute();
 
-            auto insCash = db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)");
+            auto insCash = db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount,reason,created_at) VALUES(?,?,?,?,?,?,?)");
             insCash.bind(1, uuid());
             insCash.bind(2, shiftId);
             insCash.bind(3, saleId);

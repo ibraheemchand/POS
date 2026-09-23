@@ -12,7 +12,7 @@ AuthSession& AuthSession::instance() {
 
 bool AuthSession::unlock(const std::shared_ptr<Database>& database, const QString& pin) {
     SecurityService security(database);
-    if (!security.hasPin() || !security.verifyPin(pin)) {
+    if (!security.hasPin() || security.attemptUnlock(pin) != SecurityService::UnlockResult::Ok) {
         unlocked_ = false;
         return false;
     }

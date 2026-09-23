@@ -4,7 +4,6 @@
 #include <memory>
 #include <QLineEdit>
 #include <QSpinBox>
-#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QPushButton>
 
@@ -17,8 +16,6 @@ public:
 public slots:
     void load();
 private:
-    void refreshFlexibleLabel();
-
     std::shared_ptr<pos::Database> database_;
 
     QLineEdit* businessNameInput_{};
@@ -29,16 +26,8 @@ private:
     QLineEdit* thermalPathInput_{};
 
     QPushButton* saveSettingsBtn_{};
-    QPushButton* setPinBtn_{};
-    QPushButton* clearPinBtn_{};
     QPushButton* viewNotificationsBtn_{};
     QPushButton* testReceiptBtn_{};
     QPushButton* testLabelBtn_{};
     QLabel* pinStatusLabel_{};
-
-    QDoubleSpinBox* commissionRateSpin_{};
-    QDoubleSpinBox* partnerShareSpin_{};
-    QDoubleSpinBox* ownerMinShareSpin_{};
-    QLabel* flexibleShareLabel_{};
-    QPushButton* saveCommissionBtn_{};
 };

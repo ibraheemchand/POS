@@ -53,7 +53,7 @@ ChequesPage::ChequesPage(std::shared_ptr<pos::Database> database, QWidget* paren
         if (!ok || number.trimmed().isEmpty()) return;
         const auto bank = QInputDialog::getText(this, "Record cheque", "Bank:", QLineEdit::Normal, {}, &ok);
         if (!ok) return;
-        const auto amount = QInputDialog::getInt(this, "Record cheque", "Amount (paisa):", 0, 1, 1000000000, 1, &ok);
+        const auto amount = pos::askMoney(this, "Record cheque", "Amount", 0, &ok);
         if (!ok) return;
         const auto due = QInputDialog::getText(this, "Record cheque", "Due date (YYYY-MM-DD):", QLineEdit::Normal, QDate::currentDate().toString(Qt::ISODate), &ok);
         if (!ok) return;
@@ -109,7 +109,7 @@ void ChequesPage::load() {
             table_->setItem(row, 1, noItem);
             
             table_->setItem(row, 2, new QTableWidgetItem(item.bank));
-            table_->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatPaisa(item.amount)));
+            table_->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatMoney(item.amount)));
             table_->setItem(row, 4, new QTableWidgetItem(item.dueDate.toString(Qt::ISODate)));
             table_->setItem(row, 5, new QTableWidgetItem(item.status));
         }

@@ -4,6 +4,7 @@
 #include <memory>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QDateEdit>
 #include <QTableWidget>
@@ -23,7 +24,7 @@ private:
     QComboBox* supplierCombo_{};
     QComboBox* productCombo_{};
     QSpinBox* quantitySpin_{};
-    QSpinBox* priceSpin_{};
+    QDoubleSpinBox* priceSpin_{};
     QLineEdit* batchInput_{};
     QDateEdit* expiryEdit_{};
     QTableWidget* cartTable_{};

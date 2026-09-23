@@ -7,6 +7,8 @@
 #include <QPushButton>
 #include <QDateEdit>
 #include <QTabWidget>
+#include <QGridLayout>
+#include <QFrame>
 
 namespace pos { class Database; }
 
@@ -18,10 +20,16 @@ public:
     explicit ProfitReportPage(std::shared_ptr<pos::Database> database, QWidget* parent = nullptr);
 public slots:
     void load();
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 private:
     bool ensureUnlocked();
     void exportCurrentTab();
+    void relayoutCards();
     std::shared_ptr<pos::Database> database_;
+    QGridLayout* cardsGrid_{};
+    QList<QFrame*> cardFrames_;
+    int cardColumns_{0};
     QDateEdit* fromDate_{};
     QDateEdit* toDate_{};
     QLabel* cardSales_{};

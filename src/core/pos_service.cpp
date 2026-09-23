@@ -81,25 +81,24 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     QString shiftId=request.shiftId;
     if(cashTender>0) { if(shiftId.isEmpty()) shiftId=activeShiftId(*db_); if(shiftId.isEmpty()) throw DatabaseError("open a cashier shift before recording cash sales"); }
     if (!request.customerId.isEmpty() && due>0) {
-        auto c=db_->prepare("SELECT balance_paisa, credit_limit_paisa FROM customers WHERE id=? AND is_deleted=0"); c.bind(1,request.customerId);
+        auto c=db_->prepare("SELECT balance, credit_limit FROM customers WHERE id=? AND is_deleted=0"); c.bind(1,request.customerId);
         if(!c.stepRow()) throw DatabaseError("customer not found");
         if(c.integer(1)>0 && c.integer(0)+due>c.integer(1)) throw DatabaseError("customer credit limit exceeded");
     }
     const QString id=uuid(); const QString invoice=QString("INV-%1-%2").arg(QDate::currentDate().toString("yyyyMMdd"), id.left(6).toUpper());
-    auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal_paisa,discount_paisa,total_paisa,paid_paisa,due_paisa,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal,discount,total,paid,due,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
     sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
     CommissionService commission(db_);
-    const auto commissionSettings = commission.settings();
     PartnerService partners(db_);
     for (const auto& line: request.lines) {
-        // Validates the point-of-sale discount against the flexible commission
-        // margin once per line (throws unless a manager override was approved).
-        const auto lineBreakdown = commission.computeBreakdown(line.quantity*line.unitPrice, line.discount, line.discountOverrideApproved, commissionSettings);
         // Snapshot the partner-commission settings onto every allocation of this
         // line. A course-tagged line uses the course's settings; a standalone
         // book uses the book's own. Frozen here so later config edits never
         // change past sales, ledgers or reports.
         const auto commissionConfig = line.courseId.isEmpty() ? partners.resolveBookConfig(line.productId) : partners.resolveCourseConfig(line.courseId);
+        // Enforce the discount cap once per line: (item total% - item partner% -
+        // owner min%) of the gross line. Throws unless a manager override was approved.
+        const auto lineBreakdown = commission.computeBreakdown(line.quantity*line.unitPrice, commissionConfig.totalBp, commissionConfig.partnerBp, line.discount, line.discountOverrideApproved);
         const auto allocations=allocateBatches(line,id,"POS");
         Money discountRemaining=line.discount;
         for (int index=0; index<allocations.size(); ++index) {
@@ -108,14 +107,16 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
             discountRemaining-=allocationDiscount;
             const Money allocationTotal=allocation.quantity*line.unitPrice-allocationDiscount;
             const QString itemId=uuid();
-            auto item=db_->prepare("INSERT INTO sale_items(id,sale_id,product_id,batch_id,quantity,unit_name,unit_price_paisa,discount_paisa,line_total_paisa,course_id,total_pct_bp,partner_pct_bp,partner_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            auto item=db_->prepare("INSERT INTO sale_items(id,sale_id,product_id,batch_id,quantity,unit_name,unit_price,discount,line_total,course_id,total_pct_bp,partner_pct_bp,partner_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
             item.bind(1,itemId); item.bind(2,id); item.bind(3,line.productId); if(allocation.batchId.isEmpty()) item.bindNull(4); else item.bind(4,allocation.batchId); item.bind(5,allocation.quantity); item.bind(6,line.unitName); item.bind(7,line.unitPrice); item.bind(8,allocationDiscount); item.bind(9,allocationTotal); if(line.courseId.isEmpty()) item.bindNull(10); else item.bind(10,line.courseId); item.bind(11,commissionConfig.totalBp); item.bind(12,commissionConfig.partnerBp); if(commissionConfig.partnerId.isEmpty()) item.bindNull(13); else item.bind(13,commissionConfig.partnerId); item.execute();
 
             // The per-line cap was already enforced above; the fragment-level call
             // (forced overrideApproved=true) only derives amounts, never re-throws.
-            const auto fragment = commission.computeBreakdown(allocation.quantity*line.unitPrice, allocationDiscount, true, commissionSettings);
-            auto commissionRow=db_->prepare("INSERT INTO sale_item_commissions(id,sale_item_id,sale_id,product_id,retail_amount_paisa,commission_rate_bp,commission_amount_paisa,partner_rate_bp,partner_amount_paisa,discount_amount_paisa,owner_amount_paisa,overridden,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            commissionRow.bind(1,uuid()); commissionRow.bind(2,itemId); commissionRow.bind(3,id); commissionRow.bind(4,line.productId); commissionRow.bind(5,fragment.retailAmount); commissionRow.bind(6,commissionSettings.commissionRateBp); commissionRow.bind(7,fragment.commissionAmount); commissionRow.bind(8,commissionSettings.partnerShareBp); commissionRow.bind(9,fragment.partnerAmount); commissionRow.bind(10,fragment.discountAmount); commissionRow.bind(11,fragment.ownerAmount); commissionRow.bind(12,lineBreakdown.overridden?1:0); commissionRow.bind(13,utcNow()); commissionRow.execute();
+            const auto fragment = commission.computeBreakdown(allocation.quantity*line.unitPrice, commissionConfig.totalBp, commissionConfig.partnerBp, allocationDiscount, true);
+            // partner_rate_bp/partner_amount are always 0 now: partner shares
+            // are tracked by the new PartnerService system, not this legacy record.
+            auto commissionRow=db_->prepare("INSERT INTO sale_item_commissions(id,sale_item_id,sale_id,product_id,retail_amount,commission_rate_bp,commission_amount,partner_rate_bp,partner_amount,discount_amount,owner_amount,overridden,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            commissionRow.bind(1,uuid()); commissionRow.bind(2,itemId); commissionRow.bind(3,id); commissionRow.bind(4,line.productId); commissionRow.bind(5,fragment.retailAmount); commissionRow.bind(6,commissionConfig.totalBp); commissionRow.bind(7,fragment.commissionAmount); commissionRow.bind(8,static_cast<qint64>(0)); commissionRow.bind(9,static_cast<qint64>(0)); commissionRow.bind(10,fragment.discountAmount); commissionRow.bind(11,fragment.ownerAmount); commissionRow.bind(12,lineBreakdown.overridden?1:0); commissionRow.bind(13,utcNow()); commissionRow.execute();
         }
     }
     // Post partner-commission and My-Profits entries from the snapshot just
@@ -123,18 +124,18 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     // same transaction, so a failed sale never leaves half-written ledgers.
     partners.postSaleCommissions(id);
     if (!request.customerId.isEmpty() && due>0) {
-        auto balance=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa+? WHERE id=?"); balance.bind(1,due); balance.bind(2,request.customerId); balance.execute();
-        auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Credit sale',?,0,balance_paisa,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,request.customerId); ledger.bind(3,id); ledger.bind(4,due); ledger.bind(5,utcNow()); ledger.bind(6,request.customerId); ledger.execute();
+        auto balance=db_->prepare("UPDATE customers SET balance=balance+? WHERE id=?"); balance.bind(1,due); balance.bind(2,request.customerId); balance.execute();
+        auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit,credit,running_balance,created_at) SELECT ?,?,?,'Credit sale',?,0,balance,? FROM customers WHERE id=?"); ledger.bind(1,uuid()); ledger.bind(2,request.customerId); ledger.bind(3,id); ledger.bind(4,due); ledger.bind(5,utcNow()); ledger.bind(6,request.customerId); ledger.execute();
     }
-    for(const auto& tender:tenders){auto payment=db_->prepare("INSERT INTO sale_payments(id,sale_id,method,amount_paisa,created_at) VALUES(?,?,?,?,?)");payment.bind(1,uuid());payment.bind(2,id);payment.bind(3,tender.method);payment.bind(4,tender.amount);payment.bind(5,utcNow());payment.execute();}
-    if (cashTender>0) { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,cashTender); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
+    for(const auto& tender:tenders){auto payment=db_->prepare("INSERT INTO sale_payments(id,sale_id,method,amount,created_at) VALUES(?,?,?,?,?)");payment.bind(1,uuid());payment.bind(2,id);payment.bind(3,tender.method);payment.bind(4,tender.amount);payment.bind(5,utcNow());payment.execute();}
+    if (cashTender>0) { auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount,reason,created_at) VALUES(?,?,?,?,?,?,?)"); cash.bind(1,uuid()); cash.bind(2,shiftId); cash.bind(3,id); cash.bind(4,"cash_in"); cash.bind(5,cashTender); cash.bind(6,"Sale payment"); cash.bind(7,utcNow()); cash.execute(); }
     tx.commit();
     notifySalesChanged();
     notifyInventoryChanged();
     if (!request.customerId.isEmpty() && due > 0) notifyCustomersChanged();
     if (cashTender > 0) notifyCashChanged();
     NotificationService notifications(db_);
-    notifications.createBestEffort("sale", "Sale completed", QString("Invoice %1 completed for %2 paisa.").arg(invoice).arg(total));
+    notifications.createBestEffort("sale", "Sale completed", QString("Invoice %1 completed for PKR %2.").arg(invoice, formatMoney(total)));
     for (const auto& line : request.lines) {
         auto stock = db_->prepare("SELECT name,stock_quantity,minimum_stock FROM products WHERE id=? AND is_deleted=0");
         stock.bind(1, line.productId);
@@ -147,14 +148,14 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
 
 void PosService::voidSale(const QString& saleId, const QString& reason, const QString& performedBy) {
     if(reason.trimmed().isEmpty()) throw DatabaseError("a void reason is required");
-    Transaction tx(db_->handle()); auto sale=db_->prepare("SELECT customer_id,due_paisa,status FROM sales WHERE id=?"); sale.bind(1,saleId); if(!sale.stepRow()) throw DatabaseError("sale not found"); const auto customer=sale.text(0); const auto due=sale.integer(1); if(sale.text(2)!="completed") throw DatabaseError("only completed, unpaid sales can be voided");
+    Transaction tx(db_->handle()); auto sale=db_->prepare("SELECT customer_id,due,status FROM sales WHERE id=?"); sale.bind(1,saleId); if(!sale.stepRow()) throw DatabaseError("sale not found"); const auto customer=sale.text(0); const auto due=sale.integer(1); if(sale.text(2)!="completed") throw DatabaseError("only completed, unpaid sales can be voided");
     auto allocations=db_->prepare("SELECT 1 FROM customer_payment_allocations WHERE sale_id=? LIMIT 1"); allocations.bind(1,saleId); if(allocations.stepRow()) throw DatabaseError("a sale with recorded customer payments must be refunded, not voided");
     auto lines=db_->prepare("SELECT product_id,batch_id,quantity FROM sale_items WHERE sale_id=?"); lines.bind(1,saleId);
     while(lines.stepRow()) { const auto product=lines.text(0), batch=lines.text(1); const auto quantity=lines.integer(2); auto p=db_->prepare("UPDATE products SET stock_quantity=stock_quantity+?,updated_at=? WHERE id=?"); p.bind(1,quantity); p.bind(2,utcNow()); p.bind(3,product); p.execute(); if(!batch.isEmpty()){auto b=db_->prepare("UPDATE batches SET quantity_remaining=quantity_remaining+? WHERE id=?");b.bind(1,quantity);b.bind(2,batch);b.execute();} auto m=db_->prepare("INSERT INTO stock_movements(id,product_id,batch_id,type,quantity,reference_id,reason,balance_after,performed_by,created_at) SELECT ?,?,?, 'void_return', ?, ?, ?, stock_quantity, ?, ? FROM products WHERE id=?");m.bind(1,uuid());m.bind(2,product);if(batch.isEmpty())m.bindNull(3);else m.bind(3,batch);m.bind(4,quantity);m.bind(5,saleId);m.bind(6,reason);m.bind(7,performedBy);m.bind(8,utcNow());m.bind(9,product);m.execute(); }
     PartnerService(db_).reverseSale(saleId, "Voided sale reversal"); // reverses partner ledger + My-Profits, never deletes history
     auto mark=db_->prepare("UPDATE sales SET status='voided',voided_at=?,void_reason=? WHERE id=?"); mark.bind(1,utcNow());mark.bind(2,reason);mark.bind(3,saleId);mark.execute();
-    if(!customer.isEmpty() && due>0){auto c=db_->prepare("UPDATE customers SET balance_paisa=balance_paisa-? WHERE id=?");c.bind(1,due);c.bind(2,customer);c.execute();auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) SELECT ?,?,?,'Voided sale reversal',0,?,balance_paisa,? FROM customers WHERE id=?");ledger.bind(1,uuid());ledger.bind(2,customer);ledger.bind(3,saleId);ledger.bind(4,due);ledger.bind(5,utcNow());ledger.bind(6,customer);ledger.execute();}
-    auto cashPaid=db_->prepare("SELECT COALESCE(SUM(amount_paisa),0) FROM sale_payments WHERE sale_id=? AND method='cash'");cashPaid.bind(1,saleId);cashPaid.stepRow();if(cashPaid.integer(0)>0){auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount_paisa,reason,created_at) SELECT ?,shift_id,?,'cash_out',?,'Voided sale reversal',? FROM sales WHERE id=?");cash.bind(1,uuid());cash.bind(2,saleId);cash.bind(3,cashPaid.integer(0));cash.bind(4,utcNow());cash.bind(5,saleId);cash.execute();}
+    if(!customer.isEmpty() && due>0){auto c=db_->prepare("UPDATE customers SET balance=balance-? WHERE id=?");c.bind(1,due);c.bind(2,customer);c.execute();auto ledger=db_->prepare("INSERT INTO customer_ledger(id,customer_id,sale_id,description,debit,credit,running_balance,created_at) SELECT ?,?,?,'Voided sale reversal',0,?,balance,? FROM customers WHERE id=?");ledger.bind(1,uuid());ledger.bind(2,customer);ledger.bind(3,saleId);ledger.bind(4,due);ledger.bind(5,utcNow());ledger.bind(6,customer);ledger.execute();}
+    auto cashPaid=db_->prepare("SELECT COALESCE(SUM(amount),0) FROM sale_payments WHERE sale_id=? AND method='cash'");cashPaid.bind(1,saleId);cashPaid.stepRow();if(cashPaid.integer(0)>0){auto cash=db_->prepare("INSERT INTO cash_transactions(id,shift_id,sale_id,type,amount,reason,created_at) SELECT ?,shift_id,?,'cash_out',?,'Voided sale reversal',? FROM sales WHERE id=?");cash.bind(1,uuid());cash.bind(2,saleId);cash.bind(3,cashPaid.integer(0));cash.bind(4,utcNow());cash.bind(5,saleId);cash.execute();}
     auto audit=db_->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");audit.bind(1,uuid());audit.bind(2,"sale_voided");audit.bind(3,"sale");audit.bind(4,saleId);audit.bind(5,reason);audit.bind(6,utcNow());audit.execute();tx.commit();
     notifySalesChanged();
     notifyInventoryChanged();

@@ -10,6 +10,7 @@
 #include "core/thermal_print_service.h"
 #include "core/data_change_bus.h"
 #include "core/commission_service.h"
+#include "core/partner_service.h"
 #include "core/bundle_service.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -164,10 +165,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     rowActions->addWidget(removeLineBtn_);
     rowActions->addStretch();
 
-    discountSpin_ = new QSpinBox(cartPanel);
-    discountSpin_->setRange(0, 1000000000);
-    discountSpin_->setPrefix("Invoice discount (paisa): ");
-    discountSpin_->setAccessibleName("Invoice discount in paisa");
+    discountSpin_ = new QDoubleSpinBox(cartPanel);
+    discountSpin_->setRange(0, 100000000);
+    discountSpin_->setDecimals(2);
+    discountSpin_->setPrefix("Invoice discount (PKR): ");
+    discountSpin_->setAccessibleName("Invoice discount in rupees");
     
     auto* discountLabel = new QLabel("&Discount:", cartPanel);
     discountLabel->setBuddy(discountSpin_);
@@ -207,10 +209,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     sl->addSpacing(2);
     sl->addWidget(totalValue_);
 
-    receivedSpin_ = new QSpinBox(cartPanel);
-    receivedSpin_->setRange(0, 2147483647);
-    receivedSpin_->setPrefix("Amount received (paisa): ");
-    receivedSpin_->setAccessibleName("Amount received in paisa");
+    receivedSpin_ = new QDoubleSpinBox(cartPanel);
+    receivedSpin_->setRange(0, 100000000);
+    receivedSpin_->setDecimals(2);
+    receivedSpin_->setPrefix("Amount received (PKR): ");
+    receivedSpin_->setAccessibleName("Amount received in rupees");
     
     auto* receivedLabel = new QLabel("&Received:", cartPanel);
     receivedLabel->setBuddy(receivedSpin_);
@@ -330,10 +333,10 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     });
     connect(loadCourseBtn_, &QPushButton::clicked, this, &SalesPosPage::loadCourse);
 
-    connect(discountSpin_, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
+    connect(discountSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
         const auto grand = computeTotal();
         if (paymentMethodCombo_->currentData().toString() != "credit") {
-            receivedSpin_->setValue(grand);
+            receivedSpin_->setValue(grand / 100.0);
         }
         refreshDue(grand);
     });
@@ -341,12 +344,12 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     connect(paymentMethodCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int) {
         const auto grand = computeTotal();
         if (paymentMethodCombo_->currentData().toString() != "credit") {
-            receivedSpin_->setValue(grand);
+            receivedSpin_->setValue(grand / 100.0);
         }
         refreshDue(grand);
     });
 
-    connect(receivedSpin_, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
+    connect(receivedSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
         refreshDue(computeTotal());
     });
 
@@ -414,7 +417,7 @@ void SalesPosPage::load() {
             productsTable_->setItem(row, 1, new QTableWidgetItem(item.sku));
             productsTable_->setItem(row, 2, new QTableWidgetItem(QString::number(item.stock)));
             
-            auto* priceItem = new QTableWidgetItem("PKR " + pos::formatPaisa(item.retailPrice));
+            auto* priceItem = new QTableWidgetItem("PKR " + pos::formatMoney(item.retailPrice));
             priceItem->setData(Qt::UserRole + 2, item.retailPrice);
             productsTable_->setItem(row, 3, priceItem);
             
@@ -428,25 +431,25 @@ qint64 SalesPosPage::computeTotal() {
     for (int row = 0; row < cartTable_->rowCount(); ++row) {
         subtotal += cartTable_->item(row, 4)->data(Qt::UserRole).toLongLong();
     }
-    const qint64 disc = discountSpin_->value();
+    const qint64 disc = pos::roundMoney(discountSpin_->value() * 100);
     const qint64 grand = subtotal - disc;
-    subtotalValue_->setText("PKR " + pos::formatPaisa(subtotal));
-    discountValue_->setText("PKR " + pos::formatPaisa(disc));
-    totalValue_->setText("PKR " + pos::formatPaisa(grand));
+    subtotalValue_->setText("PKR " + pos::formatMoney(subtotal));
+    discountValue_->setText("PKR " + pos::formatMoney(disc));
+    totalValue_->setText("PKR " + pos::formatMoney(grand));
     return grand;
 }
 
 void SalesPosPage::refreshDue(qint64 grand) {
     if (paymentMethodCombo_->currentData().toString() == "credit") {
         receivedSpin_->setEnabled(false);
-        dueLabel_->setText(QString("Balance due: PKR %1").arg(pos::formatPaisa(grand)));
+        dueLabel_->setText(QString("Balance due: PKR %1").arg(pos::formatMoney(grand)));
     } else {
         receivedSpin_->setEnabled(true);
-        const auto paid = receivedSpin_->value();
+        const qint64 paid = pos::roundMoney(receivedSpin_->value() * 100);
         if (paid >= grand) {
-            dueLabel_->setText(QString("Change: PKR %1").arg(pos::formatPaisa(paid - grand)));
+            dueLabel_->setText(QString("Change: PKR %1").arg(pos::formatMoney(paid - grand)));
         } else {
-            dueLabel_->setText(QString("Balance due: PKR %1").arg(pos::formatPaisa(grand - paid)));
+            dueLabel_->setText(QString("Balance due: PKR %1").arg(pos::formatMoney(grand - paid)));
         }
     }
 }
@@ -454,7 +457,7 @@ void SalesPosPage::refreshDue(qint64 grand) {
 void SalesPosPage::refresh() {
     const auto grand = computeTotal();
     if (paymentMethodCombo_->currentData().toString() != "credit") {
-        receivedSpin_->setValue(grand);
+        receivedSpin_->setValue(grand / 100.0);
     }
     refreshDue(grand);
 }
@@ -503,11 +506,11 @@ void SalesPosPage::addCartRow(const QString& productId, const QString& productNa
 
     cartTable_->setItem(target, 1, new QTableWidgetItem(QString::number(quantity)));
 
-    auto* priceItem = new QTableWidgetItem(pos::formatPaisa(unitPrice));
+    auto* priceItem = new QTableWidgetItem(pos::formatMoney(unitPrice));
     priceItem->setData(Qt::UserRole + 2, unitPrice);
     cartTable_->setItem(target, 2, priceItem);
 
-    auto* discountItem = new QTableWidgetItem(pos::formatPaisa(discount));
+    auto* discountItem = new QTableWidgetItem(pos::formatMoney(discount));
     discountItem->setData(Qt::UserRole, discount);
     discountItem->setData(Qt::UserRole + 1, discountOverrideApproved);
     cartTable_->setItem(target, 3, discountItem);
@@ -531,10 +534,10 @@ void SalesPosPage::updateLineTotal(int row) {
         discount = retail;
         discountItem->setData(Qt::UserRole, discount);
     }
-    discountItem->setText(pos::formatPaisa(discount));
+    discountItem->setText(pos::formatMoney(discount));
     auto* amountItem = cartTable_->item(row, 4);
     const auto net = retail - discount;
-    amountItem->setText(pos::formatPaisa(net));
+    amountItem->setText(pos::formatMoney(net));
     amountItem->setData(Qt::UserRole, net);
 }
 
@@ -550,15 +553,23 @@ void SalesPosPage::editLineDiscount() {
     auto* discountItem = cartTable_->item(row, 3);
     const auto currentDiscount = discountItem->data(Qt::UserRole).toLongLong();
 
+    // Cap is item-specific: (this item's total% - partner% - owner min%) of the
+    // gross line. A course-loaded line uses the course's settings; anything with
+    // no commission configured gets a cap of 0 (any discount needs a manager PIN).
     pos::Money cap = 0;
     try {
-        pos::CommissionService commission(database_);
-        cap = commission.flexibleCap(retail, commission.settings());
+        const auto productId = cartTable_->item(row, 0)->data(Qt::UserRole).toString();
+        const auto courseId = cartTable_->item(row, 0)->data(Qt::UserRole + 2).toString();
+        pos::PartnerService partners(database_);
+        const auto cfg = courseId.isEmpty() ? partners.resolveBookConfig(productId) : partners.resolveCourseConfig(courseId);
+        cap = pos::CommissionService(database_).flexibleCap(retail, cfg.totalBp, cfg.partnerBp);
     } catch (...) {}
 
     bool ok = false;
-    const auto discount = QInputDialog::getInt(this, "Discount line", QString("Discount for this line (paisa). Up to PKR %1 without a manager override.").arg(pos::formatPaisa(cap)), static_cast<int>(currentDiscount), 0, static_cast<int>(retail), 1, &ok);
+    QMessageBox::information(this, "Discount line", QString("Up to %1 may be discounted on this line without a manager override.").arg(pos::formatMoney(cap)));
+    const auto discount = pos::askMoney(this, "Discount line", "Discount for this line", currentDiscount, &ok);
     if (!ok) return;
+    if (discount > retail) { QMessageBox::warning(this, "Discount line", "The discount cannot exceed the line amount."); return; }
 
     bool overrideApproved = false;
     if (discount > cap) {
@@ -637,7 +648,7 @@ void SalesPosPage::completeSale(bool printReceipt) {
         pos::SaleRequest request;
         request.paymentMethod = paymentMethodCombo_->currentData().toString();
         request.customerId = customerCombo_->currentData().toString();
-        request.invoiceDiscount = discountSpin_->value();
+        request.invoiceDiscount = pos::roundMoney(discountSpin_->value() * 100);
 
         qint64 subtotal{};
         for (int row = 0; row < cartTable_->rowCount(); ++row) {
@@ -663,7 +674,7 @@ void SalesPosPage::completeSale(bool printReceipt) {
             return;
         }
 
-        request.paidAmount = request.paymentMethod == "credit" ? 0 : receivedSpin_->value();
+        request.paidAmount = request.paymentMethod == "credit" ? 0 : pos::roundMoney(receivedSpin_->value() * 100);
         if (request.paidAmount > subtotal - request.invoiceDiscount) {
             request.paidAmount = subtotal - request.invoiceDiscount;
         }
@@ -671,9 +682,9 @@ void SalesPosPage::completeSale(bool printReceipt) {
         if (request.paymentMethod == "mixed") {
             const auto maxTender = request.paidAmount;
             bool ok = false;
-            const auto cashAmt = QInputDialog::getInt(this, "Mixed payment", "Cash amount (paisa):", 0, 0, maxTender, 1, &ok);
+            const auto cashAmt = pos::askMoney(this, "Mixed payment", QString("Cash amount (total due %1)").arg(pos::formatMoney(maxTender)), 0, &ok);
             if (!ok) return;
-            const auto chequeAmt = QInputDialog::getInt(this, "Mixed payment", "Cheque amount (paisa):", 0, 0, maxTender - cashAmt, 1, &ok);
+            const auto chequeAmt = pos::askMoney(this, "Mixed payment", QString("Cheque amount (remaining %1)").arg(pos::formatMoney(maxTender - cashAmt)), 0, &ok);
             if (!ok) return;
             const auto mobileAmt = maxTender - cashAmt - chequeAmt;
             if (cashAmt + chequeAmt + mobileAmt != maxTender) {

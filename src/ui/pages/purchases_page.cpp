@@ -53,11 +53,12 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
     auto* quantityLabel = new QLabel("&Qty:", this);
     quantityLabel->setBuddy(quantitySpin_);
 
-    priceSpin_ = new QSpinBox(this);
-    priceSpin_->setRange(0, 1000000000);
-    priceSpin_->setSuffix(" paisa");
+    priceSpin_ = new QDoubleSpinBox(this);
+    priceSpin_->setRange(0, 100000000);
+    priceSpin_->setDecimals(2);
+    priceSpin_->setSuffix(" PKR");
     
-    auto* costLabel = new QLabel("Unit &Cost (paisa):", this);
+    auto* costLabel = new QLabel("Unit &Cost (PKR):", this);
     costLabel->setBuddy(priceSpin_);
 
     controls1->addWidget(productLabel);
@@ -141,8 +142,9 @@ PurchasesPage::PurchasesPage(std::shared_ptr<pos::Database> database, QWidget* p
         name->setData(Qt::UserRole + 1, trackInfo.first); // base unit
         cartTable_->setItem(row, 0, name);
         cartTable_->setItem(row, 1, new QTableWidgetItem(QString::number(quantitySpin_->value())));
-        auto* costItem = new QTableWidgetItem("PKR " + pos::formatPaisa(priceSpin_->value()));
-        costItem->setData(Qt::UserRole, static_cast<qint64>(priceSpin_->value()));
+        const qint64 unitCost = pos::roundMoney(priceSpin_->value() * 100);
+        auto* costItem = new QTableWidgetItem("PKR " + pos::formatMoney(unitCost));
+        costItem->setData(Qt::UserRole, unitCost);
         cartTable_->setItem(row, 2, costItem);
         cartTable_->setItem(row, 3, new QTableWidgetItem(batchInput_->text().trimmed()));
         cartTable_->setItem(row, 4, new QTableWidgetItem(expiryEdit_->date().toString(Qt::ISODate)));

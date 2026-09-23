@@ -5,9 +5,10 @@
 #include <QVector>
 #include <QLabel>
 #include <QListWidget>
+#include <QPushButton>
+#include <QGridLayout>
 
 namespace pos { class Database; }
-class SalesTrendGraph;
 
 class MainPage : public QWidget {
     Q_OBJECT
@@ -17,11 +18,19 @@ public slots:
     void load();
 signals:
     void requestNavigation(const QString& pageName);
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 private:
+    void relayoutQuickAccess();
     std::shared_ptr<pos::Database> database_;
     QVector<QLabel*> metricValues_;
     QVector<QLabel*> metricCaptions_;
-    SalesTrendGraph* chart_{};
     QListWidget* recent_{};
     QListWidget* lowStockList_{};
+    QGridLayout* metricsGrid_{};
+    QList<QFrame*> metricCards_;
+    int metricColumns_{0};
+    QGridLayout* quickGrid_{};
+    QList<QPushButton*> quickButtons_;
+    int quickColumns_{0};
 };

@@ -42,7 +42,7 @@ CashManagementPage::CashManagementPage(std::shared_ptr<pos::Database> database, 
     // Connections
     connect(openBtn_, &QPushButton::clicked, this, [this] {
         bool ok = false;
-        const auto opening = QInputDialog::getInt(this, "Open shift", "Opening cash (paisa):", 0, 0, 1000000000, 1, &ok);
+        const auto opening = pos::askMoney(this, "Open shift", "Opening cash", 0, &ok);
         if (!ok) return;
         try {
             pos::ShiftService(database_).open(opening);
@@ -60,12 +60,12 @@ CashManagementPage::CashManagementPage(std::shared_ptr<pos::Database> database, 
         }
         if (!pos::authorizeSensitiveAction(this, database_, "close the shift")) return;
         bool ok = false;
-        const auto counted = QInputDialog::getInt(this, "Close shift", "Counted cash (paisa):", 0, 0, 1000000000, 1, &ok);
+        const auto counted = pos::askMoney(this, "Close shift", "Counted cash", 0, &ok);
         if (!ok) return;
         try {
             const auto result = pos::ShiftService(database_).close(id, counted);
             load();
-            QMessageBox::information(this, "Shift closed", QString("Expected: PKR %1\nDifference: PKR %2").arg(pos::formatPaisa(result.expected), pos::formatPaisa(result.difference)));
+            QMessageBox::information(this, "Shift closed", QString("Expected: PKR %1\nDifference: PKR %2").arg(pos::formatMoney(result.expected), pos::formatMoney(result.difference)));
         } catch (const std::exception& error) {
             QMessageBox::critical(this, "Could not close shift", error.what());
         }
@@ -84,7 +84,7 @@ void CashManagementPage::load() {
         if (id.isEmpty()) {
             statusLabel_->setText("Till status: CLOSED (No active shift)");
         } else {
-            auto q = database_->prepare("SELECT opening_cash_paisa, opened_at FROM shift_sessions WHERE id=?");
+            auto q = database_->prepare("SELECT opening_cash, opened_at FROM shift_sessions WHERE id=?");
             q.bind(1, id);
             qint64 openingPaisa = 0;
             QString openedAt;
@@ -92,7 +92,7 @@ void CashManagementPage::load() {
                 openingPaisa = q.integer(0);
                 openedAt = q.text(1);
             }
-            statusLabel_->setText(QString("Till status: OPEN\nActive shift: %1\nOpened at: %2\nOpening cash: PKR %3").arg(id, openedAt, pos::formatPaisa(openingPaisa)));
+            statusLabel_->setText(QString("Till status: OPEN\nActive shift: %1\nOpened at: %2\nOpening cash: PKR %3").arg(id, openedAt, pos::formatMoney(openingPaisa)));
         }
     } catch (...) {}
 }

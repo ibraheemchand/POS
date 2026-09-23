@@ -60,7 +60,7 @@ CustomersPage::CustomersPage(std::shared_ptr<pos::Database> database, QWidget* p
         if (!ok || name.trimmed().isEmpty()) return;
         const auto phone = QInputDialog::getText(this, "New customer", "Phone:", QLineEdit::Normal, {}, &ok);
         if (!ok) return;
-        const auto limit = QInputDialog::getInt(this, "New customer", "Credit limit (paisa):", 0, 0, 1000000000, 1, &ok);
+        const auto limit = pos::askMoney(this, "New customer", "Credit limit", 0, &ok);
         if (!ok) return;
         const auto terms = QInputDialog::getInt(this, "New customer", "Payment terms (days):", 0, 0, 365, 1, &ok);
         if (!ok) return;
@@ -92,13 +92,13 @@ CustomersPage::CustomersPage(std::shared_ptr<pos::Database> database, QWidget* p
         QList<QString> ids;
         for (const auto& inv : unpaid) {
             ids.append(inv.id);
-            choices.append(inv.invoiceNo + " (due " + QString::number(inv.due) + " paisa)");
+            choices.append(inv.invoiceNo + " (due PKR " + pos::formatMoney(inv.due) + ")");
         }
 
         bool ok = false;
         const auto selected = QInputDialog::getItem(this, "Allocate payment", "Invoice:", choices, 0, false, &ok);
         if (!ok) return;
-        const auto amount = QInputDialog::getInt(this, "Allocate payment", "Amount (paisa):", 0, 1, 1000000000, 1, &ok);
+        const auto amount = pos::askMoney(this, "Allocate payment", "Amount", 0, &ok);
         if (!ok) return;
         const auto method = QInputDialog::getItem(this, "Allocate payment", "Method:", {"cash", "cheque", "mobile_wallet", "bank"}, 0, false, &ok);
         if (!ok) return;
@@ -136,9 +136,9 @@ void CustomersPage::load() {
             table_->setItem(row, 0, nameItem);
             
             table_->setItem(row, 1, new QTableWidgetItem(item.phone));
-            table_->setItem(row, 2, new QTableWidgetItem("PKR " + pos::formatPaisa(item.creditLimit)));
+            table_->setItem(row, 2, new QTableWidgetItem("PKR " + pos::formatMoney(item.creditLimit)));
             
-            auto* outstanding = new QTableWidgetItem("PKR " + pos::formatPaisa(item.balance));
+            auto* outstanding = new QTableWidgetItem("PKR " + pos::formatMoney(item.balance));
             outstanding->setForeground(item.balance > 0 ? QColor("#B3261E") : QColor("#16A34A"));
             table_->setItem(row, 3, outstanding);
             
@@ -175,7 +175,7 @@ void CustomersPage::editSelectedCustomer() {
             }
         }
         
-        const auto limit = QInputDialog::getInt(this, "Edit customer", "Credit limit (paisa):", target.creditLimit, 0, 1000000000, 1, &ok);
+        const auto limit = pos::askMoney(this, "Edit customer", "Credit limit", target.creditLimit, &ok);
         if (!ok) return;
         const auto terms = QInputDialog::getInt(this, "Edit customer", "Payment terms (days):", target.paymentTermsDays, 0, 365, 1, &ok);
         if (!ok) return;

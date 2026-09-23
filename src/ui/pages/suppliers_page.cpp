@@ -54,7 +54,7 @@ SuppliersPage::SuppliersPage(std::shared_ptr<pos::Database> database, QWidget* p
     ledgerTable_->setHorizontalHeaderLabels({"Date", "Entry", "Reference", "Debit", "Credit"});
     ledgerTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ledgerTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    ledgerTable_->setFixedHeight(170);
+    ledgerTable_->setMinimumHeight(150);
     layout->addWidget(ledgerTable_);
 
     // Initial setups
@@ -78,7 +78,7 @@ SuppliersPage::SuppliersPage(std::shared_ptr<pos::Database> database, QWidget* p
         if (!ok) return;
         const auto address = QInputDialog::getText(this, "New supplier", "Address:", QLineEdit::Normal, {}, &ok);
         if (!ok) return;
-        const auto opening = QInputDialog::getInt(this, "New supplier", "Opening payable (paisa):", 0, 0, 1000000000, 1, &ok);
+        const auto opening = pos::askMoney(this, "New supplier", "Opening payable", 0, &ok);
         if (!ok) return;
 
         try {
@@ -141,7 +141,7 @@ void SuppliersPage::load() {
             table_->setItem(row, 1, new QTableWidgetItem(item.contactPerson));
             table_->setItem(row, 2, new QTableWidgetItem(item.phone));
             table_->setItem(row, 3, new QTableWidgetItem(item.address));
-            table_->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatPaisa(item.balance)));
+            table_->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatMoney(item.balance)));
         }
     } catch (...) {}
 }
@@ -159,8 +159,8 @@ void SuppliersPage::loadLedger() {
             ledgerTable_->setItem(target, 0, new QTableWidgetItem(entry.createdAt));
             ledgerTable_->setItem(target, 1, new QTableWidgetItem(entry.entryType));
             ledgerTable_->setItem(target, 2, new QTableWidgetItem(entry.referenceId));
-            ledgerTable_->setItem(target, 3, new QTableWidgetItem("PKR " + pos::formatPaisa(entry.debit)));
-            ledgerTable_->setItem(target, 4, new QTableWidgetItem("PKR " + pos::formatPaisa(entry.credit)));
+            ledgerTable_->setItem(target, 3, new QTableWidgetItem("PKR " + pos::formatMoney(entry.debit)));
+            ledgerTable_->setItem(target, 4, new QTableWidgetItem("PKR " + pos::formatMoney(entry.credit)));
         }
     } catch (const std::exception& error) {
         QMessageBox::critical(this, "Could not load supplier ledger", error.what());

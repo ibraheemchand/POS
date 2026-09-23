@@ -1,10 +1,14 @@
 #include "core/database.h"
 #include "core/seed_service.h"
+#include "core/security_service.h"
 #include "ui/main_window.h"
 #include <QApplication>
+#include <QFont>
 #include <QIcon>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QInputDialog>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QDebug>
@@ -75,9 +79,46 @@ int runSeedCommand(const QStringList& arguments) {
     throw pos::DatabaseError("unknown seed command");
 }
 
+// First-run owner PIN setup, shown before the main window. The PIN is required to
+// run — it is never created silently by whoever opens an owner page first.
+bool ensureOwnerPinConfigured(const std::shared_ptr<pos::Database>& database) {
+    pos::SecurityService security(database);
+    if (security.hasPin()) return true;
+    while (true) {
+        bool ok = false;
+        const auto pin = QInputDialog::getText(nullptr, "First-time setup — Owner PIN",
+            "Set an owner PIN (6-12 digits).\nIt protects commission, partner and profit data.",
+            QLineEdit::Password, {}, &ok);
+        if (!ok) {
+            if (QMessageBox::question(nullptr, "Setup required",
+                    "An owner PIN is required to run the app. Quit without setting one?") == QMessageBox::Yes)
+                return false;
+            continue;
+        }
+        const auto confirm = QInputDialog::getText(nullptr, "First-time setup — Owner PIN",
+            "Re-enter the PIN:", QLineEdit::Password, {}, &ok);
+        if (!ok) continue;
+        if (pin != confirm) { QMessageBox::warning(nullptr, "PIN not set", "The two entries did not match."); continue; }
+        try {
+            const auto recovery = security.setupPin(pin);
+            QMessageBox::information(nullptr, "Save your recovery code",
+                "Setup complete.\n\nRecovery code (write it down — shown once; needed if you forget the PIN):\n\n"
+                + recovery + "\n\nThe app is offline, so there is no email reset.");
+            return true;
+        } catch (const std::exception& error) {
+            QMessageBox::warning(nullptr, "PIN not set", error.what());
+        }
+    }
+}
+
 } // namespace
 
 int main(int argc, char* argv[]) {
+    // Render fractional Windows display scaling (125%, 150%) exactly instead of
+    // rounding to the nearest integer factor, which is what made 150% laptops
+    // clip and overlap. Must be set before any Q(Gui)Application is constructed.
+    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
     const auto dataDirectory = dataDirectoryArgument(argc, argv);
     if (hasSeedArgument(argc, argv)) {
         QCoreApplication app(argc, argv);
@@ -95,8 +136,12 @@ int main(int argc, char* argv[]) {
     QApplication::setApplicationName("Invento");
     QApplication::setOrganizationName("Invento");
     QApplication::setWindowIcon(QIcon(":/branding/app_icon"));
+    // Point-based base font so text scales with the OS text-size setting and stays
+    // readable (not oversized) at high DPI, instead of a fixed pixel size.
+    { QFont base = app.font(); base.setPointSizeF(10.0); app.setFont(base); }
     try {
         auto database = openDatabase(dataDirectory);
+        if (!ensureOwnerPinConfigured(database)) return 0; // owner cancelled mandatory PIN setup
         MainWindow window(database);
         window.showMaximized();
         return app.exec();

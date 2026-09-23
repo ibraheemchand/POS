@@ -1,5 +1,6 @@
 #include "core/thermal_print_service.h"
 #include "core/database.h"
+#include "core/types.h"
 #include <QFile>
 
 namespace pos {
@@ -46,10 +47,10 @@ QByteArray ThermalPrintService::receiptBytes(const QString& storeName, const QSt
     for (const auto& item : items) {
         if (item.quantity <= 0 || item.lineTotal < 0) throw DatabaseError("invalid thermal receipt item");
         validateText(item.name, "receipt item name");
-        result.append(textLine(QString("%1 x%2  %3").arg(item.name.trimmed()).arg(item.quantity).arg(item.lineTotal)));
+        result.append(textLine(QString("%1 x%2  PKR %3").arg(item.name.trimmed()).arg(item.quantity).arg(formatMoney(item.lineTotal))));
     }
     result.append(textLine("--------------------------------"));
-    result.append(textLine(QString("TOTAL (paisa): %1").arg(total)));
+    result.append(textLine(QString("TOTAL: PKR %1").arg(formatMoney(total))));
     result.append('\n').append(Esc).append('d').append('\x03');
     result.append(Gs).append('V').append('\x01');
     return result;

@@ -72,12 +72,12 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
 
     commissionSummary_ = new QTableWidget(this);
     commissionSummary_->setColumnCount(2);
-    commissionSummary_->setRowCount(6);
+    commissionSummary_->setRowCount(5);
     commissionSummary_->setHorizontalHeaderLabels({"Metric", "Value"});
     commissionSummary_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     commissionSummary_->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    const QStringList commissionLabels = {"Revenue (net of discounts)", "Commission pool", "Partner accrued", "Owner profit", "Discounts given", "Manager overrides used"};
+    const QStringList commissionLabels = {"Revenue (net of discounts)", "Commission pool", "Owner profit", "Discounts given", "Manager overrides used"};
     for (int row = 0; row < commissionLabels.size(); ++row) {
         commissionSummary_->setItem(row, 0, new QTableWidgetItem(commissionLabels[row]));
     }
@@ -111,17 +111,17 @@ void ReportsPage::load() {
             if (row == 5) {
                 summary_->setItem(row, 1, new QTableWidgetItem(QString::number(values[row])));
             } else {
-                summary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(values[row])));
+                summary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatMoney(values[row])));
             }
         }
 
         const auto c = pos::CommissionService(database_).totals(from_->date(), to_->date());
-        const QList<qint64> commissionValues = {c.revenue, c.commissionPool, c.partnerAccrued, c.ownerProfit, c.discountsGiven, c.overrideCount};
+        const QList<qint64> commissionValues = {c.revenue, c.commissionPool, c.ownerProfit, c.discountsGiven, c.overrideCount};
         for (int row = 0; row < commissionValues.size(); ++row) {
-            if (row == 5) {
+            if (row == 4) {
                 commissionSummary_->setItem(row, 1, new QTableWidgetItem(QString::number(commissionValues[row])));
             } else {
-                commissionSummary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(commissionValues[row])));
+                commissionSummary_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatMoney(commissionValues[row])));
             }
         }
     } catch (const std::exception& error) {
@@ -145,7 +145,7 @@ void ReportsPage::exportReport() {
             if (row == 5) {
                 stream << labels[row] << "," << values[row] << "\n";
             } else {
-                stream << labels[row] << ",\"PKR " << pos::formatPaisa(values[row]) << "\"\n";
+                stream << labels[row] << ",\"PKR " << pos::formatMoney(values[row]) << "\"\n";
             }
         }
         file.close();
@@ -173,7 +173,7 @@ void ReportsPage::exportPdfFile() {
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;
         for (int row = 0; row < labels.size(); ++row) {
-            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatMoney(values[row]));
             painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(valStr));
             y += 30;
         }
@@ -194,7 +194,7 @@ void ReportsPage::exportExcelFile() {
 
         QList<QStringList> rows;
         for (int row = 0; row < labels.size(); ++row) {
-            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatMoney(values[row]));
             rows.append({labels[row], valStr});
         }
         pos::ExcelExportService::writeWorkbook(fileName, {"Metric", "Value"}, rows);
@@ -221,7 +221,7 @@ void ReportsPage::printReport() {
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;
         for (int row = 0; row < labels.size(); ++row) {
-            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatPaisa(values[row]));
+            QString valStr = (row == 5) ? QString::number(values[row]) : ("PKR " + pos::formatMoney(values[row]));
             painter.drawText(100, y, QString("%1: %2").arg(labels[row]).arg(valStr));
             y += 28;
         }

@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QPushButton>
 
@@ -51,12 +52,12 @@ private:
     QPushButton* plusBtn_{};
     QPushButton* removeLineBtn_{};
     QPushButton* lineDiscountBtn_{};
-    QSpinBox* discountSpin_{};
+    QDoubleSpinBox* discountSpin_{};
 
     QLabel* subtotalValue_{};
     QLabel* discountValue_{};
     QLabel* totalValue_{};
-    QSpinBox* receivedSpin_{};
+    QDoubleSpinBox* receivedSpin_{};
     QLabel* dueLabel_{};
 
     QPushButton* savePrintBtn_{};

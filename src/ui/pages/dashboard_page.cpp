@@ -196,7 +196,7 @@ void DashboardPage::load() {
         // 1. Today's sales
         try {
             const auto salesVal = reportService.summary(today, today).sales;
-            metricValues_[0]->setText("PKR " + pos::formatPaisa(salesVal));
+            metricValues_[0]->setText("PKR " + pos::formatMoney(salesVal));
             const auto count = reportService.salesCount(today);
             metricCaptions_[0]->setText(QString("%1 completed invoices").arg(count));
         } catch (...) {
@@ -207,7 +207,7 @@ void DashboardPage::load() {
         // 2. Today's cash
         try {
             const auto cashVal = reportService.todayCashSales(today);
-            metricValues_[1]->setText("PKR " + pos::formatPaisa(cashVal));
+            metricValues_[1]->setText("PKR " + pos::formatMoney(cashVal));
             metricCaptions_[1]->setText("Cash payments received");
         } catch (...) {
             metricValues_[1]->setText("PKR 0.00");
@@ -217,7 +217,7 @@ void DashboardPage::load() {
         // 3. Receivables
         try {
             const auto recVal = customerService.totalReceivables();
-            metricValues_[2]->setText("PKR " + pos::formatPaisa(recVal));
+            metricValues_[2]->setText("PKR " + pos::formatMoney(recVal));
             metricCaptions_[2]->setText("Unpaid customer balances");
         } catch (...) {
             metricValues_[2]->setText("PKR 0.00");
@@ -237,7 +237,7 @@ void DashboardPage::load() {
         // 5. Today's purchases
         try {
             const auto purVal = reportService.summary(today, today).purchases;
-            metricValues_[4]->setText("PKR " + pos::formatPaisa(purVal));
+            metricValues_[4]->setText("PKR " + pos::formatMoney(purVal));
             metricCaptions_[4]->setText("Received stock value");
         } catch (...) {
             metricValues_[4]->setText("PKR 0.00");
@@ -277,11 +277,11 @@ void DashboardPage::load() {
             recent_->clear();
             const auto sales = reportService.recentSales(4);
             for (const auto& item : sales) {
-                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
             }
             const auto purchases = reportService.recentPurchases(4);
             for (const auto& item : purchases) {
-                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
             }
         } catch (...) {}
 

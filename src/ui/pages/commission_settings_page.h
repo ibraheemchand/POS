@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include <QDoubleSpinBox>
 
 namespace pos { class Database; }
 
@@ -28,4 +29,6 @@ private:
     QPushButton* refreshBtn_{};
     QLabel* feedbackLabel_{};
     QLabel* lockedLabel_{};
+    QDoubleSpinBox* ownerMinSpin_{};
+    QPushButton* saveDiscountBtn_{};
 };

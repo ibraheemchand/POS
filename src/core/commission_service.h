@@ -5,20 +5,18 @@
 namespace pos {
 class Database;
 
-// Rates are stored as basis points (1% = 100 bp) so the margin math stays in
-// integers, matching the Money/Quantity convention used across the app.
+// The only global discount-limit knob left. Per-item total%/partner% now live on
+// products/bundles (see PartnerService); the flexible discount margin for a line
+// is derived from those minus this owner floor. Stored as basis points.
 struct CommissionSettings {
-    qint64 commissionRateBp{3000};     // total markup pool taken from retail price
-    qint64 partnerShareBp{1000};       // fixed, never reduced by a point-of-sale discount
-    qint64 ownerMinShareBp{1000};      // floor guaranteed to the owner
+    qint64 ownerMinShareBp{1200}; // owner's guaranteed floor (default 12%)
 };
 
 struct CommissionBreakdown {
-    Money retailAmount{};
-    Money commissionAmount{};
-    Money partnerAmount{};
+    Money retailAmount{};       // gross line amount, before discount
+    Money commissionAmount{};   // gross * totalBp
     Money discountAmount{};
-    Money ownerAmount{};
+    Money ownerAmount{};        // commission - discount
     Money flexibleCap{};
     bool overridden{};
 };
@@ -26,7 +24,6 @@ struct CommissionBreakdown {
 struct CommissionTotals {
     Money revenue{};
     Money commissionPool{};
-    Money partnerAccrued{};
     Money ownerProfit{};
     Money discountsGiven{};
     qint64 overrideCount{};
@@ -37,7 +34,6 @@ struct CommissionLedgerRow {
     QString productName;
     Money retailAmount{};
     Money discountAmount{};
-    Money partnerAmount{};
     Money ownerAmount{};
     bool overridden{};
     QString createdAt;
@@ -50,12 +46,13 @@ public:
     CommissionSettings settings() const;
     void setSettings(const CommissionSettings& settings);
 
-    // Largest discount (in paisa) a salesman may give on this line without a
-    // manager override, i.e. the pool left after the partner and owner floors.
-    Money flexibleCap(Money retailAmount, const CommissionSettings& snapshot) const;
+    // Largest discount (paisa) allowed on this line without a manager override:
+    // (item total% - item partner% - owner min%) of the gross line amount, floored
+    // at 0. An item with no commission configured (total%=0) yields a cap of 0.
+    Money flexibleCap(Money grossLineAmount, qint64 totalBp, qint64 partnerBp) const;
 
-    // Throws if discountAmount exceeds the flexible cap and overrideApproved is false.
-    CommissionBreakdown computeBreakdown(Money retailAmount, Money discountAmount, bool overrideApproved, const CommissionSettings& snapshot) const;
+    // Throws if discount exceeds the cap and overrideApproved is false.
+    CommissionBreakdown computeBreakdown(Money grossLineAmount, qint64 totalBp, qint64 partnerBp, Money discountAmount, bool overrideApproved) const;
 
     CommissionTotals totals(const QDate& from, const QDate& to) const;
     QList<CommissionLedgerRow> ledger(const QDate& from, const QDate& to, int limit) const;

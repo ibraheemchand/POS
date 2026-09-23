@@ -1,5 +1,5 @@
 #include "ui/pages/main_page.h"
-#include "ui/pages/sales_trend_graph.h"
+#include "ui/pages/nav_catalog.h"
 #include "ui/pages/page_helper.h"
 #include "core/database.h"
 #include "core/report_service.h"
@@ -12,6 +12,8 @@
 #include <QFrame>
 #include <QPushButton>
 #include <QColor>
+#include <QIcon>
+#include <QResizeEvent>
 #include <QTime>
 #include <QDate>
 
@@ -39,9 +41,9 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     metricValues_.resize(6);
     metricCaptions_.resize(6);
-    auto* metrics = new QGridLayout;
-    metrics->setHorizontalSpacing(10);
-    metrics->setVerticalSpacing(8);
+    metricsGrid_ = new QGridLayout;
+    metricsGrid_->setHorizontalSpacing(10);
+    metricsGrid_->setVerticalSpacing(8);
 
     const QList<QString> accents = {"#2563EB", "#22C55E", "#F59E0B", "#EF4444", "#7C3AED", "#EA580C"};
     const QList<QString> labels = {"Today's sales", "Today's cash", "Receivables", "Low stock", "Today's purchases", "Expiring batches"};
@@ -49,22 +51,27 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     for (int i = 0; i < 6; ++i) {
         auto* card = new QFrame(this);
         card->setObjectName("metric");
-        card->setMinimumHeight(84);
+        // No fixed height: the card grows to fit its (DPI-scaled) text. A minimum
+        // width keeps it readable while the grid reflows the column count.
+        card->setMinimumWidth(160);
+        card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         auto* cardLayout = new QVBoxLayout(card);
-        cardLayout->setContentsMargins(12, 8, 12, 8);
-        cardLayout->setSpacing(2);
+        cardLayout->setContentsMargins(12, 10, 12, 10);
+        cardLayout->setSpacing(3);
 
         auto* label = new QLabel(labels[i], card);
         label->setObjectName("metricLabel");
-        label->setStyleSheet("font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;");
+        label->setWordWrap(true);
+        label->setStyleSheet("font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;");
 
-        auto* value = new QLabel(i == 3 || i == 5 ? "PKR 0.00" : "PKR 0.00", card);
+        auto* value = new QLabel("PKR 0.00", card);
         value->setObjectName("metricValue");
-        value->setStyleSheet("color:" + accents[i] + "; font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', 'Segoe UI', monospace;");
+        value->setWordWrap(true);
+        value->setStyleSheet("color:" + accents[i] + "; font-weight: 800; font-family: 'JetBrains Mono', 'Segoe UI', monospace;");
 
         auto* caption = new QLabel("Updated live", card);
         caption->setObjectName("metricCaption");
-        caption->setStyleSheet("font-size: 10.5px;");
+        caption->setWordWrap(true);
 
         cardLayout->addWidget(label);
         cardLayout->addWidget(value);
@@ -72,21 +79,44 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
 
         metricValues_[i] = value;
         metricCaptions_[i] = caption;
-        metrics->addWidget(card, i / 3, i % 3);
+        metricCards_.append(card);
     }
-    l->addLayout(metrics);
+    l->addLayout(metricsGrid_);
 
-    // --- Trend chart ---
-    auto* graphPanel = new QFrame(this);
-    graphPanel->setObjectName("panel");
-    graphPanel->setMinimumHeight(120);
-    auto* gl = new QVBoxLayout(graphPanel);
-    gl->setContentsMargins(14, 10, 14, 10);
-    gl->setSpacing(4);
+    // --- Quick Access ---
+    auto* quickPanel = new QFrame(this);
+    quickPanel->setObjectName("panel");
+    auto* ql = new QVBoxLayout(quickPanel);
+    ql->setContentsMargins(14, 10, 14, 12);
+    ql->setSpacing(8);
+    auto* quickTitle = new QLabel("Quick Access", quickPanel);
+    quickTitle->setObjectName("sectionTitle");
+    ql->addWidget(quickTitle);
 
-    chart_ = new SalesTrendGraph(graphPanel);
-    gl->addWidget(chart_, 1);
-    l->addWidget(graphPanel);
+    quickGrid_ = new QGridLayout;
+    quickGrid_->setHorizontalSpacing(10);
+    quickGrid_->setVerticalSpacing(8);
+    for (const auto& entry : pos::navCatalog()) {
+        if (entry.name == "Main") continue; // no self-link; you're already here
+        auto* btn = new QPushButton(quickPanel);
+        btn->setObjectName("quickCard");
+        btn->setIcon(QIcon(entry.iconPath));
+        btn->setIconSize(QSize(22, 22));
+        btn->setCursor(Qt::PointingHandCursor);
+        // Minimum height derives from the font (two text lines + padding) so it
+        // scales with DPI and never clips the name or the shortcut line.
+        btn->setMinimumHeight(fontMetrics().height() * 2 + 26);
+        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+        // Name (+ lock for owner pages) on the first line, shortcut on the second.
+        const auto lock = entry.gated ? QString("  \xF0\x9F\x94\x92") : QString();
+        btn->setText(entry.name + lock + "\n" + entry.shortcut);
+        const auto target = entry.name;
+        connect(btn, &QPushButton::clicked, this, [this, target] { emit requestNavigation(target); });
+        quickButtons_.append(btn);
+    }
+    ql->addLayout(quickGrid_);
+    l->addWidget(quickPanel);
+    relayoutQuickAccess();
 
     auto* lower = new QHBoxLayout;
     lower->setSpacing(10);
@@ -136,8 +166,35 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     // Initial load
     load();
 
-    // Set tab order
-    // No quick actions to set tab order for
+}
+
+void MainPage::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    relayoutQuickAccess();
+}
+
+void MainPage::relayoutQuickAccess() {
+    // Base the column count on the SCROLL VIEWPORT width (our parent), not our own
+    // width(): inside a scroll area the widget's width inflates to its content's
+    // minimum, which would feed back and prevent the grid from ever shrinking.
+    const int avail = parentWidget() ? parentWidget()->width() : width();
+    const int metricCols = qBound(2, avail / 190, 6);
+    if (metricsGrid_ && !metricCards_.isEmpty() && metricCols != metricColumns_) {
+        metricColumns_ = metricCols;
+        for (auto* card : metricCards_) metricsGrid_->removeWidget(card);
+        for (int i = 0; i < metricCards_.size(); ++i)
+            metricsGrid_->addWidget(metricCards_[i], i / metricCols, i % metricCols);
+        for (int c = 0; c < metricCols; ++c) metricsGrid_->setColumnStretch(c, 1);
+    }
+
+    const int quickCols = qBound(2, avail / 210, 6);
+    if (quickGrid_ && !quickButtons_.isEmpty() && quickCols != quickColumns_) {
+        quickColumns_ = quickCols;
+        for (auto* btn : quickButtons_) quickGrid_->removeWidget(btn);
+        for (int i = 0; i < quickButtons_.size(); ++i)
+            quickGrid_->addWidget(quickButtons_[i], i / quickCols, i % quickCols);
+        for (int c = 0; c < quickCols; ++c) quickGrid_->setColumnStretch(c, 1);
+    }
 }
 
 void MainPage::load() {
@@ -150,7 +207,7 @@ void MainPage::load() {
         // 1. Today's sales
         try {
             const auto salesVal = reportService.summary(today, today).sales;
-            metricValues_[0]->setText("PKR " + pos::formatPaisa(salesVal));
+            metricValues_[0]->setText("PKR " + pos::formatMoney(salesVal));
             const auto count = reportService.salesCount(today);
             metricCaptions_[0]->setText(QString("%1 completed invoices").arg(count));
         } catch (...) {
@@ -161,7 +218,7 @@ void MainPage::load() {
         // 2. Today's cash
         try {
             const auto cashVal = reportService.todayCashSales(today);
-            metricValues_[1]->setText("PKR " + pos::formatPaisa(cashVal));
+            metricValues_[1]->setText("PKR " + pos::formatMoney(cashVal));
             metricCaptions_[1]->setText("Cash payments received");
         } catch (...) {
             metricValues_[1]->setText("PKR 0.00");
@@ -171,7 +228,7 @@ void MainPage::load() {
         // 3. Receivables
         try {
             const auto recVal = customerService.totalReceivables();
-            metricValues_[2]->setText("PKR " + pos::formatPaisa(recVal));
+            metricValues_[2]->setText("PKR " + pos::formatMoney(recVal));
             metricCaptions_[2]->setText("Unpaid customer balances");
         } catch (...) {
             metricValues_[2]->setText("PKR 0.00");
@@ -191,7 +248,7 @@ void MainPage::load() {
         // 5. Today's purchases
         try {
             const auto purVal = reportService.summary(today, today).purchases;
-            metricValues_[4]->setText("PKR " + pos::formatPaisa(purVal));
+            metricValues_[4]->setText("PKR " + pos::formatMoney(purVal));
             metricCaptions_[4]->setText("Received stock value");
         } catch (...) {
             metricValues_[4]->setText("PKR 0.00");
@@ -208,34 +265,16 @@ void MainPage::load() {
             metricCaptions_[5]->setText("Batches expiring within 30 days");
         }
 
-        // Trend chart
-        try {
-            QVector<double> trendValues;
-            QStringList trendLabels;
-            const auto rawTrend = reportService.salesTrend(today.addDays(-6), today);
-            QMap<QString, double> trendMap;
-            for (const auto& pair : rawTrend) {
-                trendMap[pair.first] = static_cast<double>(pair.second) / 100.0;
-            }
-            for (int d = -6; d <= 0; ++d) {
-                const auto dt = today.addDays(d);
-                const auto key = dt.toString(Qt::ISODate);
-                trendValues.append(trendMap.value(key, 0.0));
-                trendLabels.append(dt.toString("dd MMM"));
-            }
-            chart_->setData(trendValues, trendLabels);
-        } catch (...) {}
-
         // Recent Activity
         try {
             recent_->clear();
             const auto sales = reportService.recentSales(4);
             for (const auto& item : sales) {
-                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
             }
             const auto purchases = reportService.recentPurchases(4);
             for (const auto& item : purchases) {
-                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatPaisa(item.total)).arg(item.date));
+                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
             }
         } catch (...) {}
 

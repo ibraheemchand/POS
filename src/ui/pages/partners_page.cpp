@@ -203,7 +203,7 @@ void PartnersPage::load() {
             nameItem->setData(Qt::UserRole, p.id);
             partnersTable_->setItem(r, 0, nameItem);
             partnersTable_->setItem(r, 1, new QTableWidgetItem(p.phone));
-            partnersTable_->setItem(r, 2, new QTableWidgetItem("PKR " + pos::formatPaisa(p.balance)));
+            partnersTable_->setItem(r, 2, new QTableWidgetItem("PKR " + pos::formatMoney(p.balance)));
         }
     } catch (const std::exception&) { lockedLabel_->show(); partnersTable_->hide(); return; }
     if (partnersTable_->rowCount() > 0) partnersTable_->selectRow(0);
@@ -223,9 +223,9 @@ void PartnersPage::loadLedger() {
             ledgerTable_->setItem(r, 0, new QTableWidgetItem(row.createdAt.left(10)));
             const auto desc = row.invoiceNo.isEmpty() ? row.description : QString("%1 [%2]").arg(row.description, row.invoiceNo);
             ledgerTable_->setItem(r, 1, new QTableWidgetItem(desc));
-            ledgerTable_->setItem(r, 2, new QTableWidgetItem(row.credit ? "PKR " + pos::formatPaisa(row.credit) : ""));
-            ledgerTable_->setItem(r, 3, new QTableWidgetItem(row.debit ? "PKR " + pos::formatPaisa(row.debit) : ""));
-            ledgerTable_->setItem(r, 4, new QTableWidgetItem("PKR " + pos::formatPaisa(row.balance)));
+            ledgerTable_->setItem(r, 2, new QTableWidgetItem(row.credit ? "PKR " + pos::formatMoney(row.credit) : ""));
+            ledgerTable_->setItem(r, 3, new QTableWidgetItem(row.debit ? "PKR " + pos::formatMoney(row.debit) : ""));
+            ledgerTable_->setItem(r, 4, new QTableWidgetItem("PKR " + pos::formatMoney(row.balance)));
         }
     } catch (const std::exception&) {}
 }

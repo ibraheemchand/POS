@@ -12,18 +12,23 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QTimer>
 
 namespace {
 QFrame* makeCard(QWidget* parent, const QString& label, QLabel*& valueOut) {
     auto* card = new QFrame(parent);
     card->setObjectName("metric");
+    card->setMinimumWidth(150);
+    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto* l = new QVBoxLayout(card);
     l->setContentsMargins(14, 12, 14, 12);
     auto* name = new QLabel(label, card);
     name->setObjectName("metricLabel");
+    name->setWordWrap(true);
     valueOut = new QLabel("PKR 0.00", card);
     valueOut->setObjectName("metricValue");
+    valueOut->setWordWrap(true);
     l->addWidget(name);
     l->addWidget(valueOut);
     return card;
@@ -77,14 +82,19 @@ ProfitReportPage::ProfitReportPage(std::shared_ptr<pos::Database> database, QWid
     controls->addWidget(refreshBtn);
     layout->addLayout(controls);
 
-    auto* cards = new QHBoxLayout;
-    cards->addWidget(makeCard(this, "Total sales value", cardSales_));
-    cards->addWidget(makeCard(this, "Total commission", cardCommission_));
-    cards->addWidget(makeCard(this, "Total partner share", cardPartner_));
-    cards->addWidget(makeCard(this, "MY TOTAL PROFIT", cardProfit_));
-    cards->addWidget(makeCard(this, "Paid to partners", cardPaid_));
-    cards->addWidget(makeCard(this, "Still owed", cardOwed_));
-    layout->addLayout(cards);
+    // Reflowing card grid (wraps to fewer columns on narrow screens instead of
+    // forcing the page wider than the window).
+    cardsGrid_ = new QGridLayout;
+    cardsGrid_->setHorizontalSpacing(10);
+    cardsGrid_->setVerticalSpacing(8);
+    cardFrames_ = {makeCard(this, "Total sales value", cardSales_),
+                   makeCard(this, "Total commission", cardCommission_),
+                   makeCard(this, "Total partner share", cardPartner_),
+                   makeCard(this, "MY TOTAL PROFIT", cardProfit_),
+                   makeCard(this, "Paid to partners", cardPaid_),
+                   makeCard(this, "Still owed", cardOwed_)};
+    layout->addLayout(cardsGrid_);
+    relayoutCards();
 
     tabs_ = new QTabWidget(this);
     courseTable_ = makeTable({"Course", "Partner", "Times sold", "Sale value", "Commission", "Partner share", "My profit"});
@@ -109,6 +119,24 @@ ProfitReportPage::ProfitReportPage(std::shared_ptr<pos::Database> database, QWid
 
 bool ProfitReportPage::ensureUnlocked() { return pos::unlockOwnerSession(this, database_); }
 
+void ProfitReportPage::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    relayoutCards();
+}
+
+void ProfitReportPage::relayoutCards() {
+    if (!cardsGrid_ || cardFrames_.isEmpty()) return;
+    // Use the scroll viewport width (parent), not our own — see MainPage::relayoutQuickAccess.
+    const int avail = parentWidget() ? parentWidget()->width() : width();
+    const int columns = qBound(2, avail / 200, 6);
+    if (columns == cardColumns_) return;
+    cardColumns_ = columns;
+    for (auto* card : cardFrames_) cardsGrid_->removeWidget(card);
+    for (int i = 0; i < cardFrames_.size(); ++i)
+        cardsGrid_->addWidget(cardFrames_[i], i / columns, i % columns);
+    for (int c = 0; c < columns; ++c) cardsGrid_->setColumnStretch(c, 1);
+}
+
 void ProfitReportPage::load() {
     auto& session = pos::AuthSession::instance();
     const bool unlocked = session.isUnlocked();
@@ -125,12 +153,12 @@ void ProfitReportPage::load() {
     try {
         pos::PartnerService service(database_);
         const auto sum = service.summary(from, to);
-        cardSales_->setText("PKR " + pos::formatPaisa(sum.totalSales));
-        cardCommission_->setText("PKR " + pos::formatPaisa(sum.totalCommission));
-        cardPartner_->setText("PKR " + pos::formatPaisa(sum.totalPartner));
-        cardProfit_->setText("PKR " + pos::formatPaisa(sum.myProfit));
-        cardPaid_->setText("PKR " + pos::formatPaisa(sum.totalPaidOut));
-        cardOwed_->setText("PKR " + pos::formatPaisa(sum.totalOwed));
+        cardSales_->setText("PKR " + pos::formatMoney(sum.totalSales));
+        cardCommission_->setText("PKR " + pos::formatMoney(sum.totalCommission));
+        cardPartner_->setText("PKR " + pos::formatMoney(sum.totalPartner));
+        cardProfit_->setText("PKR " + pos::formatMoney(sum.myProfit));
+        cardPaid_->setText("PKR " + pos::formatMoney(sum.totalPaidOut));
+        cardOwed_->setText("PKR " + pos::formatMoney(sum.totalOwed));
 
         const auto fillSource = [](QTableWidget* table, const QList<pos::SourceReportRow>& rows) {
             table->setRowCount(0);
@@ -140,10 +168,10 @@ void ProfitReportPage::load() {
                 table->setItem(row, 0, new QTableWidgetItem(r.name));
                 table->setItem(row, 1, new QTableWidgetItem(r.partnerName));
                 table->setItem(row, 2, new QTableWidgetItem(QString::number(r.timesSold)));
-                table->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatPaisa(r.saleValue)));
-                table->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatPaisa(r.commission)));
-                table->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatPaisa(r.partnerAmount)));
-                table->setItem(row, 6, new QTableWidgetItem("PKR " + pos::formatPaisa(r.myProfit)));
+                table->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatMoney(r.saleValue)));
+                table->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatMoney(r.commission)));
+                table->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatMoney(r.partnerAmount)));
+                table->setItem(row, 6, new QTableWidgetItem("PKR " + pos::formatMoney(r.myProfit)));
             }
         };
         fillSource(courseTable_, service.courseReport(from, to));
@@ -154,9 +182,9 @@ void ProfitReportPage::load() {
             const int row = partnerTable_->rowCount();
             partnerTable_->insertRow(row);
             partnerTable_->setItem(row, 0, new QTableWidgetItem(p.name));
-            partnerTable_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatPaisa(p.earned)));
-            partnerTable_->setItem(row, 2, new QTableWidgetItem("PKR " + pos::formatPaisa(p.paidOut)));
-            partnerTable_->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatPaisa(p.balance)));
+            partnerTable_->setItem(row, 1, new QTableWidgetItem("PKR " + pos::formatMoney(p.earned)));
+            partnerTable_->setItem(row, 2, new QTableWidgetItem("PKR " + pos::formatMoney(p.paidOut)));
+            partnerTable_->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatMoney(p.balance)));
         }
 
         profitsTable_->setRowCount(0);
@@ -167,8 +195,8 @@ void ProfitReportPage::load() {
             profitsTable_->setItem(row, 1, new QTableWidgetItem(e.invoiceNo));
             profitsTable_->setItem(row, 2, new QTableWidgetItem(e.reversal ? e.sourceType + " (reversal)" : e.sourceType));
             profitsTable_->setItem(row, 3, new QTableWidgetItem(e.sourceName));
-            profitsTable_->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatPaisa(e.saleValue)));
-            profitsTable_->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatPaisa(e.myProfit)));
+            profitsTable_->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatMoney(e.saleValue)));
+            profitsTable_->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatMoney(e.myProfit)));
         }
     } catch (const std::exception&) {
         lockedLabel_->show();

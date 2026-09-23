@@ -1,11 +1,124 @@
 #include "core/migrations.h"
 #include "core/database.h"
+#include "core/types.h"
 #include <array>
+#include <fstream>
 
 namespace pos {
 namespace {
+
+bool columnExists(Database& db, const QString& table, const QString& column) {
+    auto info = db.prepare(("PRAGMA table_info(" + table + ")").toUtf8().constData());
+    while (info.stepRow()) if (info.text(1) == column) return true;
+    return false;
+}
+qint64 sumColumn(Database& db, const QString& table, const QString& column) {
+    if (!columnExists(db, table, column)) return 0;
+    auto q = db.prepare(("SELECT COALESCE(SUM(" + column + "),0) FROM " + table).toUtf8().constData());
+    q.stepRow();
+    return q.integer(0);
+}
+
+// Renames every *_paisa money column to its rupee-facing name (values are exact
+// hundredths and are NOT changed — only the name changes). Idempotent: a column is
+// renamed only when the old name still exists and the new one does not. On an
+// existing database it first takes a timestamped safety backup and writes a
+// before/after totals report so the owner can confirm nothing shifted.
+void migrateMoneyColumnsToRupees(Database& db, bool existingDb) {
+    const QList<QPair<QString, QList<QPair<QString, QString>>>> renames = {
+        {"customers", {{"credit_limit_paisa","credit_limit"},{"balance_paisa","balance"}}},
+        {"suppliers", {{"opening_balance_paisa","opening_balance"},{"balance_paisa","balance"}}},
+        {"products", {{"purchase_price_paisa","purchase_price"},{"retail_price_paisa","retail_price"},{"wholesale_price_paisa","wholesale_price"},{"dealer_price_paisa","dealer_price"}}},
+        {"batches", {{"purchase_price_paisa","purchase_price"}}},
+        {"sales", {{"subtotal_paisa","subtotal"},{"discount_paisa","discount"},{"tax_paisa","tax"},{"total_paisa","total"},{"paid_paisa","paid"},{"due_paisa","due"}}},
+        {"sale_items", {{"unit_price_paisa","unit_price"},{"discount_paisa","discount"},{"line_total_paisa","line_total"}}},
+        {"purchases", {{"subtotal_paisa","subtotal"},{"discount_paisa","discount"},{"tax_paisa","tax"},{"total_paisa","total"},{"paid_paisa","paid"},{"due_paisa","due"}}},
+        {"purchase_items", {{"unit_price_paisa","unit_price"},{"discount_paisa","discount"},{"tax_paisa","tax"},{"line_total_paisa","line_total"}}},
+        {"purchase_returns", {{"total_paisa","total"}}},
+        {"purchase_return_items", {{"amount_paisa","amount"}}},
+        {"sale_returns", {{"total_paisa","total"}}},
+        {"sale_return_items", {{"amount_paisa","amount"}}},
+        {"customer_ledger", {{"debit_paisa","debit"},{"credit_paisa","credit"},{"running_balance_paisa","running_balance"}}},
+        {"supplier_ledger", {{"debit_paisa","debit"},{"credit_paisa","credit"},{"balance_paisa","balance"}}},
+        {"cash_transactions", {{"amount_paisa","amount"}}},
+        {"shift_sessions", {{"opening_cash_paisa","opening_cash"},{"expected_cash_paisa","expected_cash"},{"counted_cash_paisa","counted_cash"}}},
+        {"cheques", {{"amount_paisa","amount"}}},
+        {"expenses", {{"amount_paisa","amount"}}},
+        {"cash_drawers", {{"opening_balance_paisa","opening_balance"},{"current_balance_paisa","current_balance"}}},
+        {"bank_accounts", {{"balance_paisa","balance"}}},
+        {"bank_transactions", {{"amount_paisa","amount"}}},
+        {"inventory", {{"average_cost_paisa","average_cost"}}},
+        {"sale_payments", {{"amount_paisa","amount"}}},
+        {"customer_payments", {{"amount_paisa","amount"}}},
+        {"customer_payment_allocations", {{"amount_paisa","amount"}}},
+        {"sale_item_commissions", {{"retail_amount_paisa","retail_amount"},{"commission_amount_paisa","commission_amount"},{"partner_amount_paisa","partner_amount"},{"discount_amount_paisa","discount_amount"},{"owner_amount_paisa","owner_amount"}}},
+        {"partners", {{"balance_paisa","balance"}}},
+        {"partner_ledger", {{"debit_paisa","debit"},{"credit_paisa","credit"},{"running_balance_paisa","running_balance"}}},
+        {"profit_entries", {{"sale_value_paisa","sale_value"},{"commission_paisa","commission"},{"partner_amount_paisa","partner_amount"},{"my_profit_paisa","my_profit"}}},
+    };
+
+    bool needed = false;
+    for (const auto& t : renames) {
+        for (const auto& c : t.second) if (columnExists(db, t.first, c.first)) { needed = true; break; }
+        if (needed) break;
+    }
+    if (!needed) return;
+
+    struct Check { const char* label; QString table; QString oldCol; QString newCol; };
+    const QList<Check> checks = {
+        {"Sales (total)","sales","total_paisa","total"},
+        {"Sale item line totals","sale_items","line_total_paisa","line_total"},
+        {"Customer balances","customers","balance_paisa","balance"},
+        {"Supplier balances","suppliers","balance_paisa","balance"},
+        {"Partner balances","partners","balance_paisa","balance"},
+        {"Partner ledger credits","partner_ledger","credit_paisa","credit"},
+        {"Partner ledger debits","partner_ledger","debit_paisa","debit"},
+        {"Profit commission","profit_entries","commission_paisa","commission"},
+        {"Profit partner share","profit_entries","partner_amount_paisa","partner_amount"},
+        {"My profit","profit_entries","my_profit_paisa","my_profit"},
+        {"Customer ledger credits","customer_ledger","credit_paisa","credit"},
+        {"Product retail prices","products","retail_price_paisa","retail_price"},
+    };
+    QList<qint64> before;
+    if (existingDb) for (const auto& c : checks) before.append(sumColumn(db, c.table, c.oldCol));
+
+    if (existingDb) {
+        const auto folder = db.path().parent_path() / "money-migration-backups";
+        std::filesystem::create_directories(folder);
+        db.backupTo(folder / ("pre-rupees-" + utcNow().replace(":", "-").toStdString() + ".db"));
+    }
+
+    {
+        Transaction tx(db.handle());
+        db.exec("DROP VIEW IF EXISTS v_inventory_value;");
+        for (const auto& t : renames)
+            for (const auto& c : t.second)
+                if (columnExists(db, t.first, c.first) && !columnExists(db, t.first, c.second))
+                    db.exec(("ALTER TABLE " + t.first + " RENAME COLUMN " + c.first + " TO " + c.second).toUtf8().constData());
+        db.exec("CREATE VIEW IF NOT EXISTS v_inventory_value AS SELECT i.warehouse_id,i.product_id,p.name,i.quantity,i.average_cost,i.quantity*i.average_cost AS value FROM inventory i JOIN products p ON p.id=i.product_id WHERE p.is_deleted=0;");
+        tx.commit();
+    }
+
+    if (existingDb) {
+        std::ofstream report((db.path().parent_path() / "money-migration-report.txt").string());
+        report << "Money migration: columns renamed to rupee names. Stored values are exact\n"
+               << "hundredths of a rupee and were NOT changed. Before vs after totals:\n\n";
+        bool okAll = true;
+        for (int i = 0; i < checks.size(); ++i) {
+            const auto after = sumColumn(db, checks[i].table, checks[i].newCol);
+            const bool ok = after == before[i];
+            okAll = okAll && ok;
+            report << checks[i].label << ": before PKR " << formatMoney(before[i]).toStdString()
+                   << "  after PKR " << formatMoney(after).toStdString() << (ok ? "  OK\n" : "  *** MISMATCH ***\n");
+        }
+        report << (okAll ? "\nAll totals match.\n" : "\nMISMATCH DETECTED.\n");
+        report.close();
+        if (!okAll) throw DatabaseError("money migration verification failed: totals changed during column rename");
+    }
+}
+
 void addMissingColumns(Database& db) {
-    const QList<QPair<QString,QStringList>> additions={{"customers",{"phone TEXT","address TEXT","credit_limit_paisa INTEGER NOT NULL DEFAULT 0","payment_terms_days INTEGER NOT NULL DEFAULT 0","balance_paisa INTEGER NOT NULL DEFAULT 0","is_deleted INTEGER NOT NULL DEFAULT 0"}},{"sales",{"warehouse_id TEXT REFERENCES warehouses(id)","shift_id TEXT REFERENCES shift_sessions(id)","discount_paisa INTEGER NOT NULL DEFAULT 0","tax_paisa INTEGER NOT NULL DEFAULT 0","paid_paisa INTEGER NOT NULL DEFAULT 0","due_paisa INTEGER NOT NULL DEFAULT 0","note TEXT","voided_at TEXT","void_reason TEXT"}},{"sale_items",{"batch_id TEXT","unit_name TEXT NOT NULL DEFAULT 'base'","unit_price_paisa INTEGER NOT NULL DEFAULT 0","discount_paisa INTEGER NOT NULL DEFAULT 0","line_total_paisa INTEGER NOT NULL DEFAULT 0","course_id TEXT","total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"bundles",{"total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"suppliers",{"contact_person TEXT","phone TEXT","address TEXT","opening_balance_paisa INTEGER NOT NULL DEFAULT 0","balance_paisa INTEGER NOT NULL DEFAULT 0","is_archived INTEGER NOT NULL DEFAULT 0"}},{"products",{"sku TEXT","barcode TEXT","category_id TEXT","brand_id TEXT","description TEXT NOT NULL DEFAULT ''","track_batches INTEGER NOT NULL DEFAULT 0","track_expiry INTEGER NOT NULL DEFAULT 0","purchase_price_paisa INTEGER NOT NULL DEFAULT 0","retail_price_paisa INTEGER NOT NULL DEFAULT 0","wholesale_price_paisa INTEGER NOT NULL DEFAULT 0","dealer_price_paisa INTEGER NOT NULL DEFAULT 0","stock_quantity INTEGER NOT NULL DEFAULT 0","minimum_stock INTEGER NOT NULL DEFAULT 0","image_path TEXT","is_deleted INTEGER NOT NULL DEFAULT 0","total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"purchases",{"warehouse_id TEXT","subtotal_paisa INTEGER NOT NULL DEFAULT 0","discount_paisa INTEGER NOT NULL DEFAULT 0","tax_paisa INTEGER NOT NULL DEFAULT 0","paid_paisa INTEGER NOT NULL DEFAULT 0","due_paisa INTEGER NOT NULL DEFAULT 0","notes TEXT"}},{"cash_transactions",{"drawer_id TEXT","shift_id TEXT","sale_id TEXT","reason TEXT"}},{"cheques",{"party_id TEXT","bank TEXT"}},{"customer_payments",{"note TEXT"}},{"customer_ledger",{"sale_id TEXT"}},{"batches",{"expiry_date TEXT"}}};
+    const QList<QPair<QString,QStringList>> additions={{"customers",{"phone TEXT","address TEXT","credit_limit INTEGER NOT NULL DEFAULT 0","payment_terms_days INTEGER NOT NULL DEFAULT 0","balance INTEGER NOT NULL DEFAULT 0","is_deleted INTEGER NOT NULL DEFAULT 0"}},{"sales",{"warehouse_id TEXT REFERENCES warehouses(id)","shift_id TEXT REFERENCES shift_sessions(id)","discount INTEGER NOT NULL DEFAULT 0","tax INTEGER NOT NULL DEFAULT 0","paid INTEGER NOT NULL DEFAULT 0","due INTEGER NOT NULL DEFAULT 0","note TEXT","voided_at TEXT","void_reason TEXT"}},{"sale_items",{"batch_id TEXT","unit_name TEXT NOT NULL DEFAULT 'base'","unit_price INTEGER NOT NULL DEFAULT 0","discount INTEGER NOT NULL DEFAULT 0","line_total INTEGER NOT NULL DEFAULT 0","course_id TEXT","total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"bundles",{"total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"suppliers",{"contact_person TEXT","phone TEXT","address TEXT","opening_balance INTEGER NOT NULL DEFAULT 0","balance INTEGER NOT NULL DEFAULT 0","is_archived INTEGER NOT NULL DEFAULT 0"}},{"products",{"sku TEXT","barcode TEXT","category_id TEXT","brand_id TEXT","description TEXT NOT NULL DEFAULT ''","track_batches INTEGER NOT NULL DEFAULT 0","track_expiry INTEGER NOT NULL DEFAULT 0","purchase_price INTEGER NOT NULL DEFAULT 0","retail_price INTEGER NOT NULL DEFAULT 0","wholesale_price INTEGER NOT NULL DEFAULT 0","dealer_price INTEGER NOT NULL DEFAULT 0","stock_quantity INTEGER NOT NULL DEFAULT 0","minimum_stock INTEGER NOT NULL DEFAULT 0","image_path TEXT","is_deleted INTEGER NOT NULL DEFAULT 0","total_pct_bp INTEGER NOT NULL DEFAULT 0","partner_pct_bp INTEGER NOT NULL DEFAULT 0","partner_id TEXT"}},{"purchases",{"warehouse_id TEXT","subtotal INTEGER NOT NULL DEFAULT 0","discount INTEGER NOT NULL DEFAULT 0","tax INTEGER NOT NULL DEFAULT 0","paid INTEGER NOT NULL DEFAULT 0","due INTEGER NOT NULL DEFAULT 0","notes TEXT"}},{"cash_transactions",{"drawer_id TEXT","shift_id TEXT","sale_id TEXT","reason TEXT"}},{"cheques",{"party_id TEXT","bank TEXT"}},{"customer_payments",{"note TEXT"}},{"customer_ledger",{"sale_id TEXT"}},{"batches",{"expiry_date TEXT"}}};
     for(const auto& table:additions){QStringList existing;auto info=db.prepare(("PRAGMA table_info("+table.first+")").toUtf8().constData());while(info.stepRow())existing.append(info.text(1));for(const auto& definition:table.second){const auto column=definition.section(' ',0,0);if(!existing.contains(column))db.exec(("ALTER TABLE "+table.first+" ADD COLUMN "+definition).toUtf8().constData());}}
 }
 }
@@ -149,6 +262,10 @@ ALTER TABLE sale_items ADD COLUMN partner_id TEXT;
         Transaction tx(db.handle()); db.exec(migrations[i]);
         auto insert=db.prepare("INSERT INTO schema_version(version) VALUES(?)"); insert.bind(1, static_cast<qint64>(i+1)); insert.execute(); tx.commit();
     }
+    // Rename *_paisa money columns to rupee names (values unchanged). Runs after the
+    // versioned migrations so every money column exists, and BEFORE addMissingColumns
+    // so that helper (now using rupee names) doesn't re-add legacy paisa columns.
+    migrateMoneyColumnsToRupees(db, version > 0);
     Transaction compatibility(db.handle());
     addMissingColumns(db);
     db.exec("CREATE INDEX IF NOT EXISTS customers_phone_lookup ON customers(phone); CREATE INDEX IF NOT EXISTS cheques_due_status ON cheques(due_date,status);");

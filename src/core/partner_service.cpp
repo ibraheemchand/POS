@@ -18,11 +18,11 @@ void validateConfig(const CommissionConfig& config) {
 void postLedger(Database& db, const QString& partnerId, const QString& entryType, const QString& saleId,
                 const QString& sourceType, const QString& sourceId, const QString& description,
                 Money debit, Money credit) {
-    auto update = db.prepare("UPDATE partners SET balance_paisa=balance_paisa+?-? WHERE id=?");
+    auto update = db.prepare("UPDATE partners SET balance=balance+?-? WHERE id=?");
     update.bind(1, credit); update.bind(2, debit); update.bind(3, partnerId); update.execute();
     auto insert = db.prepare(
-        "INSERT INTO partner_ledger(id,partner_id,entry_type,sale_id,source_type,source_id,description,debit_paisa,credit_paisa,running_balance_paisa,created_at) "
-        "SELECT ?,?,?,?,?,?,?,?,?,balance_paisa,? FROM partners WHERE id=?");
+        "INSERT INTO partner_ledger(id,partner_id,entry_type,sale_id,source_type,source_id,description,debit,credit,running_balance,created_at) "
+        "SELECT ?,?,?,?,?,?,?,?,?,balance,? FROM partners WHERE id=?");
     insert.bind(1, uuid()); insert.bind(2, partnerId); insert.bind(3, entryType);
     if (saleId.isEmpty()) insert.bindNull(4); else insert.bind(4, saleId);
     if (sourceType.isEmpty()) insert.bindNull(5); else insert.bind(5, sourceType);
@@ -35,7 +35,7 @@ void insertProfit(Database& db, const QString& saleId, const QString& sourceType
                   const QString& partnerId, const QString& description, Money value, Money commission,
                   Money partnerAmount, qint64 totalBp, qint64 partnerBp, bool reversal) {
     auto insert = db.prepare(
-        "INSERT INTO profit_entries(id,sale_id,source_type,source_id,partner_id,description,sale_value_paisa,commission_paisa,partner_amount_paisa,my_profit_paisa,total_pct_bp,partner_pct_bp,is_reversal,created_at) "
+        "INSERT INTO profit_entries(id,sale_id,source_type,source_id,partner_id,description,sale_value,commission,partner_amount,my_profit,total_pct_bp,partner_pct_bp,is_reversal,created_at) "
         "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
     insert.bind(1, uuid()); insert.bind(2, saleId); insert.bind(3, sourceType); insert.bind(4, sourceId);
     if (partnerId.isEmpty()) insert.bindNull(5); else insert.bind(5, partnerId);
@@ -60,38 +60,42 @@ PartnerService::PartnerService(std::shared_ptr<Database> database) : db_(std::mo
 
 void PartnerService::postSaleCommissions(const QString& saleId) {
     // One entry per course (grouped over its book lines), one per standalone book.
+    // commission = roundMoney(base × total%); partner = roundMoney(base × partner%);
+    // my profit = commission − partner (the remainder), so the split is always exact.
     auto courses = db_->prepare(
-        "SELECT si.course_id, b.name, si.total_pct_bp, si.partner_pct_bp, si.partner_id, "
-        "SUM(si.line_total_paisa), SUM(si.line_total_paisa*si.total_pct_bp/10000), SUM(si.line_total_paisa*si.partner_pct_bp/10000) "
+        "SELECT si.course_id, b.name, si.total_pct_bp, si.partner_pct_bp, si.partner_id, SUM(si.line_total) "
         "FROM sale_items si LEFT JOIN bundles b ON b.id=si.course_id "
         "WHERE si.sale_id=? AND si.course_id IS NOT NULL AND si.course_id<>'' GROUP BY si.course_id");
     courses.bind(1, saleId);
     while (courses.stepRow()) {
-        const auto commission = courses.integer(6);
-        if (commission <= 0) continue;
         const auto courseId = courses.text(0);
+        const auto totalBp = courses.integer(2), partnerBp = courses.integer(3);
         const auto partnerId = courses.text(4);
-        const auto partnerAmount = courses.integer(7);
+        const auto value = courses.integer(5);
+        const auto commission = roundMoney(static_cast<double>(value) * totalBp / kBpScale);
+        if (commission <= 0) continue;
+        const auto partnerAmount = roundMoney(static_cast<double>(value) * partnerBp / kBpScale);
         insertProfit(*db_, saleId, "course", courseId, partnerId, "Course: " + courses.text(1),
-                     courses.integer(5), commission, partnerAmount, courses.integer(2), courses.integer(3), false);
+                     value, commission, partnerAmount, totalBp, partnerBp, false);
         if (!partnerId.isEmpty() && partnerAmount > 0)
             postLedger(*db_, partnerId, "sale_credit", saleId, "course", courseId, "Commission: " + courses.text(1), 0, partnerAmount);
     }
 
     auto books = db_->prepare(
-        "SELECT si.id, si.product_id, p.name, si.total_pct_bp, si.partner_pct_bp, si.partner_id, "
-        "si.line_total_paisa, si.line_total_paisa*si.total_pct_bp/10000, si.line_total_paisa*si.partner_pct_bp/10000 "
+        "SELECT si.id, si.product_id, p.name, si.total_pct_bp, si.partner_pct_bp, si.partner_id, si.line_total "
         "FROM sale_items si LEFT JOIN products p ON p.id=si.product_id "
         "WHERE si.sale_id=? AND (si.course_id IS NULL OR si.course_id='')");
     books.bind(1, saleId);
     while (books.stepRow()) {
-        const auto commission = books.integer(7);
-        if (commission <= 0) continue;
         const auto productId = books.text(1);
+        const auto totalBp = books.integer(3), partnerBp = books.integer(4);
         const auto partnerId = books.text(5);
-        const auto partnerAmount = books.integer(8);
+        const auto value = books.integer(6);
+        const auto commission = roundMoney(static_cast<double>(value) * totalBp / kBpScale);
+        if (commission <= 0) continue;
+        const auto partnerAmount = roundMoney(static_cast<double>(value) * partnerBp / kBpScale);
         insertProfit(*db_, saleId, "book", productId, partnerId, "Book: " + books.text(2),
-                     books.integer(6), commission, partnerAmount, books.integer(3), books.integer(4), false);
+                     value, commission, partnerAmount, totalBp, partnerBp, false);
         if (!partnerId.isEmpty() && partnerAmount > 0)
             postLedger(*db_, partnerId, "sale_credit", saleId, "book", productId, "Commission: " + books.text(2), 0, partnerAmount);
     }
@@ -107,9 +111,9 @@ void PartnerService::reverseSaleItem(const QString& saleId, const QString& saleI
     const auto totalBp = item.integer(2);
     const auto partnerBp = item.integer(3);
     const auto partnerId = item.text(4);
-    const auto commission = returnedAmount * totalBp / kBpScale;
+    const auto commission = roundMoney(static_cast<double>(returnedAmount) * totalBp / kBpScale);
     if (commission <= 0) return;
-    const auto partnerAmount = returnedAmount * partnerBp / kBpScale;
+    const auto partnerAmount = roundMoney(static_cast<double>(returnedAmount) * partnerBp / kBpScale);
     const bool isCourse = !courseId.isEmpty();
     const auto sourceType = isCourse ? QString("course") : QString("book");
     const auto sourceId = isCourse ? courseId : productId;
@@ -120,7 +124,7 @@ void PartnerService::reverseSaleItem(const QString& saleId, const QString& saleI
 }
 
 void PartnerService::reverseSale(const QString& saleId, const QString& reason) {
-    auto lines = db_->prepare("SELECT id, line_total_paisa FROM sale_items WHERE sale_id=?");
+    auto lines = db_->prepare("SELECT id, line_total FROM sale_items WHERE sale_id=?");
     lines.bind(1, saleId);
     QList<QPair<QString, Money>> items;
     while (lines.stepRow()) items.append({lines.text(0), lines.integer(1)});
@@ -157,7 +161,7 @@ QString PartnerService::createPartner(const Partner& partner) {
     AuthSession::instance().requireUnlocked();
     if (partner.name.trimmed().isEmpty()) throw DatabaseError("partner name is required");
     const auto id = uuid();
-    auto insert = db_->prepare("INSERT INTO partners(id,name,phone,notes,balance_paisa,is_archived,created_at) VALUES(?,?,?,?,0,0,?)");
+    auto insert = db_->prepare("INSERT INTO partners(id,name,phone,notes,balance,is_archived,created_at) VALUES(?,?,?,?,0,0,?)");
     insert.bind(1, id); insert.bind(2, partner.name.trimmed()); insert.bind(3, partner.phone.trimmed());
     insert.bind(4, partner.notes.trimmed()); insert.bind(5, utcNow()); insert.execute();
     return id;
@@ -182,7 +186,7 @@ void PartnerService::archivePartner(const QString& partnerId) {
 QList<Partner> PartnerService::listPartners(bool includeArchived) const {
     AuthSession::instance().requireUnlocked();
     QList<Partner> partners;
-    auto query = db_->prepare(QString("SELECT id,name,phone,notes,balance_paisa,is_archived FROM partners %1 ORDER BY name")
+    auto query = db_->prepare(QString("SELECT id,name,phone,notes,balance,is_archived FROM partners %1 ORDER BY name")
                                   .arg(includeArchived ? "" : "WHERE is_archived=0").toUtf8().constData());
     while (query.stepRow())
         partners.append({query.text(0), query.text(1), query.text(2), query.text(3), query.integer(4), query.integer(5) != 0});
@@ -252,7 +256,7 @@ QList<PartnerLedgerRow> PartnerService::partnerLedger(const QString& partnerId, 
     AuthSession::instance().requireUnlocked();
     QList<PartnerLedgerRow> rows;
     auto query = db_->prepare(
-        "SELECT l.id,l.entry_type,l.sale_id,s.invoice_no,l.description,l.debit_paisa,l.credit_paisa,l.running_balance_paisa,l.created_at "
+        "SELECT l.id,l.entry_type,l.sale_id,s.invoice_no,l.description,l.debit,l.credit,l.running_balance,l.created_at "
         "FROM partner_ledger l LEFT JOIN sales s ON s.id=l.sale_id "
         "WHERE l.partner_id=? AND l.created_at>=? AND l.created_at<? ORDER BY l.created_at");
     query.bind(1, partnerId); bindRange(query, 2, from, to);
@@ -281,7 +285,7 @@ QList<ProfitEntryRow> PartnerService::profitEntries(const QDate& from, const QDa
     auto query = db_->prepare(
         "SELECT pe.sale_id,s.invoice_no,pe.source_type,"
         "COALESCE(b.name,p.name,pe.description),COALESCE(pr.name,''),"
-        "pe.sale_value_paisa,pe.commission_paisa,pe.partner_amount_paisa,pe.my_profit_paisa,pe.is_reversal,pe.created_at "
+        "pe.sale_value,pe.commission,pe.partner_amount,pe.my_profit,pe.is_reversal,pe.created_at "
         "FROM profit_entries pe "
         "LEFT JOIN sales s ON s.id=pe.sale_id "
         "LEFT JOIN bundles b ON b.id=pe.source_id AND pe.source_type='course' "
@@ -299,14 +303,14 @@ ProfitSummary PartnerService::summary(const QDate& from, const QDate& to) const 
     AuthSession::instance().requireUnlocked();
     ProfitSummary result;
     auto totals = db_->prepare(
-        "SELECT COALESCE(SUM(sale_value_paisa),0),COALESCE(SUM(commission_paisa),0),COALESCE(SUM(partner_amount_paisa),0),COALESCE(SUM(my_profit_paisa),0) "
+        "SELECT COALESCE(SUM(sale_value),0),COALESCE(SUM(commission),0),COALESCE(SUM(partner_amount),0),COALESCE(SUM(my_profit),0) "
         "FROM profit_entries WHERE created_at>=? AND created_at<?");
     bindRange(totals, 1, from, to); totals.stepRow();
     result.totalSales = totals.integer(0); result.totalCommission = totals.integer(1);
     result.totalPartner = totals.integer(2); result.myProfit = totals.integer(3);
-    auto payouts = db_->prepare("SELECT COALESCE(SUM(debit_paisa),0) FROM partner_ledger WHERE entry_type='payout' AND created_at>=? AND created_at<?");
+    auto payouts = db_->prepare("SELECT COALESCE(SUM(debit),0) FROM partner_ledger WHERE entry_type='payout' AND created_at>=? AND created_at<?");
     bindRange(payouts, 1, from, to); payouts.stepRow(); result.totalPaidOut = payouts.integer(0);
-    auto owed = db_->prepare("SELECT COALESCE(SUM(balance_paisa),0) FROM partners"); owed.stepRow(); result.totalOwed = owed.integer(0);
+    auto owed = db_->prepare("SELECT COALESCE(SUM(balance),0) FROM partners"); owed.stepRow(); result.totalOwed = owed.integer(0);
     return result;
 }
 
@@ -316,7 +320,7 @@ QList<SourceReportRow> PartnerService::courseReport(const QDate& from, const QDa
     auto query = db_->prepare(
         "SELECT pe.source_id,COALESCE(b.name,'(deleted course)'),COALESCE(pr.name,'—'),"
         "SUM(CASE WHEN pe.is_reversal=0 THEN 1 ELSE 0 END),"
-        "SUM(pe.sale_value_paisa),SUM(pe.commission_paisa),SUM(pe.partner_amount_paisa),SUM(pe.my_profit_paisa) "
+        "SUM(pe.sale_value),SUM(pe.commission),SUM(pe.partner_amount),SUM(pe.my_profit) "
         "FROM profit_entries pe LEFT JOIN bundles b ON b.id=pe.source_id LEFT JOIN partners pr ON pr.id=pe.partner_id "
         "WHERE pe.source_type='course' AND pe.created_at>=? AND pe.created_at<? GROUP BY pe.source_id ORDER BY b.name");
     bindRange(query, 1, from, to);
@@ -331,7 +335,7 @@ QList<SourceReportRow> PartnerService::standaloneBookReport(const QDate& from, c
     auto query = db_->prepare(
         "SELECT pe.source_id,COALESCE(p.name,'(deleted book)'),COALESCE(pr.name,'—'),"
         "SUM(CASE WHEN pe.is_reversal=0 THEN 1 ELSE 0 END),"
-        "SUM(pe.sale_value_paisa),SUM(pe.commission_paisa),SUM(pe.partner_amount_paisa),SUM(pe.my_profit_paisa) "
+        "SUM(pe.sale_value),SUM(pe.commission),SUM(pe.partner_amount),SUM(pe.my_profit) "
         "FROM profit_entries pe LEFT JOIN products p ON p.id=pe.source_id LEFT JOIN partners pr ON pr.id=pe.partner_id "
         "WHERE pe.source_type='book' AND pe.created_at>=? AND pe.created_at<? GROUP BY pe.source_id ORDER BY p.name");
     bindRange(query, 1, from, to);
@@ -344,9 +348,9 @@ QList<PartnerReportRow> PartnerService::partnerReport(const QDate& from, const Q
     AuthSession::instance().requireUnlocked();
     QList<PartnerReportRow> rows;
     auto query = db_->prepare(
-        "SELECT pt.id,pt.name,pt.balance_paisa,"
-        "COALESCE((SELECT SUM(partner_amount_paisa) FROM profit_entries pe WHERE pe.partner_id=pt.id AND pe.created_at>=?1 AND pe.created_at<?2),0),"
-        "COALESCE((SELECT SUM(debit_paisa) FROM partner_ledger l WHERE l.partner_id=pt.id AND l.entry_type='payout' AND l.created_at>=?1 AND l.created_at<?2),0) "
+        "SELECT pt.id,pt.name,pt.balance,"
+        "COALESCE((SELECT SUM(partner_amount) FROM profit_entries pe WHERE pe.partner_id=pt.id AND pe.created_at>=?1 AND pe.created_at<?2),0),"
+        "COALESCE((SELECT SUM(debit) FROM partner_ledger l WHERE l.partner_id=pt.id AND l.entry_type='payout' AND l.created_at>=?1 AND l.created_at<?2),0) "
         "FROM partners pt WHERE pt.is_archived=0 ORDER BY pt.name");
     bindRange(query, 1, from, to);
     while (query.stepRow())
@@ -361,7 +365,7 @@ QList<SourceReportRow> PartnerService::partnerBreakdown(const QString& partnerId
         "SELECT pe.source_type||':'||pe.source_id,"
         "COALESCE(b.name,p.name,'(deleted)'),'',"
         "SUM(CASE WHEN pe.is_reversal=0 THEN 1 ELSE 0 END),"
-        "SUM(pe.sale_value_paisa),SUM(pe.commission_paisa),SUM(pe.partner_amount_paisa),SUM(pe.my_profit_paisa) "
+        "SUM(pe.sale_value),SUM(pe.commission),SUM(pe.partner_amount),SUM(pe.my_profit) "
         "FROM profit_entries pe "
         "LEFT JOIN bundles b ON b.id=pe.source_id AND pe.source_type='course' "
         "LEFT JOIN products p ON p.id=pe.source_id AND pe.source_type='book' "

@@ -4,6 +4,7 @@
 #include "core/partner_service.h"
 #include "core/auth_session.h"
 #include "core/security_service.h"
+#include "core/commission_service.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -134,6 +135,45 @@ CommissionSettingsPage::CommissionSettingsPage(std::shared_ptr<pos::Database> da
     panelLayout->addWidget(table_, 1);
     layout->addWidget(panel, 1);
 
+    // Discount limits card — the one global knob (owner minimum %). The per-line
+    // discount cap is (item total% - item partner% - this owner min%).
+    auto* discountCard = new QFrame(this);
+    discountCard->setObjectName("panel");
+    auto* discountLayout = new QVBoxLayout(discountCard);
+    discountLayout->setContentsMargins(16, 14, 16, 14);
+    auto* discountTitle = new QLabel("Discount limits", discountCard);
+    discountTitle->setObjectName("sectionTitle");
+    auto* discountHint = new QLabel("Owner minimum %: the profit floor kept on every line. A salesman may discount up to (item total % − item partner % − this) before a manager PIN is required.", discountCard);
+    discountHint->setObjectName("muted");
+    discountHint->setWordWrap(true);
+    discountLayout->addWidget(discountTitle);
+    discountLayout->addWidget(discountHint);
+    auto* discountRow = new QHBoxLayout;
+    auto* ownerLabel = new QLabel("Owner minimum %", discountCard);
+    ownerMinSpin_ = new QDoubleSpinBox(discountCard);
+    ownerMinSpin_->setRange(0, 100);
+    ownerMinSpin_->setDecimals(2);
+    ownerMinSpin_->setSuffix(" %");
+    ownerLabel->setBuddy(ownerMinSpin_);
+    saveDiscountBtn_ = new QPushButton("Save discount limits", discountCard);
+    saveDiscountBtn_->setObjectName("primary");
+    discountRow->addWidget(ownerLabel);
+    discountRow->addWidget(ownerMinSpin_);
+    discountRow->addStretch();
+    discountRow->addWidget(saveDiscountBtn_);
+    discountLayout->addLayout(discountRow);
+    layout->addWidget(discountCard);
+
+    connect(saveDiscountBtn_, &QPushButton::clicked, this, [this] {
+        if (!ensureUnlocked()) return;
+        try {
+            pos::CommissionSettings s;
+            s.ownerMinShareBp = qRound(ownerMinSpin_->value() * 100);
+            pos::CommissionService(database_).setSettings(s);
+            feedbackLabel_->setText("Discount limits saved.");
+        } catch (const std::exception& e) { QMessageBox::critical(this, "Could not save", e.what()); }
+    });
+
     feedbackLabel_ = new QLabel(this);
     feedbackLabel_->setObjectName("muted");
     layout->addWidget(feedbackLabel_);
@@ -145,12 +185,14 @@ CommissionSettingsPage::CommissionSettingsPage(std::shared_ptr<pos::Database> da
     connect(changePinBtn_, &QPushButton::clicked, this, [this] {
         if (!ensureUnlocked()) return;
         bool ok = false;
-        const auto pin = QInputDialog::getText(this, "Change owner PIN", "New PIN (4-12 digits):", QLineEdit::Password, {}, &ok);
+        const auto current = QInputDialog::getText(this, "Change owner PIN", "Current PIN:", QLineEdit::Password, {}, &ok);
+        if (!ok) return;
+        const auto pin = QInputDialog::getText(this, "Change owner PIN", "New PIN (6-12 digits):", QLineEdit::Password, {}, &ok);
         if (!ok) return;
         const auto confirm = QInputDialog::getText(this, "Change owner PIN", "Re-enter the new PIN:", QLineEdit::Password, {}, &ok);
         if (!ok) return;
         if (pin != confirm) { QMessageBox::warning(this, "PIN not changed", "The two entries did not match."); return; }
-        try { pos::SecurityService(database_).setPin(pin); feedbackLabel_->setText("Owner PIN updated."); }
+        try { pos::SecurityService(database_).changePin(current, pin); feedbackLabel_->setText("Owner PIN updated."); }
         catch (const std::exception& e) { QMessageBox::critical(this, "PIN not changed", e.what()); }
     });
 
@@ -167,8 +209,11 @@ void CommissionSettingsPage::load() {
     lockedLabel_->setVisible(!unlocked);
     table_->setVisible(unlocked);
     editBtn_->setEnabled(unlocked);
+    ownerMinSpin_->setEnabled(unlocked);
+    saveDiscountBtn_->setEnabled(unlocked);
     if (!unlocked) { table_->setRowCount(0); return; }
     session.touch();
+    ownerMinSpin_->setValue(pos::CommissionService(database_).settings().ownerMinShareBp / 100.0);
     table_->setRowCount(0);
     try {
         const auto rows = pos::PartnerService(database_).listCommissionConfigs(search_->text());
