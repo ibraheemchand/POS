@@ -25,4 +25,6 @@ private:
     QStringList pageNames_;
     QVector<int> navRowToPage_;
     bool dark_{false};
+    int lastGoodRow_{1};   // row to fall back to when an owner-PIN unlock is cancelled
+    bool navGuard_{false}; // guards against re-entrancy when reverting the selection
 };

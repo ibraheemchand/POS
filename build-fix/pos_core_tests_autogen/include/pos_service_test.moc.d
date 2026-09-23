@@ -749,13 +749,17 @@ E:/pos--2/build-fix/pos_core_tests_autogen/include/pos_service_test.moc: E:/pos-
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
   E:/pos--2/src/core/audit_service.h \
+  E:/pos--2/src/core/auth_session.h \
   E:/pos--2/src/core/backup_service.h \
   E:/pos--2/src/core/barcode_service.h \
+  E:/pos--2/src/core/bundle_service.h \
   E:/pos--2/src/core/cheque_service.h \
+  E:/pos--2/src/core/commission_service.h \
   E:/pos--2/src/core/database.h \
   E:/pos--2/src/core/excel_export_service.h \
   E:/pos--2/src/core/inventory_service.h \
   E:/pos--2/src/core/notification_service.h \
+  E:/pos--2/src/core/partner_service.h \
   E:/pos--2/src/core/payment_service.h \
   E:/pos--2/src/core/pos_service.h \
   E:/pos--2/src/core/purchase_service.h \

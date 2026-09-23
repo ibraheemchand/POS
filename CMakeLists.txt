@@ -51,6 +51,8 @@ add_library(pos_core
     src/core/data_change_bus.cpp
     src/core/commission_service.cpp
     src/core/bundle_service.cpp
+    src/core/partner_service.cpp
+    src/core/auth_session.cpp
 )
 target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
@@ -63,6 +65,8 @@ endif()
 set(UI_PAGE_SOURCES
     src/ui/pages/dashboard_page.cpp
     src/ui/pages/dashboard_page.h
+    src/ui/pages/main_page.cpp
+    src/ui/pages/main_page.h
     src/ui/pages/inventory_page.cpp
     src/ui/pages/inventory_page.h
     src/ui/pages/sales_pos_page.cpp
@@ -81,6 +85,12 @@ set(UI_PAGE_SOURCES
     src/ui/pages/reports_page.h
     src/ui/pages/courses_page.cpp
     src/ui/pages/courses_page.h
+    src/ui/pages/commission_settings_page.cpp
+    src/ui/pages/commission_settings_page.h
+    src/ui/pages/partners_page.cpp
+    src/ui/pages/partners_page.h
+    src/ui/pages/profit_report_page.cpp
+    src/ui/pages/profit_report_page.h
     src/ui/pages/audit_log_page.cpp
     src/ui/pages/audit_log_page.h
     src/ui/pages/settings_page.cpp

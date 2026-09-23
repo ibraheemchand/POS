@@ -598,7 +598,10 @@ void SalesPosPage::loadCourse() {
             }
             bool merged = false;
             for (int row = 0; row < cartTable_->rowCount(); ++row) {
-                if (cartTable_->item(row, 0)->data(Qt::UserRole).toString() == item.productId) {
+                // Only merge into a line already tagged with THIS course, so a
+                // manual line of the same book stays a standalone (book-settings) line.
+                if (cartTable_->item(row, 0)->data(Qt::UserRole).toString() == item.productId
+                    && cartTable_->item(row, 0)->data(Qt::UserRole + 2).toString() == bundle.id) {
                     const auto newQuantity = cartTable_->item(row, 1)->text().toLongLong() + item.quantity;
                     cartTable_->item(row, 1)->setText(QString::number(newQuantity));
                     updateLineTotal(row);
@@ -608,6 +611,9 @@ void SalesPosPage::loadCourse() {
             }
             if (!merged) {
                 addCartRow(item.productId, item.productName, item.baseUnit, item.quantity, item.retailPrice, 0, false);
+                // Tag the new line with its course so checkout applies the course's
+                // commission (grouped once), not the book's own settings.
+                cartTable_->item(cartTable_->rowCount() - 1, 0)->setData(Qt::UserRole + 2, bundle.id);
             }
             ++added;
         }
@@ -647,7 +653,8 @@ void SalesPosPage::completeSale(bool printReceipt) {
                 price,
                 discount,
                 cartTable_->item(row, 0)->data(Qt::UserRole + 1).toString(),
-                discountOverrideApproved
+                discountOverrideApproved,
+                cartTable_->item(row, 0)->data(Qt::UserRole + 2).toString()
             });
         }
 

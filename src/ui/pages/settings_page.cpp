@@ -130,9 +130,9 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     commissionLayout->setContentsMargins(20, 18, 20, 18);
     commissionLayout->setSpacing(12);
 
-    auto* commissionTitle = new QLabel("Book commission split", commissionCard);
+    auto* commissionTitle = new QLabel("Salesman discount margin (legacy)", commissionCard);
     commissionTitle->setObjectName("sectionTitle");
-    auto* commissionHint = new QLabel("Commission is a percentage of each book's retail price. The partner's and owner's minimum shares are fixed; the rest is the margin a salesman may discount on the spot.", commissionCard);
+    auto* commissionHint = new QLabel("Controls how large a discount a salesman may give on the spot before a manager override is needed. This is separate from partner commissions — those live in the password-protected Commission Settings section.", commissionCard);
     commissionHint->setObjectName("muted");
     commissionHint->setWordWrap(true);
     commissionLayout->addWidget(commissionTitle);

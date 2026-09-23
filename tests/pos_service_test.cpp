@@ -21,6 +21,8 @@
 #include "core/seed_service.h"
 #include "core/commission_service.h"
 #include "core/bundle_service.h"
+#include "core/partner_service.h"
+#include "core/auth_session.h"
 #include <filesystem>
 #include <QTemporaryDir>
 #include <QFile>
@@ -64,7 +66,34 @@ private slots:
     void commissionOverrideRequiredBeyondFlexibleCap();
     void commissionSettingsRejectSharesExceedingRate();
     void bundleResolvesLivePricesAndStock();
+    void courseSalePostsOneGroupedEntryUsingCourseSettings();
+    void standaloneBookSaleUsesBookSettings();
+    void multiCourseAndStandaloneBookSaleReconciles();
+    void courseWithNoPartnerSendsFullCommissionToProfit();
+    void partnerShareEqualToTotalLeavesNoProfit();
+    void partialCourseReturnReversesProportionalShare();
+    void fullCancellationReversesAllPartnerAndProfitEntries();
+    void changingCommissionSettingsDoesNotAlterPastSales();
+    void lockedSessionCannotReadOrChangeCommissionData();
+    void wrongOwnerPinIsRejected();
+    void cashierCanCompleteCommissionedSaleWhileLocked();
 };
+
+// Shared fixture helpers for the partner-commission suite.
+static void openShift(pos::Database& db) {
+    auto s = db.prepare("INSERT INTO shift_sessions(id,opened_at,opening_cash_paisa,status) VALUES(?,?,?,'open')");
+    s.bind(1, pos::uuid()); s.bind(2, pos::utcNow()); s.bind(3, 0); s.execute();
+}
+static void unlockOwner(const std::shared_ptr<pos::Database>& db) {
+    pos::SecurityService(db).setPin("1234");
+    pos::AuthSession::instance().setTimeoutSeconds(300);
+    QVERIFY(pos::AuthSession::instance().unlock(db, "1234"));
+}
+static QString stockedBook(pos::InventoryService& inv, const QString& name, qint64 retail) {
+    const auto id = inv.createProduct(name, "piece", retail / 2, retail, false);
+    inv.receiveStock({id, 50, retail / 2, "piece", {}, {}, "Seed"});
+    return id;
+}
 
 static void insertProduct(pos::Database& db, const QString& id, qint64 stock) {
     auto p=db.prepare("INSERT INTO products(id,name,base_unit,stock_quantity,created_at,updated_at) VALUES(?,?,?, ?,?,?)");
@@ -107,5 +136,118 @@ void PosServiceTest::commissionSplitIsPersistedPerSaleItem(){try {const auto pat
 void PosServiceTest::commissionOverrideRequiredBeyondFlexibleCap(){try {const auto path=std::filesystem::temp_directory_path()/("commission-override-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();const auto product=pos::uuid();insertProduct(*db,product,10);pos::PosService sales(db);pos::SaleRequest blocked{{},{},"cash",8500,0,{},{{product,{},1,10000,1500,"piece",false}}};QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,sales.completeSale(blocked));auto stock=db->prepare("SELECT stock_quantity FROM products WHERE id=?");stock.bind(1,product);QVERIFY(stock.stepRow());QCOMPARE(stock.integer(0),qint64(10));pos::SaleRequest approved{{},{},"cash",8500,0,{},{{product,{},1,10000,1500,"piece",true}}};const auto sale=sales.completeSale(approved);auto row=db->prepare("SELECT discount_amount_paisa,owner_amount_paisa,overridden FROM sale_item_commissions WHERE sale_id=?");row.bind(1,sale.saleId);QVERIFY(row.stepRow());QCOMPARE(row.integer(0),qint64(1500));QCOMPARE(row.integer(1),qint64(500));QCOMPARE(row.integer(2),qint64(1));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::commissionSettingsRejectSharesExceedingRate(){try {const auto path=std::filesystem::temp_directory_path()/("commission-settings-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::CommissionService service(db);auto settings=service.settings();QCOMPARE(settings.commissionRateBp,qint64(3000));settings.partnerShareBp=2000;settings.ownerMinShareBp=2000;QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,service.setSettings(settings));settings.partnerShareBp=1500;settings.ownerMinShareBp=1000;service.setSettings(settings);QCOMPARE(service.settings().partnerShareBp,qint64(1500));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::bundleResolvesLivePricesAndStock(){try {const auto path=std::filesystem::temp_directory_path()/("bundle-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);const auto bookA=inventory.createProduct("Math Grade 5","piece",300,500,false);const auto bookB=inventory.createProduct("English Grade 5","piece",200,400,false);inventory.receiveStock({bookA,10,300,"piece",{}, {},"Seed"});inventory.receiveStock({bookB,10,200,"piece",{}, {},"Seed"});pos::BundleService bundles(db);pos::BundleDefinition definition{"Grade 5 Course","Grade 5","Full set",{{bookA,1},{bookB,1}}};const auto id=bundles.createBundle(definition);QCOMPARE(bundles.listBundles().size(),qsizetype(1));const auto resolved=bundles.resolveItems(id);QCOMPARE(resolved.size(),qsizetype(2));QCOMPARE(resolved.first().retailPrice,qint64(500));QCOMPARE(resolved.first().stock,qint64(10));bundles.archiveBundle(id);QCOMPARE(bundles.listBundles().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::courseSalePostsOneGroupedEntryUsingCourseSettings(){try{const auto path=std::filesystem::temp_directory_path()/("course-sale-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto bookA=stockedBook(inv,"Math",1000),bookB=stockedBook(inv,"English",1000);
+    pos::PartnerService ps(db);const auto bookPartner=ps.createPartner({{},"Book Partner",{},{},0,false});ps.setBookConfig(bookA,{5000,5000,bookPartner}); // book settings that MUST be ignored inside a course
+    const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{bookA,1},{bookB,1}}});
+    const auto coursePartner=ps.createPartner({{},"Course Partner",{},{},0,false});ps.setCourseConfig(course,{3000,1000,coursePartner}); // 30% total, 10% partner
+    pos::SaleRequest req{{},{},"cash",2000,0,{},{{bookA,{},1,1000,0,"piece",false,course},{bookB,{},1,1000,0,"piece",false,course}}};
+    pos::PosService(db).completeSale(req);
+    auto courseEntries=db->prepare("SELECT COUNT(*),COALESCE(SUM(commission_paisa),0),COALESCE(SUM(partner_amount_paisa),0),COALESCE(SUM(my_profit_paisa),0) FROM profit_entries WHERE source_type='course'");QVERIFY(courseEntries.stepRow());QCOMPARE(courseEntries.integer(0),qint64(1));QCOMPARE(courseEntries.integer(1),qint64(600));QCOMPARE(courseEntries.integer(2),qint64(200));QCOMPARE(courseEntries.integer(3),qint64(400));
+    auto bookEntries=db->prepare("SELECT COUNT(*) FROM profit_entries WHERE source_type='book'");QVERIFY(bookEntries.stepRow());QCOMPARE(bookEntries.integer(0),qint64(0)); // no per-book entries for a course sale
+    auto coursePartnerLedger=db->prepare("SELECT COUNT(*),COALESCE(SUM(credit_paisa),0) FROM partner_ledger WHERE partner_id=?");coursePartnerLedger.bind(1,coursePartner);QVERIFY(coursePartnerLedger.stepRow());QCOMPARE(coursePartnerLedger.integer(0),qint64(1));QCOMPARE(coursePartnerLedger.integer(1),qint64(200));
+    auto bookPartnerLedger=db->prepare("SELECT COUNT(*) FROM partner_ledger WHERE partner_id=?");bookPartnerLedger.bind(1,bookPartner);QVERIFY(bookPartnerLedger.stepRow());QCOMPARE(bookPartnerLedger.integer(0),qint64(0));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::standaloneBookSaleUsesBookSettings(){try{const auto path=std::filesystem::temp_directory_path()/("book-sale-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto book=stockedBook(inv,"Atlas",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});ps.setBookConfig(book,{4000,1500,partner}); // 40% total, 15% partner
+    pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece"}}}; // no courseId => book settings
+    pos::PosService(db).completeSale(req);
+    auto entry=db->prepare("SELECT source_type,commission_paisa,partner_amount_paisa,my_profit_paisa FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.text(0),QString("book"));QCOMPARE(entry.integer(1),qint64(400));QCOMPARE(entry.integer(2),qint64(150));QCOMPARE(entry.integer(3),qint64(250));
+    auto ledger=db->prepare("SELECT credit_paisa FROM partner_ledger WHERE partner_id=?");ledger.bind(1,partner);QVERIFY(ledger.stepRow());QCOMPARE(ledger.integer(0),qint64(150));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::multiCourseAndStandaloneBookSaleReconciles(){try{const auto path=std::filesystem::temp_directory_path()/("multi-sale-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto a=stockedBook(inv,"A",1000),b=stockedBook(inv,"B",1000),c=stockedBook(inv,"C",1000),loose=stockedBook(inv,"Loose",1000);
+    pos::PartnerService ps(db);const auto p1=ps.createPartner({{},"P1",{},{},0,false}),p2=ps.createPartner({{},"P2",{},{},0,false});
+    const auto courseA=pos::BundleService(db).createBundle({"CourseA","G1","",{{a,1},{b,1}}});ps.setCourseConfig(courseA,{3000,1000,p1});
+    const auto courseB=pos::BundleService(db).createBundle({"CourseB","G2","",{{c,1}}});ps.setCourseConfig(courseB,{2000,2000,p2});
+    ps.setBookConfig(loose,{5000,1000,p1});
+    pos::SaleRequest req{{},{},"cash",4000,0,{},{{a,{},1,1000,0,"piece",false,courseA},{b,{},1,1000,0,"piece",false,courseA},{c,{},1,1000,0,"piece",false,courseB},{loose,{},1,1000,0,"piece"}}};
+    pos::PosService(db).completeSale(req);
+    const auto today=QDate::currentDate();const auto sum=ps.summary(today,today);
+    // courseA: value2000 comm600 partner200 profit400; courseB: value1000 comm200 partner200 profit0; loose: value1000 comm500 partner100 profit400
+    QCOMPARE(sum.totalCommission,qint64(1300));QCOMPARE(sum.totalPartner,qint64(500));QCOMPARE(sum.myProfit,qint64(800));
+    QCOMPARE(sum.totalPartner+sum.myProfit,sum.totalCommission);
+    qint64 courseSum=0;for(const auto& r:ps.courseReport(today,today))courseSum+=r.commission;qint64 bookSum=0;for(const auto& r:ps.standaloneBookReport(today,today))bookSum+=r.commission;
+    QCOMPARE(courseSum+bookSum,sum.totalCommission); // per-source rows reconcile to the summary
+    QCOMPARE(sum.totalOwed,qint64(500));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::courseWithNoPartnerSendsFullCommissionToProfit(){try{const auto path=std::filesystem::temp_directory_path()/("nopartner-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto book=stockedBook(inv,"Solo",1000);
+    pos::PartnerService ps(db);const auto course=pos::BundleService(db).createBundle({"NoPartner","G","",{{book,1}}});ps.setCourseConfig(course,{3000,0,{}}); // 30% total, no partner
+    pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req);
+    auto entry=db->prepare("SELECT commission_paisa,partner_amount_paisa,my_profit_paisa FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(300));QCOMPARE(entry.integer(1),qint64(0));QCOMPARE(entry.integer(2),qint64(300));
+    auto ledger=db->prepare("SELECT COUNT(*) FROM partner_ledger");QVERIFY(ledger.stepRow());QCOMPARE(ledger.integer(0),qint64(0));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::partnerShareEqualToTotalLeavesNoProfit(){try{const auto path=std::filesystem::temp_directory_path()/("equalshare-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto book=stockedBook(inv,"Equal",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Full Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Equal","G","",{{book,1}}});ps.setCourseConfig(course,{4000,4000,partner});
+    pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req);
+    auto entry=db->prepare("SELECT commission_paisa,partner_amount_paisa,my_profit_paisa FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(400));QCOMPARE(entry.integer(1),qint64(400));QCOMPARE(entry.integer(2),qint64(0));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::partialCourseReturnReversesProportionalShare(){try{const auto path=std::filesystem::temp_directory_path()/("partial-return-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto bookA=stockedBook(inv,"Math",1000),bookB=stockedBook(inv,"English",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{bookA,1},{bookB,1}}});ps.setCourseConfig(course,{3000,1000,partner});
+    pos::SaleRequest req{{},{},"cash",2000,0,{},{{bookA,{},1,1000,0,"piece",false,course},{bookB,{},1,1000,0,"piece",false,course}}};const auto sale=pos::PosService(db).completeSale(req);
+    auto itemB=db->prepare("SELECT id FROM sale_items WHERE sale_id=? AND product_id=?");itemB.bind(1,sale.saleId);itemB.bind(2,bookB);QVERIFY(itemB.stepRow());
+    pos::ReturnService(db).returnSale(sale.saleId,{{itemB.text(0),1}},"Damaged",true);
+    auto net=db->prepare("SELECT COALESCE(SUM(commission_paisa),0),COALESCE(SUM(partner_amount_paisa),0),COALESCE(SUM(my_profit_paisa),0) FROM profit_entries WHERE source_type='course'");QVERIFY(net.stepRow());QCOMPARE(net.integer(0),qint64(300));QCOMPARE(net.integer(1),qint64(100));QCOMPARE(net.integer(2),qint64(200)); // half reversed
+    auto balance=db->prepare("SELECT balance_paisa FROM partners WHERE id=?");balance.bind(1,partner);QVERIFY(balance.stepRow());QCOMPARE(balance.integer(0),qint64(100));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::fullCancellationReversesAllPartnerAndProfitEntries(){try{const auto path=std::filesystem::temp_directory_path()/("full-cancel-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto bookA=stockedBook(inv,"Math",1000),bookB=stockedBook(inv,"English",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{bookA,1},{bookB,1}}});ps.setCourseConfig(course,{3000,1000,partner});
+    pos::SaleRequest req{{},{},"cash",2000,0,{},{{bookA,{},1,1000,0,"piece",false,course},{bookB,{},1,1000,0,"piece",false,course}}};const auto sale=pos::PosService(db).completeSale(req);
+    pos::PosService(db).voidSale(sale.saleId,"Customer cancelled","Manager");
+    auto net=db->prepare("SELECT COALESCE(SUM(commission_paisa),0),COALESCE(SUM(partner_amount_paisa),0),COALESCE(SUM(my_profit_paisa),0) FROM profit_entries WHERE sale_id=?");net.bind(1,sale.saleId);QVERIFY(net.stepRow());QCOMPARE(net.integer(0),qint64(0));QCOMPARE(net.integer(1),qint64(0));QCOMPARE(net.integer(2),qint64(0));
+    auto balance=db->prepare("SELECT balance_paisa FROM partners WHERE id=?");balance.bind(1,partner);QVERIFY(balance.stepRow());QCOMPARE(balance.integer(0),qint64(0));
+    auto history=db->prepare("SELECT COUNT(*) FROM profit_entries WHERE sale_id=?");history.bind(1,sale.saleId);QVERIFY(history.stepRow());QVERIFY(history.integer(0)>=2); // original + reversal kept, not deleted
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::changingCommissionSettingsDoesNotAlterPastSales(){try{const auto path=std::filesystem::temp_directory_path()/("frozen-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto book=stockedBook(inv,"Math",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{book,1}}});ps.setCourseConfig(course,{3000,1000,partner});
+    pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req);
+    ps.setCourseConfig(course,{5000,5000,partner}); // change AFTER the sale
+    auto entry=db->prepare("SELECT commission_paisa,partner_amount_paisa,my_profit_paisa FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(300));QCOMPARE(entry.integer(1),qint64(100));QCOMPARE(entry.integer(2),qint64(200)); // still the old snapshot
+    const auto today=QDate::currentDate();bool found=false;for(const auto& r:ps.courseReport(today,today)){if(r.sourceId==course){found=true;QCOMPARE(r.commission,qint64(300));QCOMPARE(r.partnerAmount,qint64(100));}}QVERIFY(found);
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::lockedSessionCannotReadOrChangeCommissionData(){try{const auto path=std::filesystem::temp_directory_path()/("locked-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto book=pos::InventoryService(db).createProduct("Book","piece",500,1000,false);
+    pos::AuthSession::instance().lock(); // simulate a cashier / logged-out session
+    const auto today=QDate::currentDate();
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.listPartners());
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.summary(today,today));
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.partnerLedger(partner,today,today));
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.setBookConfig(book,{3000,1000,partner}));
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.recordPayout(partner,100,"nope"));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::wrongOwnerPinIsRejected(){try{const auto path=std::filesystem::temp_directory_path()/("wrongpin-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();
+    pos::SecurityService(db).setPin("1234");pos::AuthSession::instance().lock();
+    QVERIFY(!pos::AuthSession::instance().unlock(db,"0000"));
+    QVERIFY(!pos::AuthSession::instance().isUnlocked());
+    QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,pos::PartnerService(db).listPartners());
+    QVERIFY(pos::AuthSession::instance().unlock(db,"1234"));
+    QVERIFY(pos::AuthSession::instance().isUnlocked());
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::cashierCanCompleteCommissionedSaleWhileLocked(){try{const auto path=std::filesystem::temp_directory_path()/("cashier-locked-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);const auto book=stockedBook(inv,"Math",1000);
+    pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{book,1}}});ps.setCourseConfig(course,{3000,1000,partner});
+    pos::AuthSession::instance().lock(); // cashier / logged-out — must still record commission in the background
+    pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req); // must not throw for a cashier
+    auto entry=db->prepare("SELECT commission_paisa,partner_amount_paisa FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(300));QCOMPARE(entry.integer(1),qint64(100));
+    QVERIFY(pos::AuthSession::instance().unlock(db,"1234"));
+    const auto today=QDate::currentDate();bool found=false;for(const auto& r:ps.partnerReport(today,today)){if(r.partnerId==partner){found=true;QCOMPARE(r.earned,qint64(100));QCOMPARE(r.balance,qint64(100));}}QVERIFY(found);
+}catch(const std::exception& error){QFAIL(error.what());}}
+
 QTEST_APPLESS_MAIN(PosServiceTest)
 #include "pos_service_test.moc"

@@ -20,6 +20,11 @@ struct SaleLine {
     // Set only after a manager/owner PIN confirms a discount beyond the commission
     // flexible-margin cap; PosService still re-derives and enforces the cap itself.
     bool discountOverrideApproved{false};
+    // Non-empty when this line was loaded as part of a course (bundle). The sale
+    // then applies the COURSE's commission settings, grouped once per course,
+    // instead of the book's own settings. Kept last so existing aggregate
+    // initialisers (which omit it) still compile.
+    QString courseId;
 };
 
 struct SaleRequest {

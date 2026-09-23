@@ -70,7 +70,22 @@ template <> constexpr inline auto PosServiceTest::qt_create_metaobjectdata<qt_me
         "backupRetentionPrunesOldSnapshots",
         "thermalReceiptAndBarcodeBytesAreValidated",
         "demoSeedIsIdempotent",
-        "randomSeedCreatesPricedDataIdempotently"
+        "randomSeedCreatesPricedDataIdempotently",
+        "commissionSplitIsPersistedPerSaleItem",
+        "commissionOverrideRequiredBeyondFlexibleCap",
+        "commissionSettingsRejectSharesExceedingRate",
+        "bundleResolvesLivePricesAndStock",
+        "courseSalePostsOneGroupedEntryUsingCourseSettings",
+        "standaloneBookSaleUsesBookSettings",
+        "multiCourseAndStandaloneBookSaleReconciles",
+        "courseWithNoPartnerSendsFullCommissionToProfit",
+        "partnerShareEqualToTotalLeavesNoProfit",
+        "partialCourseReturnReversesProportionalShare",
+        "fullCancellationReversesAllPartnerAndProfitEntries",
+        "changingCommissionSettingsDoesNotAlterPastSales",
+        "lockedSessionCannotReadOrChangeCommissionData",
+        "wrongOwnerPinIsRejected",
+        "cashierCanCompleteCommissionedSaleWhileLocked"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -138,6 +153,36 @@ template <> constexpr inline auto PosServiceTest::qt_create_metaobjectdata<qt_me
         QtMocHelpers::SlotData<void()>(32, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'randomSeedCreatesPricedDataIdempotently'
         QtMocHelpers::SlotData<void()>(33, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'commissionSplitIsPersistedPerSaleItem'
+        QtMocHelpers::SlotData<void()>(34, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'commissionOverrideRequiredBeyondFlexibleCap'
+        QtMocHelpers::SlotData<void()>(35, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'commissionSettingsRejectSharesExceedingRate'
+        QtMocHelpers::SlotData<void()>(36, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'bundleResolvesLivePricesAndStock'
+        QtMocHelpers::SlotData<void()>(37, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'courseSalePostsOneGroupedEntryUsingCourseSettings'
+        QtMocHelpers::SlotData<void()>(38, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'standaloneBookSaleUsesBookSettings'
+        QtMocHelpers::SlotData<void()>(39, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'multiCourseAndStandaloneBookSaleReconciles'
+        QtMocHelpers::SlotData<void()>(40, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'courseWithNoPartnerSendsFullCommissionToProfit'
+        QtMocHelpers::SlotData<void()>(41, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'partnerShareEqualToTotalLeavesNoProfit'
+        QtMocHelpers::SlotData<void()>(42, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'partialCourseReturnReversesProportionalShare'
+        QtMocHelpers::SlotData<void()>(43, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'fullCancellationReversesAllPartnerAndProfitEntries'
+        QtMocHelpers::SlotData<void()>(44, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'changingCommissionSettingsDoesNotAlterPastSales'
+        QtMocHelpers::SlotData<void()>(45, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'lockedSessionCannotReadOrChangeCommissionData'
+        QtMocHelpers::SlotData<void()>(46, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'wrongOwnerPinIsRejected'
+        QtMocHelpers::SlotData<void()>(47, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'cashierCanCompleteCommissionedSaleWhileLocked'
+        QtMocHelpers::SlotData<void()>(48, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -193,6 +238,21 @@ void PosServiceTest::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 29: _t->thermalReceiptAndBarcodeBytesAreValidated(); break;
         case 30: _t->demoSeedIsIdempotent(); break;
         case 31: _t->randomSeedCreatesPricedDataIdempotently(); break;
+        case 32: _t->commissionSplitIsPersistedPerSaleItem(); break;
+        case 33: _t->commissionOverrideRequiredBeyondFlexibleCap(); break;
+        case 34: _t->commissionSettingsRejectSharesExceedingRate(); break;
+        case 35: _t->bundleResolvesLivePricesAndStock(); break;
+        case 36: _t->courseSalePostsOneGroupedEntryUsingCourseSettings(); break;
+        case 37: _t->standaloneBookSaleUsesBookSettings(); break;
+        case 38: _t->multiCourseAndStandaloneBookSaleReconciles(); break;
+        case 39: _t->courseWithNoPartnerSendsFullCommissionToProfit(); break;
+        case 40: _t->partnerShareEqualToTotalLeavesNoProfit(); break;
+        case 41: _t->partialCourseReturnReversesProportionalShare(); break;
+        case 42: _t->fullCancellationReversesAllPartnerAndProfitEntries(); break;
+        case 43: _t->changingCommissionSettingsDoesNotAlterPastSales(); break;
+        case 44: _t->lockedSessionCannotReadOrChangeCommissionData(); break;
+        case 45: _t->wrongOwnerPinIsRejected(); break;
+        case 46: _t->cashierCanCompleteCommissionedSaleWhileLocked(); break;
         default: ;
         }
     }
@@ -218,14 +278,14 @@ int PosServiceTest::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 32)
+        if (_id < 47)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 32;
+        _id -= 47;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 32)
+        if (_id < 47)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 32;
+        _id -= 47;
     }
     return _id;
 }

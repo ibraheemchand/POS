@@ -212,6 +212,11 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #include "ui/pages/audit_log_page.h"
 #include "ui/pages/settings_page.h"
 #include "ui/pages/backup_restore_page.h"
+#include "ui/pages/commission_settings_page.h"
+#include "ui/pages/partners_page.h"
+#include "ui/pages/profit_report_page.h"
+#include "ui/pages/page_helper.h"
+#include "core/auth_session.h"
 #include "core/data_change_bus.h"
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -267,6 +272,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         {"BUSINESS", {"Purchases", "Customers", "Suppliers"}},
         {"FINANCE", {"Cash & Shifts", "Cheques"}},
         {"ANALYTICS", {"Reports", "Audit log"}},
+        {"OWNER (PIN)", {"Commission Settings", "Partners", "Profit & Commission"}},
         {"SYSTEM", {"Settings", "Backup & Restore"}}
     };
 
@@ -283,6 +289,9 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         {"Cheques", QIcon(":/icons/cheques.svg")},
         {"Reports", QIcon(":/icons/reports.svg")},
         {"Audit log", QIcon(":/icons/audit.svg")},
+        {"Commission Settings", QIcon(":/icons/settings.svg")},
+        {"Partners", QIcon(":/icons/customers.svg")},
+        {"Profit & Commission", QIcon(":/icons/reports.svg")},
         {"Settings", QIcon(":/icons/settings.svg")},
         {"Backup & Restore", QIcon(":/icons/backup.svg")},
     };
@@ -390,6 +399,9 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         else if (n == "Cheques") page = new ChequesPage(database_);
         else if (n == "Reports") page = new ReportsPage(database_);
         else if (n == "Audit log") page = new AuditLogPage(database_);
+        else if (n == "Commission Settings") page = new CommissionSettingsPage(database_);
+        else if (n == "Partners") page = new PartnersPage(database_);
+        else if (n == "Profit & Commission") page = new ProfitReportPage(database_);
         else if (n == "Settings") page = new SettingsPage(database_);
         else if (n == "Backup & Restore") page = new BackupRestorePage(database_);
         
@@ -423,6 +435,9 @@ shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Ref
         {"Cheques", "Register received and issued cheques and their status."},
         {"Reports", "Filter, print and export business reports."},
         {"Audit log", "Append-only record of sensitive business actions."},
+        {"Commission Settings", "Owner-only. Course and book commission percentages and linked partners."},
+        {"Partners", "Owner-only. Partner balances, ledgers and payouts."},
+        {"Profit & Commission", "Owner-only. My Profits and the profit & commission report."},
         {"Settings", "Business identity, currency, printers, security and backup."},
         {"Backup & Restore", "Verified backups and a guided, checksum-safe restore."}
     };
@@ -431,6 +446,19 @@ shortcutBar->setText("F2 Main  |  F3 Find Product  |  F4 New Purchase  |  F5 Ref
         if (row < 0 || row >= navRowToPage_.size()) return;
         const int pageIndex = navRowToPage_.value(row);
         if (pageIndex < 0 || pageIndex >= pages_->count()) return;
+        if (navGuard_) return; // a programmatic revert is in progress
+        // Owner-only pages require the PIN; leaving them re-locks the session so a
+        // walk-away doesn't expose commission/partner/profit data to a cashier.
+        static const QStringList ownerPages = {"Commission Settings", "Partners", "Profit & Commission"};
+        const auto targetName = pageNames_.value(pageIndex);
+        if (ownerPages.contains(targetName)) {
+            if (!pos::unlockOwnerSession(this, database_)) {
+                navGuard_ = true; navigation->setCurrentRow(lastGoodRow_); navGuard_ = false; return;
+            }
+        } else {
+            pos::AuthSession::instance().lock();
+        }
+        lastGoodRow_ = row;
         pages_->setCurrentIndex(pageIndex);
         const auto* item = navigation->item(row);
         if (!item) return;
