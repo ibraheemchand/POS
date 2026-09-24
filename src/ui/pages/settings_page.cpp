@@ -10,6 +10,8 @@
 #include <QGridLayout>
 #include <QFrame>
 #include <QMessageBox>
+#include <QComboBox>
+#include <QPrinterInfo>
 #include <QTimer>
 
 SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* parent)
@@ -63,6 +65,22 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     form->addWidget(footerLabel, 3, 0);     form->addWidget(footerInput_, 3, 1);
     form->addWidget(backupLabel, 4, 0);     form->addWidget(backupHoursSpin_, 4, 1);
     form->addWidget(thermLabel, 5, 0);      form->addWidget(thermalPathInput_, 5, 1);
+
+    // Printer picker: pick an installed printer and its name fills the field above.
+    // Raw ESC/POS is sent through the Windows spooler, which fixes the old
+    // "Access is denied" (that came from opening the printer as a file).
+    auto* printerCombo = new QComboBox(identityCard);
+    printerCombo->addItem("— pick an installed printer —", QString());
+    for (const auto& name : QPrinterInfo::availablePrinterNames()) printerCombo->addItem(name, name);
+    auto* printerLabel = new QLabel("Detected printers", identityCard); printerLabel->setBuddy(printerCombo);
+    auto* printerHint = new QLabel("Choose your thermal printer here (fills the path above), then use \"Print test receipt\". For a network printer, share it and enter \\\\PC-NAME\\ShareName in the path field.", identityCard);
+    printerHint->setObjectName("muted"); printerHint->setWordWrap(true);
+    form->addWidget(printerLabel, 6, 0);    form->addWidget(printerCombo, 6, 1);
+    form->addWidget(printerHint, 7, 0, 1, 2);
+    connect(printerCombo, &QComboBox::currentIndexChanged, this, [this, printerCombo](int) {
+        const auto name = printerCombo->currentData().toString();
+        if (!name.isEmpty()) thermalPathInput_->setText(name);
+    });
     identityLayout->addLayout(form);
 
     saveSettingsBtn_ = new QPushButton("Save settings", identityCard);

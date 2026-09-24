@@ -196,7 +196,7 @@ void PosServiceTest::multiCourseAndStandaloneBookSaleReconciles(){try{const auto
     ps.setBookConfig(loose,{5000,1000,p1});
     pos::SaleRequest req{{},{},"cash",4000,0,{},{{a,{},1,1000,0,"piece",false,courseA},{b,{},1,1000,0,"piece",false,courseA},{c,{},1,1000,0,"piece",false,courseB},{loose,{},1,1000,0,"piece"}}};
     pos::PosService(db).completeSale(req);
-    const auto today=QDate::currentDate();const auto sum=ps.summary(today,today);
+    const auto today=QDateTime::currentDateTimeUtc().date();const auto sum=ps.summary(today,today);
     // courseA: value2000 comm600 partner200 profit400; courseB: value1000 comm200 partner200 profit0; loose: value1000 comm500 partner100 profit400
     QCOMPARE(sum.totalCommission,qint64(1300));QCOMPARE(sum.totalPartner,qint64(500));QCOMPARE(sum.myProfit,qint64(800));
     QCOMPARE(sum.totalPartner+sum.myProfit,sum.totalCommission);
@@ -246,13 +246,13 @@ void PosServiceTest::changingCommissionSettingsDoesNotAlterPastSales(){try{const
     pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req);
     ps.setCourseConfig(course,{5000,5000,partner}); // change AFTER the sale
     auto entry=db->prepare("SELECT commission,partner_amount,my_profit FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(300));QCOMPARE(entry.integer(1),qint64(100));QCOMPARE(entry.integer(2),qint64(200)); // still the old snapshot
-    const auto today=QDate::currentDate();bool found=false;for(const auto& r:ps.courseReport(today,today)){if(r.sourceId==course){found=true;QCOMPARE(r.commission,qint64(300));QCOMPARE(r.partnerAmount,qint64(100));}}QVERIFY(found);
+    const auto today=QDateTime::currentDateTimeUtc().date();bool found=false;for(const auto& r:ps.courseReport(today,today)){if(r.sourceId==course){found=true;QCOMPARE(r.commission,qint64(300));QCOMPARE(r.partnerAmount,qint64(100));}}QVERIFY(found);
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 void PosServiceTest::lockedSessionCannotReadOrChangeCommissionData(){try{const auto path=std::filesystem::temp_directory_path()/("locked-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);
     pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto book=pos::InventoryService(db).createProduct("Book","piece",500,1000,false);
     pos::AuthSession::instance().lock(); // simulate a cashier / logged-out session
-    const auto today=QDate::currentDate();
+    const auto today=QDateTime::currentDateTimeUtc().date();
     QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.listPartners());
     QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.summary(today,today));
     QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,ps.partnerLedger(partner,today,today));
@@ -276,7 +276,7 @@ void PosServiceTest::cashierCanCompleteCommissionedSaleWhileLocked(){try{const a
     pos::SaleRequest req{{},{},"cash",1000,0,{},{{book,{},1,1000,0,"piece",false,course}}};pos::PosService(db).completeSale(req); // must not throw for a cashier
     auto entry=db->prepare("SELECT commission,partner_amount FROM profit_entries");QVERIFY(entry.stepRow());QCOMPARE(entry.integer(0),qint64(300));QCOMPARE(entry.integer(1),qint64(100));
     QVERIFY(pos::AuthSession::instance().unlock(db,"123456"));
-    const auto today=QDate::currentDate();bool found=false;for(const auto& r:ps.partnerReport(today,today)){if(r.partnerId==partner){found=true;QCOMPARE(r.earned,qint64(100));QCOMPARE(r.balance,qint64(100));}}QVERIFY(found);
+    const auto today=QDateTime::currentDateTimeUtc().date();bool found=false;for(const auto& r:ps.partnerReport(today,today)){if(r.partnerId==partner){found=true;QCOMPARE(r.earned,qint64(100));QCOMPARE(r.balance,qint64(100));}}QVERIFY(found);
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 void PosServiceTest::settingsPersistAfterReopeningDatabase(){try{const auto path=std::filesystem::temp_directory_path()/("settings-persist-"+pos::uuid().toStdString()+".db");
@@ -308,7 +308,7 @@ void PosServiceTest::dashboardNumbersReflectSalesAndPurchases(){try{const auto p
     sales.completeSale({customer,{},"credit",0,0,{},{{product,{},1,1000,0,"piece"}}});   // credit sale 1000 -> receivable
     pos::SupplierService suppliers(db);const auto supplier=suppliers.create({{},"Supplier",{},{},{},0,false});
     pos::PurchaseService(db).completePurchase({supplier,{},"cash",3000,0,0,{},{{product,3,1000,0,0,"piece",{}, {}}}}); // purchase 3000
-    const auto today=QDate::currentDate();pos::ReportService rep(db);
+    const auto today=QDateTime::currentDateTimeUtc().date();pos::ReportService rep(db);
     const auto sum=rep.summary(today,today);
     QCOMPARE(sum.sales,qint64(3000));           // 2000 cash + 1000 credit
     QCOMPARE(sum.purchases,qint64(3000));

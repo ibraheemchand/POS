@@ -196,6 +196,18 @@ QMessageBox { background: #1E2025; color: #E2E2E9; }
 #quickCard:pressed { background: #33353A; }
 #quickCard:focus { border: 2px solid #E9C349; padding: 9px 11px; }
 )QSS";
+
+// Appended below the theme on narrow windows (<1440 logical). Tighter paddings and
+// row heights only — SAME fonts, nothing hidden — so everything fits at 1280x720.
+const char* compactExtra = R"QSS(
+QListWidget::item { padding: 8px 11px; margin: 1px 0; }
+QPushButton { padding: 7px 11px; }
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit { padding: 6px 9px; min-height: 15px; }
+QHeaderView::section { padding: 7px 8px; }
+QTableWidget::item { padding: 5px 8px; }
+QFrame#metric, QFrame#panel { border-radius: 12px; }
+#quickCard { padding: 8px 11px; border-radius: 12px; }
+)QSS";
 }
 
 #include "ui/main_window.h"
@@ -247,7 +259,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     setWindowIcon(QIcon(":/branding/app_icon")); 
     // Keep the minimum small enough to fit a 1366x768 laptop at 150% scaling
     // (~910x512 logical px); showMaximized() picks the real size.
-    setMinimumSize(720, 480);
+    setMinimumSize(1280, 720); // the smallest logical canvas we design for (1920x1080 @150%)
     resize(1600, 900);
 
     auto* root = new QWidget(this); 
@@ -272,10 +284,8 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* brand = new QLabel("Nexora POS", sidebar);
     brand->setObjectName("brand");
-    brand_ = brand;
     auto* sub = new QLabel("Enterprise Edition", sidebar);
     sub->setObjectName("subtitle");
-    subtitle_ = sub;
     sideLayout->addWidget(brand); 
     sideLayout->addWidget(sub);
 
@@ -341,7 +351,6 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* footerFrame = new QFrame(sidebar);
     footerFrame->setObjectName("footerCard");
-    footerFrame_ = footerFrame;
     footerFrame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed); 
     auto* footerLayout = new QVBoxLayout(footerFrame); 
     footerLayout->setContentsMargins(14,12,14,12); 
@@ -362,19 +371,13 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     auto* content = new QWidget(root); 
     content->setObjectName("content");
     auto* contentLayout = new QVBoxLayout(content);
-    contentLayout->setContentsMargins(24,16,24,10);
-    contentLayout->setSpacing(10);
+    contentLayout->setContentsMargins(16,8,16,8);
+    contentLayout->setSpacing(8);
 
-    auto* top = new QHBoxLayout; 
-    auto* workspace = new QVBoxLayout; 
-    auto* workspaceTitle = new QLabel("Main", content);
-    workspaceTitle->setObjectName("workspaceTitle"); 
-    auto* workspaceHint = new QLabel("Monitor the health of your operation and move quickly to the next task.", content); 
-    workspaceHint->setObjectName("workspaceHint"); 
-    workspaceHint->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred); 
-    workspace->addWidget(workspaceTitle); 
-    workspace->addWidget(workspaceHint); 
-    top->addLayout(workspace, 1); 
+    // No page title here — each page shows its own title once (avoids the duplicate
+    // "Suppliers"/"Suppliers" the top bar used to cause). Just the status strip.
+    auto* top = new QHBoxLayout;
+    top->addStretch(1);
 
     auto* online = new QLabel("OFFLINE READY", content); 
     online->setObjectName("statusChip"); 
@@ -424,7 +427,9 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         
         // "Main" is intentionally NOT here: it wraps in a vertical scroll area so
         // its cards/quick-access scroll instead of squeezing on small screens.
-        const QStringList fixedViewportPages = {"Dashboard", "Inventory", "Courses", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
+        // Frequently-used pages are NOT wrapped in a scroll area — they must fit at
+        // 1280x720 with only their tables scrolling internally (no page scrollbar).
+        const QStringList fixedViewportPages = {"Main", "Dashboard", "Inventory", "Courses", "Sales POS", "Purchases", "Customers", "Suppliers", "Cash & Shifts", "Reports", "Cheques"};
         return fixedViewportPages.contains(n) ? page : pageScroller(page);
     };
 
@@ -481,7 +486,8 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         {"Backup & Restore", "Verified backups and a guided, checksum-safe restore."}
     };
 
-    connect(navigation, &QListWidget::currentRowChanged, this, [this, navigation, workspaceTitle, workspaceHint, hints](int row) {
+    Q_UNUSED(hints);
+    connect(navigation, &QListWidget::currentRowChanged, this, [this, navigation](int row) {
         if (row < 0 || row >= navRowToPage_.size()) return;
         const int pageIndex = navRowToPage_.value(row);
         if (pageIndex < 0 || pageIndex >= pages_->count()) return;
@@ -501,10 +507,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         pages_->setCurrentIndex(pageIndex);
         const auto* item = navigation->item(row);
         if (!item) return;
-        const auto name = pageNames_.value(pageIndex);
-        workspaceTitle->setText(name);
-        workspaceHint->setText(hints.value(name));
-        
+
         auto* currentPageWidget = pages_->widget(pageIndex);
         if (auto* scroller = qobject_cast<QScrollArea*>(currentPageWidget)) {
             currentPageWidget = scroller->widget();
@@ -624,34 +627,32 @@ void MainWindow::goToPage(const QString& pageName) {
     if (navigation_->currentRow() != navRow) navigation_->setCurrentRow(navRow); 
 }
 
+QString MainWindow::currentPageName() const {
+    if (!navigation_) return {};
+    const int row = navigation_->currentRow();
+    if (row < 0 || row >= navRowToPage_.size()) return {};
+    return pageNames_.value(navRowToPage_.value(row));
+}
+
+void MainWindow::applyStyle() {
+    qApp->setStyleSheet(QString(dark_ ? darkStyle : lightStyle) + (compact_ ? compactExtra : ""));
+}
+
 void MainWindow::switchTheme() {
     dark_ = !dark_;
-    qApp->setStyleSheet(dark_ ? darkStyle : lightStyle);
+    applyStyle();
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
-    // Collapse the sidebar to icons on narrow windows so it never clips the menu.
-    const bool collapsed = width() < 1000;
-    if (collapsed != sidebarCollapsed_ || navItemTexts_.isEmpty())
-        applySidebarMode(collapsed);
-}
-
-void MainWindow::applySidebarMode(bool collapsed) {
-    if (!navigation_ || !sidebar_) return;
-    if (navItemTexts_.isEmpty())
-        for (int r = 0; r < navigation_->count(); ++r) navItemTexts_ << navigation_->item(r)->text();
-    sidebarCollapsed_ = collapsed;
-    sidebar_->setFixedWidth(collapsed ? 66 : 262);
-    if (brand_) brand_->setVisible(!collapsed);
-    if (subtitle_) subtitle_->setVisible(!collapsed);
-    if (footerFrame_) footerFrame_->setVisible(!collapsed);
-    navigation_->setIconSize(collapsed ? QSize(24, 24) : QSize(20, 20));
-    for (int r = 0; r < navigation_->count(); ++r) {
-        auto* item = navigation_->item(r);
-        const auto full = navItemTexts_.value(r);
-        item->setText(collapsed ? QString() : full);
-        item->setToolTip(collapsed ? full : QString());
-        item->setTextAlignment(collapsed ? Qt::AlignCenter : (Qt::AlignLeft | Qt::AlignVCenter));
+    // Compact density below 1440 logical width: tighter paddings/row heights and a
+    // narrower sidebar so every page still fits at 1280x720. Fonts are unchanged and
+    // nothing is hidden — the layout is identical, just denser.
+    const bool compact = width() < 1440;
+    if (compact != compact_ || !densityApplied_) {
+        compact_ = compact;
+        densityApplied_ = true;
+        if (sidebar_) sidebar_->setFixedWidth(compact ? 214 : 262);
+        applyStyle();
     }
 }

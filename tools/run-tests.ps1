@@ -40,15 +40,16 @@ Write-Host "== Business-logic + UI tests (ctest) ==" -ForegroundColor Cyan
 ctest --test-dir $build --output-on-failure
 $ctestExit = $LASTEXITCODE
 
-Write-Host "== DPI screenshot matrix ==" -ForegroundColor Cyan
+Write-Host "== Layout verification at 100/125/150% DPI (all four logical sizes each) ==" -ForegroundColor Cyan
 $ui = Join-Path $build "pos_ui_smoke_tests.exe"
 foreach ($dpi in @(@{f="1";l="100"}, @{f="1.25";l="125"}, @{f="1.5";l="150"})) {
-    Write-Host ("  capturing at {0}%" -f $dpi.l)
+    Write-Host ("  verifying at {0}%" -f $dpi.l)
     $env:QT_SCALE_FACTOR = $dpi.f
     $env:TEST_DPI_LABEL  = $dpi.l
-    & $ui capturesScreenshotsAndScansLayoutAtResolutions | Out-Null
+    & $ui verifyLayoutAtRequiredSizes | Out-Null
 }
-Remove-Item Env:\QT_SCALE_FACTOR, Env:\TEST_DPI_LABEL -ErrorAction SilentlyContinue
+Remove-Item Env:\QT_SCALE_FACTOR -ErrorAction SilentlyContinue
+Remove-Item Env:\TEST_DPI_LABEL -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "Artifacts:" -ForegroundColor Green

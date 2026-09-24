@@ -7,6 +7,13 @@
 #include <QLineEdit>
 #include <QDir>
 #include <QScreen>
+#include <QPainter>
+#include <QPushButton>
+#include <QFrame>
+#include <QFile>
+#include <QStackedWidget>
+#include <QScrollArea>
+#include <QFontMetrics>
 #include <filesystem>
 #include "core/database.h"
 #include "core/seed_service.h"
@@ -32,7 +39,7 @@ private slots:
     void keyboardShortcutsOpenTheCorrectPage();
     void quickAccessButtonsOpenTheCorrectPage();
     void protectedPagesHideDataWhenLockedAndShowWhenUnlocked();
-    void capturesScreenshotsAndScansLayoutAtResolutions();
+    void verifyLayoutAtRequiredSizes();
 };
 
 namespace {
@@ -51,8 +58,7 @@ void unlockOwner(const std::shared_ptr<pos::Database>& db) {
     pos::AuthSession::instance().unlock(db, "123456");
 }
 QString currentPageTitle(MainWindow& w) {
-    if (auto* title = w.findChild<QLabel*>("workspaceTitle")) return title->text();
-    return {};
+    return w.currentPageName();
 }
 } // namespace
 
@@ -363,53 +369,121 @@ void UiSmokeTest::protectedPagesHideDataWhenLockedAndShowWhenUnlocked() {
     }
 }
 
-void UiSmokeTest::capturesScreenshotsAndScansLayoutAtResolutions() {
-    auto db = seededDb("shots");
+
+// The "Current sale" cart table (its last column is "Line total").
+static QTableWidget* findCartTable(QWidget* root) {
+    for (auto* t : root->findChildren<QTableWidget*>()) {
+        auto* last = t->horizontalHeaderItem(t->columnCount() - 1);
+        if (last && last->text() == "Line total") return t;
+    }
+    return nullptr;
+}
+static QTableWidget* findProductTable(QWidget* root) {
+    for (auto* t : root->findChildren<QTableWidget*>()) {
+        auto* c0 = t->horizontalHeaderItem(0);
+        auto* c1 = t->horizontalHeaderItem(1);
+        if (c0 && c0->text() == "Product" && c1 && c1->text() == "SKU") return t;
+    }
+    return nullptr;
+}
+static bool rectsVerticallyOverlap(const QRect& a, const QRect& b) {
+    return a.bottom() > b.top() + 2 && b.bottom() > a.top() + 2 && a.left() < b.right() && b.left() < a.right();
+}
+
+void UiSmokeTest::verifyLayoutAtRequiredSizes() {
+    auto db = seededDb("layout");
     unlockOwner(db);
     MainWindow window(db);
     window.show();
-    QTest::qWait(80);
 
     const QString dpiLabel = qEnvironmentVariable("TEST_DPI_LABEL", "100");
+    const double scale = qEnvironmentVariable("QT_SCALE_FACTOR", "1").toDouble();
     QString base = qEnvironmentVariable("TEST_OUTPUT_DIR");
     if (base.isEmpty()) base = QDir::currentPath() + "/test-output";
     const QString outDir = base + "/screens/dpi" + dpiLabel;
     QDir().mkpath(outDir);
-
-    QFile report(base + "/layout-report.txt");
-    report.open(QIODevice::Append | QIODevice::Text);
+    QFile report(base + "/screens/layout-verification-dpi" + dpiLabel + ".txt");
+    report.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream rs(&report);
+    // Device font height = logical height x device-pixel-ratio. With point-based fonts
+    // + PassThrough, device-height / scale is constant across DPI = same physical size.
+    const double logicalFontPx = QFontMetrics(qApp->font()).height();
+    const double deviceFontPx = logicalFontPx * window.devicePixelRatioF();
+    rs << QString("DPI %1%%  QT_SCALE_FACTOR=%2  dpr=%3  logical-font=%4px  device-font=%5px  device/scale=%6 (≈constant => same physical size)\n\n")
+              .arg(dpiLabel).arg(scale).arg(window.devicePixelRatioF()).arg(logicalFontPx).arg(deviceFontPx).arg(deviceFontPx / scale, 0, 'f', 2);
 
-    const QList<QSize> resolutions = {QSize(1366, 768), QSize(1920, 1080)};
-    for (const auto& res : resolutions) {
-        window.resize(res);
+    struct SizeCfg { int w; int h; };
+    const SizeCfg sizes[] = {{1280, 720}, {1536, 864}, {1920, 1080}, {2560, 1440}};
+    static const QStringList frequentlyUsed = {"Main", "Sales POS", "Inventory", "Courses", "Purchases", "Customers", "Suppliers", "Cash & Shifts"};
+
+    auto* stack = window.findChild<QStackedWidget*>();
+    QVERIFY(stack);
+
+    for (const auto& sz : sizes) {
+        window.resize(sz.w, sz.h);
         QTest::qWait(60);
         for (const auto& entry : pos::navCatalog()) {
-            unlockOwner(db); // owner pages render fully in the shots
+            unlockOwner(db);
             window.goToPage(entry.name);
-            QTest::qWait(50);
-            const QString file = QString("%1/%2_%3x%4.png").arg(outDir, entry.name).arg(res.width()).arg(res.height()).replace(' ', '_').replace('&', "and");
-            const QPixmap shot = window.grab();
-            QVERIFY(!shot.isNull());
-            QVERIFY(shot.save(file));
+            QTest::qWait(60);
+            const QString file = QString("%1/%2_%3x%4.png").arg(outDir, entry.name).arg(sz.w).arg(sz.h).replace(' ', '_').replace('&', "and");
+            window.grab().save(file);
 
-            // Layout scan: flag visible widgets whose rect spills past the RIGHT window
-            // edge (horizontal overflow is a real bug; vertical is legitimate scrolling).
+            // Current page widget (unwrapped from a scroll area if it is a scrolling page).
+            QWidget* page = stack->currentWidget();
+            const bool wrapped = qobject_cast<QScrollArea*>(page) != nullptr;
+            if (auto* sa = qobject_cast<QScrollArea*>(page)) page = sa->widget();
+
+            // No horizontal overflow anywhere.
+            bool noHOverflow = true;
             for (auto* child : window.findChildren<QWidget*>()) {
                 if (!child->isVisible() || child->size().isEmpty()) continue;
                 const QRect g(child->mapTo(&window, QPoint(0, 0)), child->size());
-                if (g.right() > window.width() + 2 && g.left() >= 0) {
-                    rs << QString("dpi%1 %2 %3x%4: '%5' (%6) right edge %7 > window %8\n")
-                              .arg(dpiLabel, entry.name).arg(res.width()).arg(res.height())
-                              .arg(child->objectName().isEmpty() ? child->metaObject()->className() : child->objectName())
-                              .arg(child->metaObject()->className())
-                              .arg(g.right()).arg(window.width());
-                }
+                if (g.right() > window.width() + 2 && g.left() >= 0) { noHOverflow = false; break; }
             }
+
+            QString verdict = noHOverflow ? "PASS" : "FAIL(h-overflow)";
+            const bool freq = frequentlyUsed.contains(entry.name);
+            if (freq && sz.w == 1280 && sz.h == 720) {
+                // No page scrollbar (frequently-used pages are not wrapped) and content fits.
+                const bool noPageScroll = !wrapped;
+                const bool fits = page && page->minimumSizeHint().height() <= page->height() + 6;
+                if (!noPageScroll) verdict = "FAIL(page-scrolls)";
+                else if (!fits) verdict = "FAIL(clipped)";
+                if (entry.name == "Sales POS") {
+                    auto* cart = findCartTable(&window);
+                    auto* prod = findProductTable(&window);
+                    auto* totals = window.findChild<QFrame*>("summaryBox");
+                    QPushButton *savePrint = nullptr, *resume = nullptr;
+                    for (auto* b : window.findChildren<QPushButton*>()) {
+                        if (b->text().contains("Print")) savePrint = b;
+                        if (b->text().contains("esume")) resume = b;
+                    }
+                    const bool cartRows = cart && cart->isVisible() && cart->height() >= 5 * 28;
+                    const bool prodRows = prod && prod->isVisible() && prod->height() >= 6 * 28;
+                    const bool totalsOk = totals && totals->isVisible();
+                    bool buttonsOk = savePrint && resume && savePrint->isVisible() && resume->isVisible();
+                    if (buttonsOk) {
+                        const QRect r1(savePrint->mapTo(&window, QPoint(0, 0)), savePrint->size());
+                        const QRect r2(resume->mapTo(&window, QPoint(0, 0)), resume->size());
+                        buttonsOk = !rectsVerticallyOverlap(r1, r2);
+                    }
+                    if (!(cartRows && prodRows && totalsOk && buttonsOk) && verdict == "PASS")
+                        verdict = QString("FAIL(salespos cart=%1 prod=%2 totals=%3 buttons=%4)").arg(cartRows).arg(prodRows).arg(totalsOk).arg(buttonsOk);
+                    QVERIFY2(cartRows, "Sales POS: fewer than 5 cart rows at 1280x720");
+                    QVERIFY2(prodRows, "Sales POS: fewer than 6 product rows at 1280x720");
+                    QVERIFY2(totalsOk, "Sales POS: totals box not visible at 1280x720");
+                    QVERIFY2(buttonsOk, "Sales POS: action buttons overlap/missing at 1280x720");
+                }
+                QVERIFY2(noPageScroll, qPrintable(entry.name + " page-scrolls at 1280x720"));
+                QVERIFY2(fits, qPrintable(entry.name + " content clipped at 1280x720"));
+            }
+            QVERIFY2(noHOverflow, qPrintable(entry.name + " horizontal overflow"));
+            rs << QString("%1 @ %2x%3: %4\n").arg(entry.name).arg(sz.w).arg(sz.h).arg(verdict);
         }
     }
     report.close();
-    qDebug() << "Screenshots saved under" << outDir;
+    qDebug() << "Layout verification + screenshots under" << outDir;
 }
 
 int main(int argc, char** argv) {

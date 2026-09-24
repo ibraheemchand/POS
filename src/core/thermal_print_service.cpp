@@ -3,6 +3,45 @@
 #include "core/types.h"
 #include <QFile>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <winspool.h>
+namespace {
+// Sends raw ESC/POS bytes to an installed Windows printer BY NAME via the print
+// spooler. This is the correct way — opening a printer as a file (the old code)
+// gives "Access is denied" because printers are not files.
+void writeRawToWindowsPrinter(const QString& printerName, const QByteArray& bytes) {
+    std::wstring name = printerName.toStdWString();
+    HANDLE handle = nullptr;
+    if (!OpenPrinterW(name.data(), &handle, nullptr))
+        throw pos::DatabaseError(QString("Windows could not open printer \"%1\" (error %2). Check that the printer is installed and shared/allowed for this user, or pick another one in Settings.")
+                                     .arg(printerName).arg(static_cast<qulonglong>(GetLastError())));
+    std::wstring docName = L"POS Receipt", dataType = L"RAW";
+    DOC_INFO_1W info{};
+    info.pDocName = docName.data();
+    info.pOutputFile = nullptr;
+    info.pDatatype = dataType.data();
+    bool ok = StartDocPrinterW(handle, 1, reinterpret_cast<LPBYTE>(&info)) != 0;
+    if (ok) {
+        ok = StartPagePrinter(handle) != 0;
+        DWORD written = 0;
+        ok = ok && WritePrinter(handle, const_cast<char*>(bytes.constData()), static_cast<DWORD>(bytes.size()), &written)
+                && written == static_cast<DWORD>(bytes.size());
+        EndPagePrinter(handle);
+        EndDocPrinter(handle);
+    }
+    const auto err = GetLastError();
+    ClosePrinter(handle);
+    if (!ok) throw pos::DatabaseError(QString("The print job to \"%1\" did not complete (error %2).").arg(printerName).arg(static_cast<qulonglong>(err)));
+}
+// A plain installed-printer name vs. a device path (COM/LPT port, UNC share, file).
+bool looksLikeDevicePath(const QString& p) {
+    return p.startsWith("\\\\") || p.contains('/') || p.contains(':')
+        || p.startsWith("COM", Qt::CaseInsensitive) || p.startsWith("LPT", Qt::CaseInsensitive);
+}
+} // namespace
+#endif
+
 namespace pos {
 namespace {
 constexpr char Esc = '\x1b';
@@ -74,10 +113,19 @@ QByteArray ThermalPrintService::barcodeLabelBytes(const QString& label, const QS
 }
 
 void ThermalPrintService::writeRaw(const QString& devicePath, const QByteArray& bytes) {
-    if (devicePath.trimmed().isEmpty() || bytes.isEmpty()) throw DatabaseError("thermal printer path and data are required");
-    QFile device(devicePath.trimmed());
-    if (!device.open(QIODevice::WriteOnly)) throw DatabaseError(QString("could not open thermal printer: %1").arg(device.errorString()));
-    if (device.write(bytes) != bytes.size()) throw DatabaseError("thermal printer write was incomplete");
+    const auto path = devicePath.trimmed();
+    if (path.isEmpty()) throw DatabaseError("No thermal printer is configured. Open Settings, choose your printer, then use \"Print test receipt\".");
+    if (bytes.isEmpty()) throw DatabaseError("there is nothing to print");
+#ifdef _WIN32
+    // A plain installed-printer name goes through the spooler; a real device path
+    // (COM/LPT/UNC/file) is written directly.
+    if (!looksLikeDevicePath(path)) { writeRawToWindowsPrinter(path, bytes); return; }
+#endif
+    QFile device(path);
+    if (!device.open(QIODevice::WriteOnly))
+        throw DatabaseError(QString("Could not open \"%1\": %2. If this is a Windows printer, enter its exact installed name (as shown in Settings) instead of a file path.")
+                                .arg(path, device.errorString()));
+    if (device.write(bytes) != bytes.size()) throw DatabaseError("the printer write was incomplete");
     device.flush();
 }
 

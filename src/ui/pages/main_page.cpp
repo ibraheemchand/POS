@@ -105,7 +105,7 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
         btn->setCursor(Qt::PointingHandCursor);
         // Minimum height derives from the font (two text lines + padding) so it
         // scales with DPI and never clips the name or the shortcut line.
-        btn->setMinimumHeight(fontMetrics().height() * 2 + 26);
+        btn->setMinimumHeight(fontMetrics().height() * 2 + 16);
         btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
         // Name (+ lock for owner pages) on the first line, shortcut on the second.
         const auto lock = entry.gated ? QString("  \xF0\x9F\x94\x92") : QString();
@@ -123,7 +123,7 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* activity = new QFrame(this);
     activity->setObjectName("panel");
-    activity->setMinimumHeight(110);
+    activity->setMinimumHeight(88);
     auto* al = new QVBoxLayout(activity);
     al->setContentsMargins(14, 10, 14, 10);
     al->setSpacing(6);
@@ -139,7 +139,7 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
 
     auto* lowStockAlerts = new QFrame(this);
     lowStockAlerts->setObjectName("panel");
-    lowStockAlerts->setMinimumHeight(110);
+    lowStockAlerts->setMinimumHeight(88);
     auto* nl = new QVBoxLayout(lowStockAlerts);
     nl->setContentsMargins(14, 10, 14, 10);
     nl->setSpacing(6);
@@ -178,7 +178,7 @@ void MainPage::relayoutQuickAccess() {
     // width(): inside a scroll area the widget's width inflates to its content's
     // minimum, which would feed back and prevent the grid from ever shrinking.
     const int avail = parentWidget() ? parentWidget()->width() : width();
-    const int metricCols = qBound(2, avail / 190, 6);
+    const int metricCols = qBound(2, avail / 196, 6);
     if (metricsGrid_ && !metricCards_.isEmpty() && metricCols != metricColumns_) {
         metricColumns_ = metricCols;
         for (auto* card : metricCards_) metricsGrid_->removeWidget(card);
@@ -187,7 +187,7 @@ void MainPage::relayoutQuickAccess() {
         for (int c = 0; c < metricCols; ++c) metricsGrid_->setColumnStretch(c, 1);
     }
 
-    const int quickCols = qBound(2, avail / 210, 6);
+    const int quickCols = qBound(2, avail / 200, 6);
     if (quickGrid_ && !quickButtons_.isEmpty() && quickCols != quickColumns_) {
         quickColumns_ = quickCols;
         for (auto* btn : quickButtons_) quickGrid_->removeWidget(btn);

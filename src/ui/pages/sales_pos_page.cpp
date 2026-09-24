@@ -27,14 +27,14 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(10);
+    layout->setSpacing(6);
 
     // Header Panel
     auto* header = new QFrame(this);
     header->setObjectName("panel");
     auto* hl = new QVBoxLayout(header);
-    hl->setContentsMargins(16, 10, 16, 10);
-    hl->setSpacing(8);
+    hl->setContentsMargins(14, 8, 14, 8);
+    hl->setSpacing(6);
 
     auto* headTitle = new QLabel("New sale", header);
     headTitle->setObjectName("sectionTitle");
@@ -84,8 +84,6 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
 
     auto* productHeading = new QLabel("Product finder", productPanel);
     productHeading->setObjectName("sectionTitle");
-    auto* productHint = new QLabel("Search or scan — press Enter to add the first match, or double-click a row.", productPanel);
-    productHint->setObjectName("muted");
 
     search_ = new QLineEdit(productPanel);
     search_->setObjectName("posSearch");
@@ -106,7 +104,10 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     productsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     productsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     productsTable_->setAlternatingRowColors(true);
+    productsTable_->verticalHeader()->setVisible(false); // row-number gutter is noise here (and rendered garbled)
     productsTable_->verticalHeader()->setDefaultSectionSize(28);
+    productsTable_->setMinimumHeight(190); // ~6 rows visible even at 1280x720
+    productsTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     quantitySpin_ = new QSpinBox(productPanel);
     quantitySpin_->setRange(1, 1000000);
@@ -123,8 +124,8 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     addRow->addWidget(addToCartBtn_, 2);
     addRow->addWidget(loadCourseBtn_, 2);
 
+    productLayout->setSpacing(6);
     productLayout->addWidget(productHeading);
-    productLayout->addWidget(productHint);
     productLayout->addWidget(searchLabel);
     productLayout->addWidget(search_);
     productLayout->addWidget(productsTable_, 1);
@@ -140,8 +141,6 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
 
     auto* cartHeading = new QLabel("Current sale", cartPanel);
     cartHeading->setObjectName("sectionTitle");
-    auto* cartHint = new QLabel("Select a line to adjust its quantity or remove it.", cartPanel);
-    cartHint->setObjectName("muted");
 
     cartTable_ = new QTableWidget(cartPanel);
     cartTable_->setColumnCount(5);
@@ -150,7 +149,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     cartTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     cartTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     cartTable_->setAlternatingRowColors(true);
+    cartTable_->verticalHeader()->setVisible(false);
     cartTable_->verticalHeader()->setDefaultSectionSize(28);
+    // Never collapse below 5 rows (5 x 28px): the cart must stay usable when tight.
+    cartTable_->setMinimumHeight(140);
+    cartTable_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     minusBtn_ = new QPushButton("−1", cartPanel);
     plusBtn_ = new QPushButton("+1", cartPanel);
@@ -171,14 +174,12 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     discountSpin_->setPrefix("Invoice discount (PKR): ");
     discountSpin_->setAccessibleName("Invoice discount in rupees");
     
-    auto* discountLabel = new QLabel("&Discount:", cartPanel);
-    discountLabel->setBuddy(discountSpin_);
 
     auto* summary = new QFrame(cartPanel);
     summary->setObjectName("summaryBox");
     auto* sl = new QVBoxLayout(summary);
-    sl->setContentsMargins(12, 8, 12, 8);
-    sl->setSpacing(4);
+    sl->setContentsMargins(10, 5, 10, 5);
+    sl->setSpacing(2);
 
     auto* subtotalLabel = new QLabel("Subtotal", summary);
     subtotalLabel->setObjectName("sumLabel");
@@ -215,13 +216,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     receivedSpin_->setPrefix("Amount received (PKR): ");
     receivedSpin_->setAccessibleName("Amount received in rupees");
     
-    auto* receivedLabel = new QLabel("&Received:", cartPanel);
-    receivedLabel->setBuddy(receivedSpin_);
 
     dueLabel_ = new QLabel("Change: PKR 0.00", cartPanel);
     dueLabel_->setObjectName("muted");
 
-    savePrintBtn_ = new QPushButton("Save & &Print", cartPanel);
+    savePrintBtn_ = new QPushButton("Save && &Print", cartPanel); // "&&" renders a literal & ; &P keeps Alt+P
     savePrintBtn_->setObjectName("primary");
     savePrintBtn_->setMinimumHeight(32);
 
@@ -246,15 +245,13 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     feedbackLabel_->setObjectName("muted");
     feedbackLabel_->setWordWrap(true);
 
+    cartLayout->setSpacing(4);
     cartLayout->addWidget(cartHeading);
-    cartLayout->addWidget(cartHint);
-    cartLayout->addWidget(cartTable_, 1);
+    cartLayout->addWidget(cartTable_, 1);      // stretches — the cart is the flexible area
     cartLayout->addLayout(rowActions);
-    cartLayout->addWidget(discountLabel);
-    cartLayout->addWidget(discountSpin_);
+    cartLayout->addWidget(discountSpin_);      // its prefix already says "Invoice discount (PKR)"
     cartLayout->addWidget(summary);
-    cartLayout->addWidget(receivedLabel);
-    cartLayout->addWidget(receivedSpin_);
+    cartLayout->addWidget(receivedSpin_);      // prefix says "Amount received (PKR)"
     cartLayout->addWidget(dueLabel_);
     cartLayout->addLayout(primaryRow);
     cartLayout->addLayout(secondaryRow);

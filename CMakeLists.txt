@@ -56,6 +56,9 @@ add_library(pos_core
 )
 target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
+if(WIN32)
+  target_link_libraries(pos_core PUBLIC winspool) # raw ESC/POS printing via the print spooler
+endif()
 target_compile_definitions(pos_core PUBLIC $<$<BOOL:${POS_ENABLE_FBR}>:POS_ENABLE_FBR=1>)
 if(POS_ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(pos_core PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
@@ -113,6 +116,7 @@ target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintS
 
 if(WIN32)
   target_sources(invento PRIVATE src/ui/app_icon.rc)
+  target_link_libraries(invento PRIVATE shcore) # GetDpiForMonitor for global scaling
 endif()
 
 if(MSVC)

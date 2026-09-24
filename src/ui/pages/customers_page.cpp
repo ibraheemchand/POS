@@ -136,9 +136,9 @@ void CustomersPage::load() {
             table_->setItem(row, 0, nameItem);
             
             table_->setItem(row, 1, new QTableWidgetItem(item.phone));
-            table_->setItem(row, 2, new QTableWidgetItem("PKR " + pos::formatMoney(item.creditLimit)));
-            
-            auto* outstanding = new QTableWidgetItem("PKR " + pos::formatMoney(item.balance));
+            table_->setItem(row, 2, pos::moneyItem(item.creditLimit));
+
+            auto* outstanding = pos::moneyItem(item.balance);
             outstanding->setForeground(item.balance > 0 ? QColor("#B3261E") : QColor("#16A34A"));
             table_->setItem(row, 3, outstanding);
             

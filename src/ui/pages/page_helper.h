@@ -14,10 +14,18 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QTableWidgetItem>
 #include <memory>
 
 namespace pos {
 // formatMoney(), roundMoney() and parseMoney() live in core/types.h.
+
+// A right-aligned "PKR ..." table cell for money columns (digits line up).
+inline QTableWidgetItem* moneyItem(Money value) {
+    auto* item = new QTableWidgetItem("PKR " + formatMoney(value));
+    item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    return item;
+}
 
 // Prompt for a rupee amount as text, parse to exact hundredths, and reject more
 // than 2 decimals with a clear message. `current` is the existing amount (hundredths)

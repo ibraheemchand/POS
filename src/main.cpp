@@ -1,6 +1,7 @@
 #include "core/database.h"
 #include "core/seed_service.h"
 #include "core/security_service.h"
+#include "core/settings_service.h"
 #include "ui/main_window.h"
 #include <QApplication>
 #include <QFont>
@@ -114,9 +115,10 @@ bool ensureOwnerPinConfigured(const std::shared_ptr<pos::Database>& database) {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    // Render fractional Windows display scaling (125%, 150%) exactly instead of
-    // rounding to the nearest integer factor, which is what made 150% laptops
-    // clip and overlap. Must be set before any Q(Gui)Application is constructed.
+    // Standard Qt6 high-DPI: honor the OS per-monitor scaling and render fractional
+    // factors (125/150%) precisely. No manual scale factors — 150% on a laptop and
+    // 100% on a monitor therefore give the same physical text size. Must be set
+    // before any Q(Gui)Application exists.
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     const auto dataDirectory = dataDirectoryArgument(argc, argv);
@@ -136,11 +138,12 @@ int main(int argc, char* argv[]) {
     QApplication::setApplicationName("Invento");
     QApplication::setOrganizationName("Invento");
     QApplication::setWindowIcon(QIcon(":/branding/app_icon"));
-    // Point-based base font so text scales with the OS text-size setting and stays
-    // readable (not oversized) at high DPI, instead of a fixed pixel size.
-    { QFont base = app.font(); base.setPointSizeF(10.0); app.setFont(base); }
     try {
         auto database = openDatabase(dataDirectory);
+        // Point-based base font (physical-size units) times the user's "UI size"
+        // preference (80/90/100/110%, default 100). High-DPI handles the rest.
+        const int uiSize = qBound(80, pos::SettingsService(database).value("ui.size_percent", "100").toInt(), 110);
+        { QFont base = app.font(); base.setPointSizeF(10.5 * uiSize / 100.0); app.setFont(base); }
         if (!ensureOwnerPinConfigured(database)) return 0; // owner cancelled mandatory PIN setup
         MainWindow window(database);
         window.showMaximized();
