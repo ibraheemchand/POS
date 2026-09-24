@@ -89,6 +89,7 @@ private slots:
     void moneyHelpersRoundFormatAndParse();
     void partnerPlusProfitEqualsCommissionForRandomInputs();
     void migrationRenamesPaisaColumnsPreservingValues();
+    void databaseIsDurableAgainstPowerLoss();
 };
 
 // Shared fixture helpers for the partner-commission suite.
@@ -444,6 +445,21 @@ void PosServiceTest::migrationRenamesPaisaColumnsPreservingValues(){try{const au
     QCOMPARE("PKR " + pos::formatMoney(s.integer(0)),QString("PKR 1,000"));
     auto c=db->prepare("SELECT balance FROM customers WHERE id='c1'"); QVERIFY(c.stepRow()); QCOMPARE(c.integer(0),qint64(50050));
     QCOMPARE("PKR " + pos::formatMoney(c.integer(0)),QString("PKR 500.50"));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::databaseIsDurableAgainstPowerLoss(){try{const auto path=std::filesystem::temp_directory_path()/("durable-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();
+    // WAL + synchronous=FULL: committed writes are fsynced, so a sale survives a power
+    // cut. (synchronous: 2 = FULL.) Losing these settings would risk data loss.
+    {auto sync=db->prepare("PRAGMA synchronous");QVERIFY(sync.stepRow());QCOMPARE(sync.integer(0),qint64(2));}
+    {auto mode=db->prepare("PRAGMA journal_mode");QVERIFY(mode.stepRow());QCOMPARE(mode.text(0).toLower(),QString("wal"));}
+    {auto fk=db->prepare("PRAGMA foreign_keys");QVERIFY(fk.stepRow());QCOMPARE(fk.integer(0),qint64(1));}
+    // A committed sale is really on disk: reopen the file and it is still there.
+    openShift(*db);const auto product=pos::uuid();insertProduct(*db,product,10);
+    const auto sale=pos::PosService(db).completeSale({{}, {}, "cash", 5000, 0, {}, {{product,{},1,5000,0,"piece"}}});
+    QVERIFY(!sale.saleId.isEmpty());
+    db.reset(); // close (simulates the app going away)
+    auto reopened=std::make_shared<pos::Database>(path);
+    auto q=reopened->prepare("SELECT COUNT(*) FROM sales WHERE status='completed'");QVERIFY(q.stepRow());QCOMPARE(q.integer(0),qint64(1));
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 QTEST_APPLESS_MAIN(PosServiceTest)

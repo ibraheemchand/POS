@@ -31,7 +31,11 @@ void Transaction::commit() { check(sqlite3_exec(db_, "COMMIT", nullptr, nullptr,
 Database::Database(const std::filesystem::path& path) : path_(path) {
     const auto utf8 = path.u8string();
     check(sqlite3_open_v2(reinterpret_cast<const char*>(utf8.c_str()), &db_, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_FULLMUTEX, nullptr), db_, "open database");
-    exec("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA synchronous=NORMAL;");
+    // synchronous=FULL (not NORMAL): in WAL mode NORMAL can lose the last committed
+    // transaction on a power cut / hard reset. FULL fsyncs every commit, so a saved
+    // sale/payment survives an abrupt shutdown. WAL keeps it fast and crash-safe;
+    // wal_autocheckpoint keeps the -wal file from growing unbounded.
+    exec("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA synchronous=FULL; PRAGMA wal_autocheckpoint=1000;");
 }
 Database::~Database() { if (db_) sqlite3_close_v2(db_); }
 void Database::exec(const char* sql) const { char* error=nullptr; const int r=sqlite3_exec(db_, sql, nullptr, nullptr, &error); if(r!=SQLITE_OK) { const QString message=error?QString::fromUtf8(error):QString::fromUtf8(sqlite3_errmsg(db_)); sqlite3_free(error); throw DatabaseError(message.toStdString()); } }
