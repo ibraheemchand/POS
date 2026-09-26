@@ -1,8 +1,12 @@
 E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos--2/tests/ui_smoke_test.cpp \
   E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/moc_predefs.h \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QAbstractItemModel \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QChar \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QDate \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QDeadlineTimer \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QDir \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QEvent \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QFile \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QHash \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QList \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMap \
@@ -12,6 +16,7 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMutex \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QRect \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QRegularExpression \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QSize \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QSizeF \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
@@ -307,9 +312,12 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtGui/QBrush \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QColor \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QFont \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QFontMetrics \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QIcon \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QImage \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QPainter \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QPixmap \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/QScreen \
   C:/Qt/6.11.1/mingw_64/include/QtGui/QTransform \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qaction.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qbitmap.h \
@@ -330,7 +338,9 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtGui/qinputmethod.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qkeysequence.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qpaintdevice.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qpainter.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qpalette.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qpen.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qpicture.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qpixelformat.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qpixmap.h \
@@ -344,7 +354,10 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtGui/qsurface.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qsurfaceformat.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtestsupport_gui.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextcursor.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtextdocument.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextformat.h \
+  C:/Qt/6.11.1/mingw_64/include/QtGui/qtextoption.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtgui-config.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtguiexports.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qtguiglobal.h \
@@ -383,11 +396,22 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtTest/qttestlib-config.h \
   C:/Qt/6.11.1/mingw_64/include/QtTest/qttestversion.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QApplication \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDateEdit \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDoubleSpinBox \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QFrame \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QGridLayout \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QListWidget \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QScrollArea \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSizePolicy \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QStackedWidget \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QTabWidget \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QTableWidget \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QWidget \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractbutton.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
@@ -396,18 +420,30 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractslider.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractspinbox.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qapplication.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qboxlayout.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qcombobox.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdatetimeedit.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qframe.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qgridlayout.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlabel.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlayout.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlayoutitem.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlineedit.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlistview.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlistwidget.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qmainwindow.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qrubberband.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qscrollarea.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qslider.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qspinbox.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstackedwidget.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstyle.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstyleoption.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtabbar.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtableview.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtablewidget.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtabwidget.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtestsupport_widgets.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtwidgets-config.h \
@@ -788,9 +824,20 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/include/ui_smoke_test.moc: E:/pos
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
+  E:/pos--2/src/core/auth_session.h \
   E:/pos--2/src/core/data_change_bus.h \
   E:/pos--2/src/core/database.h \
+  E:/pos--2/src/core/inventory_service.h \
+  E:/pos--2/src/core/partner_service.h \
+  E:/pos--2/src/core/security_service.h \
   E:/pos--2/src/core/seed_service.h \
+  E:/pos--2/src/core/types.h \
   E:/pos--2/src/ui/main_window.h \
+  E:/pos--2/src/ui/pages/commission_settings_page.h \
+  E:/pos--2/src/ui/pages/inventory_page.h \
   E:/pos--2/src/ui/pages/main_page.h \
+  E:/pos--2/src/ui/pages/nav_catalog.h \
+  E:/pos--2/src/ui/pages/partners_page.h \
+  E:/pos--2/src/ui/pages/profit_report_page.h \
+  E:/pos--2/src/ui/pages/purchases_page.h \
   E:/pos--2/third_party/sqlite/sqlite3.h

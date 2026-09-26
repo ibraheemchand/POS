@@ -170,6 +170,7 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/4PIRG7OLBM/moc_purchases_page.cpp
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs_win.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QComboBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDateEdit \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDoubleSpinBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QSpinBox \

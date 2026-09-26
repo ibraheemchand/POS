@@ -85,7 +85,18 @@ template <> constexpr inline auto PosServiceTest::qt_create_metaobjectdata<qt_me
         "changingCommissionSettingsDoesNotAlterPastSales",
         "lockedSessionCannotReadOrChangeCommissionData",
         "wrongOwnerPinIsRejected",
-        "cashierCanCompleteCommissionedSaleWhileLocked"
+        "cashierCanCompleteCommissionedSaleWhileLocked",
+        "settingsPersistAfterReopeningDatabase",
+        "backupRestoreRoundTripRestoresData",
+        "dashboardNumbersReflectSalesAndPurchases",
+        "discountIsSharedProportionallyBetweenPartnerAndProfit",
+        "discountCapUsesPerItemAndCourseSettings",
+        "discountCapClampsToZeroWhenOwnerMinExceedsMargin",
+        "securitySetupRecoveryChangeAndLockout",
+        "moneyHelpersRoundFormatAndParse",
+        "partnerPlusProfitEqualsCommissionForRandomInputs",
+        "migrationRenamesPaisaColumnsPreservingValues",
+        "databaseIsDurableAgainstPowerLoss"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -183,6 +194,28 @@ template <> constexpr inline auto PosServiceTest::qt_create_metaobjectdata<qt_me
         QtMocHelpers::SlotData<void()>(47, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'cashierCanCompleteCommissionedSaleWhileLocked'
         QtMocHelpers::SlotData<void()>(48, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'settingsPersistAfterReopeningDatabase'
+        QtMocHelpers::SlotData<void()>(49, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'backupRestoreRoundTripRestoresData'
+        QtMocHelpers::SlotData<void()>(50, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'dashboardNumbersReflectSalesAndPurchases'
+        QtMocHelpers::SlotData<void()>(51, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'discountIsSharedProportionallyBetweenPartnerAndProfit'
+        QtMocHelpers::SlotData<void()>(52, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'discountCapUsesPerItemAndCourseSettings'
+        QtMocHelpers::SlotData<void()>(53, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'discountCapClampsToZeroWhenOwnerMinExceedsMargin'
+        QtMocHelpers::SlotData<void()>(54, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'securitySetupRecoveryChangeAndLockout'
+        QtMocHelpers::SlotData<void()>(55, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'moneyHelpersRoundFormatAndParse'
+        QtMocHelpers::SlotData<void()>(56, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'partnerPlusProfitEqualsCommissionForRandomInputs'
+        QtMocHelpers::SlotData<void()>(57, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'migrationRenamesPaisaColumnsPreservingValues'
+        QtMocHelpers::SlotData<void()>(58, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'databaseIsDurableAgainstPowerLoss'
+        QtMocHelpers::SlotData<void()>(59, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -253,6 +286,17 @@ void PosServiceTest::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 44: _t->lockedSessionCannotReadOrChangeCommissionData(); break;
         case 45: _t->wrongOwnerPinIsRejected(); break;
         case 46: _t->cashierCanCompleteCommissionedSaleWhileLocked(); break;
+        case 47: _t->settingsPersistAfterReopeningDatabase(); break;
+        case 48: _t->backupRestoreRoundTripRestoresData(); break;
+        case 49: _t->dashboardNumbersReflectSalesAndPurchases(); break;
+        case 50: _t->discountIsSharedProportionallyBetweenPartnerAndProfit(); break;
+        case 51: _t->discountCapUsesPerItemAndCourseSettings(); break;
+        case 52: _t->discountCapClampsToZeroWhenOwnerMinExceedsMargin(); break;
+        case 53: _t->securitySetupRecoveryChangeAndLockout(); break;
+        case 54: _t->moneyHelpersRoundFormatAndParse(); break;
+        case 55: _t->partnerPlusProfitEqualsCommissionForRandomInputs(); break;
+        case 56: _t->migrationRenamesPaisaColumnsPreservingValues(); break;
+        case 57: _t->databaseIsDurableAgainstPowerLoss(); break;
         default: ;
         }
     }
@@ -278,14 +322,14 @@ int PosServiceTest::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 47)
+        if (_id < 58)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 47;
+        _id -= 58;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 47)
+        if (_id < 58)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 47;
+        _id -= 58;
     }
     return _id;
 }

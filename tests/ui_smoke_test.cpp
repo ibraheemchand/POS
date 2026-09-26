@@ -21,12 +21,15 @@
 #include "core/security_service.h"
 #include "core/auth_session.h"
 #include "core/partner_service.h"
+#include "core/inventory_service.h"
 #include "ui/main_window.h"
 #include "ui/pages/main_page.h"
 #include "ui/pages/nav_catalog.h"
 #include "ui/pages/commission_settings_page.h"
 #include "ui/pages/partners_page.h"
 #include "ui/pages/profit_report_page.h"
+#include "ui/pages/purchases_page.h"
+#include "ui/pages/inventory_page.h"
 
 class UiSmokeTest final : public QObject {
     Q_OBJECT
@@ -40,6 +43,9 @@ private slots:
     void quickAccessButtonsOpenTheCorrectPage();
     void protectedPagesHideDataWhenLockedAndShowWhenUnlocked();
     void verifyLayoutAtRequiredSizes();
+    // Phase 1 reproduction tests (issues reported during testing).
+    void repro_purchasesHasLoadCourseButton();       // issue 1
+    void repro_inventoryInStockColourIsGreen();       // issue 2
 };
 
 namespace {
@@ -484,6 +490,53 @@ void UiSmokeTest::verifyLayoutAtRequiredSizes() {
     }
     report.close();
     qDebug() << "Layout verification + screenshots under" << outDir;
+}
+
+// ISSUE 1: Purchases should offer a "Load course…" button (like Sales POS) that
+// adds every book of a course to the purchase in one go. Reproduction: the button
+// must exist. Currently it does not, so this FAILS until issue 1 is fixed.
+void UiSmokeTest::repro_purchasesHasLoadCourseButton() {
+    const auto path = std::filesystem::temp_directory_path() / ("ui-repro-loadcourse-" + pos::uuid().toStdString() + ".db");
+    auto db = std::make_shared<pos::Database>(path);
+    db->migrate();
+    PurchasesPage page(db);
+    bool found = false;
+    for (const auto* b : page.findChildren<QPushButton*>()) {
+        if (b->text().remove('&').contains("Load course", Qt::CaseInsensitive)) { found = true; break; }
+    }
+    QVERIFY2(found, "Purchases page has no 'Load course' button (issue 1 feature missing)");
+}
+
+// ISSUE 2: An in-stock inventory row should read clearly as GREEN (green channel
+// dominant), distinct from the red out-of-stock badge. Reproduction: check the
+// STOCK LEVEL cell background for an in-stock product. Currently it is a brownish
+// peach (#ffdbcd, red-dominant), so this FAILS until issue 2 is fixed.
+void UiSmokeTest::repro_inventoryInStockColourIsGreen() {
+    const auto path = std::filesystem::temp_directory_path() / ("ui-repro-stockcolour-" + pos::uuid().toStdString() + ".db");
+    auto db = std::make_shared<pos::Database>(path);
+    db->migrate();
+    pos::InventoryService inv(db);
+    const auto id = inv.createProduct("Well Stocked Book", "piece", 300, 500, false);
+    inv.receiveStock({id, 25, 300, "piece", {}, {}, "Seed"}); // stock 25 > minimum 0 => IN STOCK
+
+    InventoryPage page(db);
+    QMetaObject::invokeMethod(&page, "load");
+    QTest::qWait(20);
+    auto* table = page.findChild<QTableWidget*>("inventoryTable");
+    QVERIFY(table);
+    QVERIFY(table->rowCount() >= 1);
+
+    // Column 3 is "STOCK LEVEL"; find the in-stock row by its label text.
+    QColor bg;
+    QString label;
+    for (int r = 0; r < table->rowCount(); ++r) {
+        auto* cell = table->item(r, 3);
+        if (cell && cell->text().contains("IN STOCK")) { bg = cell->background().color(); label = cell->text(); break; }
+    }
+    QVERIFY2(!label.isEmpty(), "No IN STOCK row found");
+    qDebug() << "In-stock badge:" << label << "bg rgb=" << bg.red() << bg.green() << bg.blue();
+    QVERIFY2(bg.green() > bg.red() && bg.green() > bg.blue(),
+             "In-stock badge is not green (issue 2: green channel should dominate)");
 }
 
 int main(int argc, char** argv) {

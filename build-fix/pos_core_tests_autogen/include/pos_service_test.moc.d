@@ -2,6 +2,7 @@ E:/pos--2/build-fix/pos_core_tests_autogen/include/pos_service_test.moc: E:/pos-
   E:/pos--2/build-fix/pos_core_tests_autogen/moc_predefs.h \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QAbstractItemModel \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QByteArray \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QChar \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QDate \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QDeadlineTimer \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QEvent \
@@ -12,7 +13,9 @@ E:/pos--2/build-fix/pos_core_tests_autogen/include/pos_service_test.moc: E:/pos-
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMargins \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QMutex \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QRandomGenerator \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QRect \
+  C:/Qt/6.11.1/mingw_64/include/QtCore/QRegularExpression \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QSize \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QSizeF \
   C:/Qt/6.11.1/mingw_64/include/QtCore/QString \
@@ -755,6 +758,7 @@ E:/pos--2/build-fix/pos_core_tests_autogen/include/pos_service_test.moc: E:/pos-
   E:/pos--2/src/core/bundle_service.h \
   E:/pos--2/src/core/cheque_service.h \
   E:/pos--2/src/core/commission_service.h \
+  E:/pos--2/src/core/customer_service.h \
   E:/pos--2/src/core/database.h \
   E:/pos--2/src/core/excel_export_service.h \
   E:/pos--2/src/core/inventory_service.h \

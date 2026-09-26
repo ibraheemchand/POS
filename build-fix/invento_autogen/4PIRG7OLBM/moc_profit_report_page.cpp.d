@@ -167,6 +167,8 @@ E:/pos--2/build-fix/invento_autogen/4PIRG7OLBM/moc_profit_report_page.cpp: E:/po
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs_win.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDateEdit \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QFrame \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QGridLayout \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QTabWidget \
@@ -178,9 +180,13 @@ E:/pos--2/build-fix/invento_autogen/4PIRG7OLBM/moc_profit_report_page.cpp: E:/po
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractscrollarea.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractslider.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qabstractspinbox.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qboxlayout.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qdatetimeedit.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qframe.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qgridlayout.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlabel.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlayout.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qlayoutitem.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qpushbutton.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qrubberband.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \

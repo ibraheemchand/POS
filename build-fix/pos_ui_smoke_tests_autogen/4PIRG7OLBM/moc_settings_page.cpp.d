@@ -165,7 +165,6 @@ E:/pos--2/build-fix/pos_ui_smoke_tests_autogen/4PIRG7OLBM/moc_settings_page.cpp:
   C:/Qt/6.11.1/mingw_64/include/QtGui/qvalidator.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs_win.h \
-  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDoubleSpinBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \

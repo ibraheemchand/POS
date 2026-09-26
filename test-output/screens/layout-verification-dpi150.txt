@@ -1,0 +1,66 @@
+DPI 150%%  QT_SCALE_FACTOR=1.5  dpr=2.25  logical-font=16px  device-font=36px  device/scale=24.00 (≈constant => same physical size)
+
+Main @ 1280x720: PASS
+Sales POS @ 1280x720: PASS
+Inventory @ 1280x720: PASS
+Courses @ 1280x720: PASS
+Purchases @ 1280x720: PASS
+Customers @ 1280x720: PASS
+Suppliers @ 1280x720: PASS
+Cash & Shifts @ 1280x720: PASS
+Cheques @ 1280x720: PASS
+Reports @ 1280x720: PASS
+Audit log @ 1280x720: PASS
+Commission Settings @ 1280x720: PASS
+Partners @ 1280x720: PASS
+Profit & Commission @ 1280x720: PASS
+Settings @ 1280x720: PASS
+Backup & Restore @ 1280x720: PASS
+Main @ 1536x864: PASS
+Sales POS @ 1536x864: PASS
+Inventory @ 1536x864: PASS
+Courses @ 1536x864: PASS
+Purchases @ 1536x864: PASS
+Customers @ 1536x864: PASS
+Suppliers @ 1536x864: PASS
+Cash & Shifts @ 1536x864: PASS
+Cheques @ 1536x864: PASS
+Reports @ 1536x864: PASS
+Audit log @ 1536x864: PASS
+Commission Settings @ 1536x864: PASS
+Partners @ 1536x864: PASS
+Profit & Commission @ 1536x864: PASS
+Settings @ 1536x864: PASS
+Backup & Restore @ 1536x864: PASS
+Main @ 1920x1080: PASS
+Sales POS @ 1920x1080: PASS
+Inventory @ 1920x1080: PASS
+Courses @ 1920x1080: PASS
+Purchases @ 1920x1080: PASS
+Customers @ 1920x1080: PASS
+Suppliers @ 1920x1080: PASS
+Cash & Shifts @ 1920x1080: PASS
+Cheques @ 1920x1080: PASS
+Reports @ 1920x1080: PASS
+Audit log @ 1920x1080: PASS
+Commission Settings @ 1920x1080: PASS
+Partners @ 1920x1080: PASS
+Profit & Commission @ 1920x1080: PASS
+Settings @ 1920x1080: PASS
+Backup & Restore @ 1920x1080: PASS
+Main @ 2560x1440: PASS
+Sales POS @ 2560x1440: PASS
+Inventory @ 2560x1440: PASS
+Courses @ 2560x1440: PASS
+Purchases @ 2560x1440: PASS
+Customers @ 2560x1440: PASS
+Suppliers @ 2560x1440: PASS
+Cash & Shifts @ 2560x1440: PASS
+Cheques @ 2560x1440: PASS
+Reports @ 2560x1440: PASS
+Audit log @ 2560x1440: PASS
+Commission Settings @ 2560x1440: PASS
+Partners @ 2560x1440: PASS
+Profit & Commission @ 2560x1440: PASS
+Settings @ 2560x1440: PASS
+Backup & Restore @ 2560x1440: PASS

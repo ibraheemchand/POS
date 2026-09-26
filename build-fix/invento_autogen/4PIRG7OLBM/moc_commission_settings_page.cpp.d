@@ -167,6 +167,7 @@ E:/pos--2/build-fix/invento_autogen/4PIRG7OLBM/moc_commission_settings_page.cpp:
   C:/Qt/6.11.1/mingw_64/include/QtGui/qvalidator.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.11.1/mingw_64/include/QtGui/qwindowdefs_win.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/QDoubleSpinBox \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLabel \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QLineEdit \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/QPushButton \
@@ -185,6 +186,7 @@ E:/pos--2/build-fix/invento_autogen/4PIRG7OLBM/moc_commission_settings_page.cpp:
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qrubberband.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qslider.h \
+  C:/Qt/6.11.1/mingw_64/include/QtWidgets/qspinbox.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstyle.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qstyleoption.h \
   C:/Qt/6.11.1/mingw_64/include/QtWidgets/qtabbar.h \
