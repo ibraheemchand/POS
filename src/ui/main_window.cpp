@@ -1,4 +1,5 @@
 #include "ui/main_window.h"
+#include "ui/theme.h"
 #include "core/database.h"
 #include "core/pos_service.h"
 #include "core/data_change_bus.h"
@@ -517,9 +518,10 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         }
     });
 
-    connect(theme, &QPushButton::clicked, this, &MainWindow::switchTheme); 
-    qApp->setStyleSheet(lightStyle); 
-    dark_ = false; 
+    connect(theme, &QPushButton::clicked, this, &MainWindow::switchTheme);
+    qApp->setStyleSheet(lightStyle);
+    dark_ = false;
+    pos::theme::setDark(false);
     statusBar()->showMessage("Ready — local data is available offline");
 
     const auto updateShortcutBar = [this, shortcutBar, navigation, compactBar](int row) {
@@ -635,12 +637,19 @@ QString MainWindow::currentPageName() const {
 }
 
 void MainWindow::applyStyle() {
+    pos::theme::setDark(dark_);
     qApp->setStyleSheet(QString(dark_ ? darkStyle : lightStyle) + (compact_ ? compactExtra : ""));
 }
 
 void MainWindow::switchTheme() {
     dark_ = !dark_;
     applyStyle();
+    // Recolour data-driven cells (e.g. inventory stock badges) for the new theme;
+    // otherwise they keep the old colours until the page is next loaded.
+    if (auto* current = pages_ ? pages_->currentWidget() : nullptr) {
+        if (auto* scroller = qobject_cast<QScrollArea*>(current)) current = scroller->widget();
+        if (current) QMetaObject::invokeMethod(current, "load");
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event) {

@@ -114,12 +114,12 @@ QList<BundleItemDisplay> BundleService::resolveItems(const QString& bundleId) co
 
     QList<BundleItemDisplay> result;
     auto query = db_->prepare(
-        "SELECT i.product_id, p.name, p.base_unit, i.quantity, p.retail_price, p.stock_quantity "
+        "SELECT i.product_id, p.name, p.base_unit, i.quantity, p.retail_price, p.stock_quantity, p.purchase_price "
         "FROM bundle_items i JOIN products p ON p.id=i.product_id "
         "WHERE i.bundle_id=? AND p.is_deleted=0 ORDER BY i.sort_order");
     query.bind(1, bundleId);
     while (query.stepRow()) {
-        result.append({query.text(0), query.text(1), query.text(2), query.integer(3), query.integer(4), query.integer(5)});
+        result.append({query.text(0), query.text(1), query.text(2), query.integer(3), query.integer(4), query.integer(5), query.integer(6)});
     }
     return result;
 }

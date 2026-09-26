@@ -1,5 +1,6 @@
 #include "ui/pages/inventory_page.h"
 #include "ui/pages/page_helper.h"
+#include "ui/theme.h"
 #include "core/database.h"
 #include "core/inventory_service.h"
 #include "core/settings_service.h"
@@ -75,14 +76,14 @@ InventoryPage::InventoryPage(std::shared_ptr<pos::Database> database, QWidget* p
     auto* card2 = new QFrame(this); card2->setObjectName("metric");
     auto* l2 = new QVBoxLayout(card2);
     auto* lbl2 = new QLabel("LOW STOCK ITEMS", card2); lbl2->setObjectName("metricLabel");
-    val2_ = new QLabel("0", card2); val2_->setObjectName("metricValue"); val2_->setStyleSheet("color: #E9C349;");
+    val2_ = new QLabel("0", card2); val2_->setObjectName("metricValue"); val2_->setStyleSheet(QString("color: %1;").arg(pos::theme::lowStockAccent().name()));
     auto* cap2 = new QLabel("Requires reorder", card2); cap2->setObjectName("metricCaption");
     l2->addWidget(lbl2); l2->addWidget(val2_); l2->addWidget(cap2);
     
     auto* card3 = new QFrame(this); card3->setObjectName("metric");
     auto* l3 = new QVBoxLayout(card3);
     auto* lbl3 = new QLabel("OUT OF STOCK", card3); lbl3->setObjectName("metricLabel");
-    val3_ = new QLabel("0", card3); val3_->setObjectName("metricValue"); val3_->setStyleSheet("color: #FFB4AB;");
+    val3_ = new QLabel("0", card3); val3_->setObjectName("metricValue"); val3_->setStyleSheet(QString("color: %1;").arg(pos::theme::outOfStockAccent().name()));
     auto* cap3 = new QLabel("Critical attention", card3); cap3->setObjectName("metricCaption");
     l3->addWidget(lbl3); l3->addWidget(val3_); l3->addWidget(cap3);
     
@@ -349,7 +350,9 @@ void InventoryPage::load() {
     const auto stats = service.stats();
     val1_->setText(QString::number(stats.totalSkus));
     val2_->setText(QString::number(stats.lowStock));
+    val2_->setStyleSheet(QString("color: %1;").arg(pos::theme::lowStockAccent().name()));
     val3_->setText(QString::number(stats.outOfStock));
+    val3_->setStyleSheet(QString("color: %1;").arg(pos::theme::outOfStockAccent().name()));
     val4_->setText("PKR " + pos::formatMoney(stats.totalValuation));
 
     // Load table rows
@@ -371,27 +374,12 @@ void InventoryPage::load() {
             table_->setItem(row, 1, new QTableWidgetItem(product.name));
             table_->setItem(row, 2, new QTableWidgetItem(product.categoryName.isEmpty() ? "General" : product.categoryName));
             
-            QString stockText;
-            QColor stockBg;
-            QColor stockFg;
-            if (product.stock == 0) {
-                stockText = "OUT OF STOCK";
-                stockBg = QColor("#ffdad6");
-                stockFg = QColor("#ba1a1a");
-            } else if (product.stock <= product.minimumStock) {
-                stockText = QString("%1 LOW").arg(product.stock);
-                stockBg = QColor("#ffe08b");
-                stockFg = QColor("#745b00");
-            } else {
-                stockText = QString("%1 IN STOCK").arg(product.stock);
-                stockBg = QColor("#ffdbcd");
-                stockFg = QColor("#99461f");
-            }
-            auto* stockItem = new QTableWidgetItem(stockText);
+            const auto badge = pos::theme::stockBadge(product.stock, product.minimumStock);
+            auto* stockItem = new QTableWidgetItem(badge.label);
             stockItem->setTextAlignment(Qt::AlignCenter);
             stockItem->setFont(QFont("JetBrains Mono", 9, QFont::Bold));
-            stockItem->setBackground(stockBg);
-            stockItem->setForeground(stockFg);
+            stockItem->setBackground(badge.bg);
+            stockItem->setForeground(badge.fg);
             table_->setItem(row, 3, stockItem);
             
             auto* priceItem = new QTableWidgetItem("PKR " + pos::formatMoney(product.retailPrice));

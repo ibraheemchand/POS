@@ -68,6 +68,7 @@ private slots:
     void commissionOverrideRequiredBeyondFlexibleCap();
     void commissionSettingsRejectSharesExceedingRate();
     void bundleResolvesLivePricesAndStock();
+    void bundleResolveItemsExposesLastPurchaseCost();
     void courseSalePostsOneGroupedEntryUsingCourseSettings();
     void standaloneBookSaleUsesBookSettings();
     void multiCourseAndStandaloneBookSaleReconciles();
@@ -167,6 +168,15 @@ void PosServiceTest::commissionSettingsRejectSharesExceedingRate(){try {const au
     auto settings=service.settings();settings.ownerMinShareBp=12000;QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,service.setSettings(settings)); // >100%
     settings.ownerMinShareBp=1500;service.setSettings(settings);QCOMPARE(service.settings().ownerMinShareBp,qint64(1500));}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::bundleResolvesLivePricesAndStock(){try {const auto path=std::filesystem::temp_directory_path()/("bundle-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::InventoryService inventory(db);const auto bookA=inventory.createProduct("Math Grade 5","piece",300,500,false);const auto bookB=inventory.createProduct("English Grade 5","piece",200,400,false);inventory.receiveStock({bookA,10,300,"piece",{}, {},"Seed"});inventory.receiveStock({bookB,10,200,"piece",{}, {},"Seed"});pos::BundleService bundles(db);pos::BundleDefinition definition{"Grade 5 Course","Grade 5","Full set",{{bookA,1},{bookB,1}}};const auto id=bundles.createBundle(definition);QCOMPARE(bundles.listBundles().size(),qsizetype(1));const auto resolved=bundles.resolveItems(id);QCOMPARE(resolved.size(),qsizetype(2));QCOMPARE(resolved.first().retailPrice,qint64(500));QCOMPARE(resolved.first().stock,qint64(10));bundles.archiveBundle(id);QCOMPARE(bundles.listBundles().size(),qsizetype(0));}catch(const std::exception& error){QFAIL(error.what());}}
+void PosServiceTest::bundleResolveItemsExposesLastPurchaseCost(){try {const auto path=std::filesystem::temp_directory_path()/("bundle-cost-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();
+    pos::InventoryService inventory(db);const auto bought=inventory.createProduct("Bought Book","piece",0,500,false);const auto neverBought=inventory.createProduct("New Book","piece",0,400,false);
+    pos::SupplierService suppliers(db);const auto supplier=suppliers.create({{},"Book Supplier",{},{},{},0,false});
+    pos::PurchaseService(db).completePurchase({supplier,{},"credit",0,0,0,{},{{bought,10,350,0,0,"piece",{}, {}}}}); // last cost 350
+    pos::BundleService bundles(db);const auto id=bundles.createBundle({"Grade 1","G1","",{{bought,1},{neverBought,1}}});
+    const auto resolved=bundles.resolveItems(id);QCOMPARE(resolved.size(),qsizetype(2));
+    QCOMPARE(resolved.at(0).purchasePrice,qint64(350)); // reflects the purchase
+    QCOMPARE(resolved.at(1).purchasePrice,qint64(0));   // never purchased => 0
+}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::courseSalePostsOneGroupedEntryUsingCourseSettings(){try{const auto path=std::filesystem::temp_directory_path()/("course-sale-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
     pos::InventoryService inv(db);const auto bookA=stockedBook(inv,"Math",1000),bookB=stockedBook(inv,"English",1000);
     pos::PartnerService ps(db);const auto bookPartner=ps.createPartner({{},"Book Partner",{},{},0,false});ps.setBookConfig(bookA,{5000,5000,bookPartner}); // book settings that MUST be ignored inside a course

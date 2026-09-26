@@ -5,6 +5,9 @@
 #include <QListWidget>
 #include <QTableWidget>
 #include <QLineEdit>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QDir>
 #include <QScreen>
 #include <QPainter>
@@ -30,6 +33,7 @@
 #include "ui/pages/profit_report_page.h"
 #include "ui/pages/purchases_page.h"
 #include "ui/pages/inventory_page.h"
+#include "ui/theme.h"
 
 class UiSmokeTest final : public QObject {
     Q_OBJECT
@@ -45,6 +49,8 @@ private slots:
     void verifyLayoutAtRequiredSizes();
     // Phase 1 reproduction tests (issues reported during testing).
     void repro_purchasesHasLoadCourseButton();       // issue 1
+    void purchasesInlineEditRecomputesTotal();        // issue 1
+    void purchasesPaymentSectionSwitchesModes();      // purchase payment section
     void repro_inventoryInStockColourIsGreen();       // issue 2
 };
 
@@ -507,6 +513,107 @@ void UiSmokeTest::repro_purchasesHasLoadCourseButton() {
     QVERIFY2(found, "Purchases page has no 'Load course' button (issue 1 feature missing)");
 }
 
+// ISSUE 1: Editing a cart row's quantity or unit cost must recompute the purchase
+// total immediately. Adds a row via the normal controls, then edits cells through
+// the table API (which drives the same cellChanged path the UI uses).
+void UiSmokeTest::purchasesInlineEditRecomputesTotal() {
+    const auto path = std::filesystem::temp_directory_path() / ("ui-purchase-edit-" + pos::uuid().toStdString() + ".db");
+    auto db = std::make_shared<pos::Database>(path);
+    db->migrate();
+    pos::InventoryService(db).createProduct("Widget", "piece", 0, 500, false);
+
+    PurchasesPage page(db);
+    page.reloadLists();
+
+    auto* combo = page.findChild<QComboBox*>("purchaseProduct");
+    QVERIFY(combo && combo->count() >= 1);
+    combo->setCurrentIndex(0);
+    const auto spins = page.findChildren<QSpinBox*>();
+    QVERIFY(!spins.isEmpty());
+    spins[0]->setValue(2);                       // quantity (setsSpin_ is the other spin)
+    auto* price = page.findChild<QDoubleSpinBox*>();
+    QVERIFY(price);
+    price->setValue(100.0);                       // PKR 100.00
+
+    QPushButton* add = nullptr;
+    QLabel* total = page.findChild<QLabel*>("posTotal");
+    for (auto* b : page.findChildren<QPushButton*>()) if (b->text().remove('&') == "Add to cart") add = b;
+    QVERIFY(add && total);
+    QTest::mouseClick(add, Qt::LeftButton);
+    QTest::qWait(10);
+
+    QTableWidget* cart = nullptr;
+    for (auto* t : page.findChildren<QTableWidget*>()) {
+        auto* h = t->horizontalHeaderItem(2);
+        if (h && h->text() == "Unit cost") cart = t;
+    }
+    QVERIFY(cart && cart->rowCount() == 1);
+    QVERIFY2(total->text().contains("200"), qPrintable("expected total 200, got " + total->text())); // 2 x 100
+
+    cart->item(0, 1)->setText("5"); // qty edit
+    QTest::qWait(10);
+    QVERIFY2(total->text().contains("500"), qPrintable("expected total 500 after qty edit, got " + total->text()));
+
+    cart->item(0, 2)->setText("PKR 300"); // cost edit
+    QTest::qWait(10);
+    QVERIFY2(total->text().contains("1,500"), qPrintable("expected total 1,500 after cost edit, got " + total->text())); // 5 x 300
+    QCOMPARE(cart->item(0, 2)->data(Qt::UserRole).toLongLong(), qint64(30000)); // stored in hundredths
+}
+
+// Purchase payment section: button text tracks the method; Partial reveals the
+// paid field and shows the correct remaining payable.
+void UiSmokeTest::purchasesPaymentSectionSwitchesModes() {
+    const auto path = std::filesystem::temp_directory_path() / ("ui-purchase-pay-" + pos::uuid().toStdString() + ".db");
+    auto db = std::make_shared<pos::Database>(path);
+    db->migrate();
+    pos::InventoryService(db).createProduct("Widget", "piece", 0, 500, false);
+
+    PurchasesPage page(db);
+    page.reloadLists();
+    auto* combo = page.findChild<QComboBox*>("purchaseProduct");
+    QVERIFY(combo && combo->count() >= 1);
+    combo->setCurrentIndex(0);
+    page.findChildren<QSpinBox*>()[0]->setValue(2);
+    auto* price = page.findChild<QDoubleSpinBox*>(); // first double-spin is the unit cost
+    price->setValue(100.0);
+    QPushButton* add = nullptr;
+    QPushButton* save = nullptr;
+    for (auto* b : page.findChildren<QPushButton*>()) {
+        const auto t = b->text().remove('&');
+        if (t == "Add to cart") add = b;
+        if (t.startsWith("Receive purchase")) save = b;
+    }
+    QVERIFY(add && save);
+    QTest::mouseClick(add, Qt::LeftButton);
+    QTest::qWait(10);
+
+    // Default is Cash.
+    QCOMPARE(save->text().remove('&'), QString("Receive purchase (Cash)"));
+
+    // Find the payment combo (Cash/Credit/Partial) and the paid double-spin (no suffix).
+    QComboBox* pay = nullptr;
+    for (auto* c : page.findChildren<QComboBox*>()) if (c->count() == 3 && c->itemText(0) == "Cash") pay = c;
+    QVERIFY(pay);
+    QDoubleSpinBox* paid = nullptr;
+    for (auto* s : page.findChildren<QDoubleSpinBox*>()) if (s->suffix().isEmpty()) paid = s;
+    QVERIFY(paid);
+    QVERIFY(!paid->isVisibleTo(&page)); // hidden under Cash
+
+    pay->setCurrentIndex(1); // Credit
+    QCOMPARE(save->text().remove('&'), QString("Receive purchase on credit"));
+    QVERIFY(!paid->isVisibleTo(&page));
+
+    pay->setCurrentIndex(2); // Partial
+    QCOMPARE(save->text().remove('&'), QString("Receive purchase (Partial)"));
+    QVERIFY(paid->isVisibleTo(&page));
+    paid->setValue(50.0); // paid 50 of 200
+    QTest::qWait(10);
+    QLabel* remaining = nullptr;
+    for (auto* l : page.findChildren<QLabel*>()) if (l->text().startsWith("Remaining payable")) remaining = l;
+    QVERIFY(remaining);
+    QVERIFY2(remaining->text().contains("150"), qPrintable("expected remaining 150, got " + remaining->text()));
+}
+
 // ISSUE 2: An in-stock inventory row should read clearly as GREEN (green channel
 // dominant), distinct from the red out-of-stock badge. Reproduction: check the
 // STOCK LEVEL cell background for an in-stock product. Currently it is a brownish
@@ -516,27 +623,58 @@ void UiSmokeTest::repro_inventoryInStockColourIsGreen() {
     auto db = std::make_shared<pos::Database>(path);
     db->migrate();
     pos::InventoryService inv(db);
-    const auto id = inv.createProduct("Well Stocked Book", "piece", 300, 500, false);
-    inv.receiveStock({id, 25, 300, "piece", {}, {}, "Seed"}); // stock 25 > minimum 0 => IN STOCK
+    // Three products, one per stock state (minimum 5).
+    pos::ProductDefinition inStock{"AAA In Stock",{}, {},{}, {},{},"piece",300,500,0,0,5,false,false,{}};
+    pos::ProductDefinition low{"BBB Low",{}, {},{}, {},{},"piece",300,500,0,0,5,false,false,{}};
+    pos::ProductDefinition out{"CCC Out",{}, {},{}, {},{},"piece",300,500,0,0,5,false,false,{}};
+    const auto inStockId = inv.createProduct(inStock);
+    const auto lowId = inv.createProduct(low);
+    inv.createProduct(out);
+    inv.receiveStock({inStockId, 25, 300, "piece", {}, {}, "Seed"}); // 25 > 5 => IN STOCK
+    inv.receiveStock({lowId, 3, 300, "piece", {}, {}, "Seed"});      // 3 <= 5 => LOW
 
-    InventoryPage page(db);
-    QMetaObject::invokeMethod(&page, "load");
-    QTest::qWait(20);
-    auto* table = page.findChild<QTableWidget*>("inventoryTable");
-    QVERIFY(table);
-    QVERIFY(table->rowCount() >= 1);
+    const auto badgeBg = [](QTableWidget* t, const char* needle) -> QColor {
+        for (int r = 0; r < t->rowCount(); ++r) {
+            auto* cell = t->item(r, 3);
+            if (cell && cell->text().contains(needle)) return cell->background().color();
+        }
+        return {};
+    };
+    const auto check = [&](const QColor& green, const QColor& amber, const QColor& red, const char* theme) {
+        qDebug() << theme << "in=" << green << "low=" << amber << "out=" << red;
+        // Green: green channel dominates.
+        QVERIFY2(green.green() > green.red() && green.green() > green.blue(),
+                 qPrintable(QString("%1: in-stock badge is not green").arg(theme)));
+        // Red: red channel dominates.
+        QVERIFY2(red.red() > red.green() && red.red() > red.blue(),
+                 qPrintable(QString("%1: out-of-stock badge is not red").arg(theme)));
+        // Amber: warm (red & green both high, above blue) and clearly not the green badge.
+        QVERIFY2(amber.red() >= amber.blue() && amber.green() >= amber.blue() && amber != green,
+                 qPrintable(QString("%1: low badge is not amber/distinct").arg(theme)));
+    };
 
-    // Column 3 is "STOCK LEVEL"; find the in-stock row by its label text.
-    QColor bg;
-    QString label;
-    for (int r = 0; r < table->rowCount(); ++r) {
-        auto* cell = table->item(r, 3);
-        if (cell && cell->text().contains("IN STOCK")) { bg = cell->background().color(); label = cell->text(); break; }
+    // --- Light theme ---
+    pos::theme::setDark(false);
+    {
+        InventoryPage page(db);
+        QMetaObject::invokeMethod(&page, "load");
+        QTest::qWait(20);
+        auto* table = page.findChild<QTableWidget*>("inventoryTable");
+        QVERIFY(table);
+        QVERIFY(table->rowCount() >= 3);
+        check(badgeBg(table, "IN STOCK"), badgeBg(table, "LOW"), badgeBg(table, "OUT OF STOCK"), "light");
     }
-    QVERIFY2(!label.isEmpty(), "No IN STOCK row found");
-    qDebug() << "In-stock badge:" << label << "bg rgb=" << bg.red() << bg.green() << bg.blue();
-    QVERIFY2(bg.green() > bg.red() && bg.green() > bg.blue(),
-             "In-stock badge is not green (issue 2: green channel should dominate)");
+    // --- Dark theme: colours must still read correctly ---
+    pos::theme::setDark(true);
+    {
+        InventoryPage page(db);
+        QMetaObject::invokeMethod(&page, "load");
+        QTest::qWait(20);
+        auto* table = page.findChild<QTableWidget*>("inventoryTable");
+        QVERIFY(table);
+        check(badgeBg(table, "IN STOCK"), badgeBg(table, "LOW"), badgeBg(table, "OUT OF STOCK"), "dark");
+    }
+    pos::theme::setDark(false);
 }
 
 int main(int argc, char** argv) {

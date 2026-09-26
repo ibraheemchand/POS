@@ -18,6 +18,7 @@ struct BundleItemDisplay {
     Quantity quantity{};
     Money retailPrice{};
     Quantity stock{};
+    Money purchasePrice{}; // book's last purchase cost (0 if never purchased)
 };
 
 class BundleService {

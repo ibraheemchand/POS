@@ -103,6 +103,8 @@ set(UI_PAGE_SOURCES
     src/ui/pages/sales_trend_graph.cpp
     src/ui/pages/sales_trend_graph.h
     src/ui/pages/page_helper.h
+    src/ui/theme.cpp
+    src/ui/theme.h
 )
 
 add_executable(invento WIN32
