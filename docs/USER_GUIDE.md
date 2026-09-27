@@ -1,4 +1,4 @@
-# Nexora POS User Guide
+# Invento User Guide
 
 This guide describes the delivered offline Windows application. The application stores data locally; FBR/network synchronization is not part of this release.
 
@@ -6,7 +6,7 @@ This guide describes the delivered offline Windows application. The application 
 
 1. Copy the complete `deploy` folder to the POS computer. Keep the executable together with its DLLs and subfolders.
 2. Double-click `deploy\invento.exe`.
-3. On first start, Nexora creates the local SQLite database automatically.
+3. On first start, Invento creates the local SQLite database automatically.
 4. If Windows reports a missing Qt DLL, do not copy only the executable. Recreate the deployment folder with `scripts\deploy.ps1` and Qt's `windeployqt`.
 
 For this repository, the ready-to-run file is:
@@ -109,11 +109,11 @@ The transactional return services are implemented, but the current visible deskt
 
 1. Use **Backup now** on the Dashboard or open **Backup & Restore**.
 2. Choose a local folder or USB drive.
-3. Nexora writes a verified SQLite snapshot and `.sha256` checksum.
+3. Invento writes a verified SQLite snapshot and `.sha256` checksum.
 4. Keep both files together and copy them to separate media.
 5. To restore, select a verified backup or choose **Restore from drive/file**.
 6. Confirm the warning and pass the security PIN.
-7. Nexora creates a safety backup of the current database before restoring.
+7. Invento creates a safety backup of the current database before restoring.
 8. Restart the application after a restore and verify the latest invoice, inventory, and opening cash.
 
 ## 12. Notifications and printing

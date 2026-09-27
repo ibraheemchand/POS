@@ -19,6 +19,7 @@ private:
     void exportPdfFile();
     void exportExcelFile();
     void printReport();
+    void reprintReceipt(); // pick a recent sale and reprint / save its receipt as PDF
 
     std::shared_ptr<pos::Database> database_;
     QDateEdit* from_{};
@@ -30,4 +31,5 @@ private:
     QPushButton* exportPdfBtn_{};
     QPushButton* exportExcelBtn_{};
     QPushButton* printBtn_{};
+    QPushButton* reprintBtn_{};
 };

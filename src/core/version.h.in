@@ -1,0 +1,4 @@
+#pragma once
+// Generated from version.h.in by CMake — single source of truth for the app version.
+#define POS_VERSION "@PROJECT_VERSION@"
+#define POS_APP_NAME "Invento"

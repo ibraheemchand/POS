@@ -6,6 +6,7 @@
 #include <QSpinBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QComboBox>
 
 namespace pos { class Database; }
 
@@ -24,6 +25,9 @@ private:
     QLineEdit* footerInput_{};
     QSpinBox* backupHoursSpin_{};
     QLineEdit* thermalPathInput_{};
+    QComboBox* printerModeCombo_{};
+    QLineEdit* extraBackupInput_{};
+    QLabel* extraBackupStatus_{};
 
     QPushButton* saveSettingsBtn_{};
     QPushButton* viewNotificationsBtn_{};

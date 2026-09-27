@@ -51,6 +51,16 @@ QList<RecentActivityItem> ReportService::recentSales(int limit) const {
     return result;
 }
 
+QList<SaleHistoryRow> ReportService::recentSalesDetailed(int limit) const {
+    QList<SaleHistoryRow> result;
+    auto s = db_->prepare("SELECT id, invoice_no, created_at, total FROM sales WHERE status!='voided' ORDER BY created_at DESC LIMIT ?");
+    s.bind(1, static_cast<qint64>(limit));
+    while (s.stepRow()) {
+        result.append({s.text(0), s.text(1), s.text(2), s.integer(3)});
+    }
+    return result;
+}
+
 QList<RecentActivityItem> ReportService::recentPurchases(int limit) const {
     QList<RecentActivityItem> result;
     auto p = db_->prepare("SELECT invoice_no, total, purchased_at FROM purchases WHERE status='completed' ORDER BY purchased_at DESC LIMIT ?");

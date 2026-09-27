@@ -2,7 +2,11 @@
 #include "core/seed_service.h"
 #include "core/security_service.h"
 #include "core/settings_service.h"
+#include "core/app_paths.h"
+#include "core/data_migration.h"
+#include "core/logger.h"
 #include "ui/main_window.h"
+#include "ui/first_run_wizard.h"
 #include <QApplication>
 #include <QFont>
 #include <QIcon>
@@ -20,7 +24,7 @@ namespace {
 
 std::shared_ptr<pos::Database> openDatabase(const QString& overrideDataPath = {}) {
     const auto data = overrideDataPath.trimmed().isEmpty()
-        ? QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+        ? pos::paths::appDataDir()
         : overrideDataPath.trimmed();
     std::filesystem::create_directories(data.toStdWString());
     auto database = std::make_shared<pos::Database>(std::filesystem::path(data.toStdWString()) / L"business.db");
@@ -80,38 +84,6 @@ int runSeedCommand(const QStringList& arguments) {
     throw pos::DatabaseError("unknown seed command");
 }
 
-// First-run owner PIN setup, shown before the main window. The PIN is required to
-// run — it is never created silently by whoever opens an owner page first.
-bool ensureOwnerPinConfigured(const std::shared_ptr<pos::Database>& database) {
-    pos::SecurityService security(database);
-    if (security.hasPin()) return true;
-    while (true) {
-        bool ok = false;
-        const auto pin = QInputDialog::getText(nullptr, "First-time setup — Owner PIN",
-            "Set an owner PIN (6-12 digits).\nIt protects commission, partner and profit data.",
-            QLineEdit::Password, {}, &ok);
-        if (!ok) {
-            if (QMessageBox::question(nullptr, "Setup required",
-                    "An owner PIN is required to run the app. Quit without setting one?") == QMessageBox::Yes)
-                return false;
-            continue;
-        }
-        const auto confirm = QInputDialog::getText(nullptr, "First-time setup — Owner PIN",
-            "Re-enter the PIN:", QLineEdit::Password, {}, &ok);
-        if (!ok) continue;
-        if (pin != confirm) { QMessageBox::warning(nullptr, "PIN not set", "The two entries did not match."); continue; }
-        try {
-            const auto recovery = security.setupPin(pin);
-            QMessageBox::information(nullptr, "Save your recovery code",
-                "Setup complete.\n\nRecovery code (write it down — shown once; needed if you forget the PIN):\n\n"
-                + recovery + "\n\nThe app is offline, so there is no email reset.");
-            return true;
-        } catch (const std::exception& error) {
-            QMessageBox::warning(nullptr, "PIN not set", error.what());
-        }
-    }
-}
-
 } // namespace
 
 int main(int argc, char* argv[]) {
@@ -139,16 +111,40 @@ int main(int argc, char* argv[]) {
     QApplication::setOrganizationName("Invento");
     QApplication::setWindowIcon(QIcon(":/branding/app_icon"));
     try {
-        auto database = openDatabase(dataDirectory);
+        pos::Logger::instance().configure(std::filesystem::path(pos::paths::logsDir().toStdWString()));
+        POS_LOG_INFO("Invento starting");
+
+        // One-time copy of an old "Invento" database into the shared location. The old
+        // file is copied (never moved) and verified before use; on any mismatch the app
+        // keeps using the old database and reports it.
+        QString dbDir = dataDirectory;
+        if (dbDir.trimmed().isEmpty()) {
+            const auto migration = pos::migrateLegacyDatabaseIfNeeded();
+            dbDir = migration.databaseDir;
+            if (migration.status == pos::MigrationOutcome::Migrated)
+                QMessageBox::information(nullptr, "Database moved to a shared location", migration.message);
+            else if (migration.isError)
+                QMessageBox::critical(nullptr, "Database migration could not be verified", migration.message);
+        }
+
+        auto database = openDatabase(dbDir);
         // Point-based base font (physical-size units) times the user's "UI size"
         // preference (80/90/100/110%, default 100). High-DPI handles the rest.
         const int uiSize = qBound(80, pos::SettingsService(database).value("ui.size_percent", "100").toInt(), 110);
         { QFont base = app.font(); base.setPointSizeF(10.5 * uiSize / 100.0); app.setFont(base); }
-        if (!ensureOwnerPinConfigured(database)) return 0; // owner cancelled mandatory PIN setup
+
+        // Fresh database (no owner PIN yet) → first-run setup wizard. It is the only
+        // path that can load sample data, and only if the user opts in.
+        if (!pos::SecurityService(database).hasPin()) {
+            FirstRunWizard wizard(database);
+            if (wizard.exec() != QDialog::Accepted) return 0; // setup is mandatory to run
+        }
+
         MainWindow window(database);
         window.showMaximized();
         return app.exec();
     } catch (const std::exception& error) {
+        POS_LOG_CRITICAL(QString("Startup failed: %1").arg(error.what()));
         QMessageBox::critical(nullptr, "Unable to start Invento", error.what());
         return 1;
     }

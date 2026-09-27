@@ -2,6 +2,8 @@
 #include "ui/theme.h"
 #include "core/database.h"
 #include "core/pos_service.h"
+#include "core/app_paths.h"
+#include "core/logger.h"
 #include "core/data_change_bus.h"
 #include "core/backup_service.h"
 #include "core/inventory_service.h"
@@ -35,6 +37,7 @@
 #include <QStackedWidget>
 #include <QScrollArea>
 #include <QStandardPaths>
+#include <QDir>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QInputDialog>
@@ -109,7 +112,7 @@ QPushButton:focus { border: 2px solid #99461f; padding: 8px 14px; }
 #danger:pressed { background: #93000a; color: #ffffff; border-color: #93000a; }
 #danger:disabled { background: #dadada; color: #55433b; border-color: #dbc1b7; }
 #danger:focus { border-color: #ba1a1a; }
-QTableWidget { background: #ffffff; alternate-background-color: #f9f9f9; border: 1px solid #dbc1b7; border-radius: 12px; gridline-color: #eeeeee; selection-background-color: #ffdbcd; selection-color: #360f00; }
+QTableWidget { background: #ffffff; alternate-background-color: #f9f9f9; border: 1px solid #dbc1b7; border-radius: 12px; gridline-color: #eeeeee; selection-background-color: #ffdbcd; selection-color: #360f00; outline: 0; }
 QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #eeeeee; }
 QTableWidget::item:hover { background: #f3f3f3; }
 QTableWidget::item:selected { background: #ffdbcd; color: #360f00; }
@@ -171,7 +174,7 @@ QPushButton { border: 1px solid #45464C; border-radius: 10px; min-height: 18px; 
 QPushButton:focus { border: 2px solid #E9C349; padding: 8px 14px; }
 #primary { background: #E9C349; color: #241a00; border-color: #E9C349; } #primary:hover { background: #ffe088; border-color: #ffe088; } #primary:pressed { background: #af8d11; border-color: #af8d11; } #primary:focus { border-color: #dee2f4; }
 #danger { background: #3B1A1A; color: #FFB4AB; border-color: #6E3230; } #danger:hover { background: #4A2321; border-color: #9A4C48; } #danger:pressed { background: #331312; border-color: #7E3B37; } #danger:disabled { background: #1B2636; color: #7C879C; border-color: #2C3A52; } #danger:focus { border-color: #FFB4AB; }
-QTableWidget { background: #1E2025; alternate-background-color: #1A1B21; border: 1px solid #45464C; border-radius: 12px; gridline-color: #33353A; selection-background-color: #282A2F; selection-color: #E2E2E9; } QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #33353A; } QTableWidget::item:hover { background: #282A2F; } QTableWidget::item:selected { background: #282A2F; color: #E2E2E9; }
+QTableWidget { background: #1E2025; alternate-background-color: #1A1B21; border: 1px solid #45464C; border-radius: 12px; gridline-color: #33353A; selection-background-color: #282A2F; selection-color: #E2E2E9; outline: 0; } QTableWidget::item { padding: 8px 10px; border-bottom: 1px solid #33353A; } QTableWidget::item:hover { background: #282A2F; } QTableWidget::item:selected { background: #282A2F; color: #E2E2E9; }
 QHeaderView::section { background: #0C0E13; color: #C6C6CC; border: 0; border-bottom: 1px solid #45464C; padding: 11px 10px; font-size: 11px; font-weight: 800; } QHeaderView::section:hover { color: #E9C349; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 4px; } QScrollBar::handle:vertical { background: #33353A; border-radius: 5px; min-height: 28px; } QScrollBar::handle:vertical:hover { background: #45464C; }
 QScrollBar:horizontal { background: transparent; height: 10px; margin: 4px; } QScrollBar::handle:horizontal { background: #33353A; border-radius: 5px; min-width: 28px; } QScrollBar::handle:horizontal:hover { background: #45464C; }
@@ -256,7 +259,7 @@ QFrame#metric, QFrame#panel { border-radius: 12px; }
 MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QMainWindow(parent), database_(std::move(database)) {
     Q_INIT_RESOURCE(resources);
-    setWindowTitle("Nexora POS"); 
+    setWindowTitle("Invento");
     setWindowIcon(QIcon(":/branding/app_icon")); 
     // Keep the minimum small enough to fit a 1366x768 laptop at 150% scaling
     // (~910x512 logical px); showMaximized() picks the real size.
@@ -280,10 +283,10 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     logo->setAlignment(Qt::AlignCenter); 
     logo->setPixmap(QPixmap(":/branding/logo").scaled(92, 92, Qt::KeepAspectRatio, Qt::SmoothTransformation)); 
     logo->setStyleSheet("background: white; border-radius: 14px; padding: 8px; margin-top: 18px;"); 
-    logo->setAccessibleName("Nexora POS logo"); 
+    logo->setAccessibleName("Invento logo");
     sideLayout->addWidget(logo, 0, Qt::AlignHCenter);
 
-    auto* brand = new QLabel("Nexora POS", sidebar);
+    auto* brand = new QLabel("Invento", sidebar);
     brand->setObjectName("brand");
     auto* sub = new QLabel("Enterprise Edition", sidebar);
     sub->setObjectName("subtitle");
@@ -357,7 +360,7 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     footerLayout->setContentsMargins(14,12,14,12); 
     footerLayout->setSpacing(4);
 
-    auto* store = new QLabel(pos::SettingsService(database_).value("business.name", "Nexora POS"), footerFrame); 
+    auto* store = new QLabel(pos::SettingsService(database_).value("business.name", "Invento"), footerFrame);
     store->setObjectName("footerStore"); 
     store->setWordWrap(true);
     
@@ -607,11 +610,20 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
         timer->setInterval(backupIntervalHours*60*60*1000);
         connect(timer, &QTimer::timeout, this, [this]{
             try {
-                const auto folder = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)+"/backups";
-                const auto file = std::filesystem::path(folder.toStdWString()) / (L"scheduled-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
+                const auto stamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss");
+                const auto folder = pos::paths::backupsDir();
+                const auto file = std::filesystem::path(folder.toStdWString()) / (L"scheduled-" + stamp.toStdWString() + L".db");
                 pos::BackupService service(database_);
                 service.createVerifiedBackup(file);
                 service.pruneVerifiedBackups(30);
+                // Extra off-site copy (USB / another drive), if configured and reachable.
+                const auto extra = pos::SettingsService(database_).value("backup.extra_dir").trimmed();
+                if (!extra.isEmpty() && QDir(extra).exists()) {
+                    try {
+                        const auto extraFile = std::filesystem::path(extra.toStdWString()) / (L"invento-scheduled-" + stamp.toStdWString() + L".db");
+                        service.createVerifiedBackup(extraFile);
+                    } catch (...) { POS_LOG_WARNING("Scheduled off-site backup copy failed"); }
+                }
             } catch(...) {}
         });
         timer->start();

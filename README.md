@@ -1,4 +1,4 @@
-# Nexora POS
+# Invento
 
 An offline-first Windows wholesale POS foundation written in C++20, Qt 6 Widgets, and SQLite. It starts with a modern business shell and the safety-critical data path: integer-money accounting, UUIDs, WAL-mode SQLite, migrations, atomic sale/stock/ledger writes, FEFO lot selection, void audit logging, and verified online backups.
 

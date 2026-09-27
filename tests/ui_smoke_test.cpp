@@ -33,7 +33,18 @@
 #include "ui/pages/profit_report_page.h"
 #include "ui/pages/purchases_page.h"
 #include "ui/pages/inventory_page.h"
+#include "ui/pages/sales_pos_page.h"
+#include "ui/discount_slider.h"
 #include "ui/theme.h"
+#include "core/receipt_service.h"
+#include "core/security_service.h"
+#include "ui/receipt_output.h"
+#include "ui/first_run_wizard.h"
+#include <QCheckBox>
+#include <QPrinter>
+#include <QPainter>
+#include <QProcess>
+#include <QRegularExpression>
 
 class UiSmokeTest final : public QObject {
     Q_OBJECT
@@ -51,6 +62,10 @@ private slots:
     void repro_purchasesHasLoadCourseButton();       // issue 1
     void purchasesInlineEditRecomputesTotal();        // issue 1
     void purchasesPaymentSectionSwitchesModes();      // purchase payment section
+    void salesDiscountSliderRespectsMaxAndZones();    // discount slider
+    void receiptSaveAsPdfIsValidWithText();           // Save as PDF (QPdfWriter)
+    void receiptNormalDriverPdfIsValid();             // Normal printer path -> PDF file
+    void firstRunWizardStartsEmpty();                 // fresh install wizard + empty DB
     void repro_inventoryInStockColourIsGreen();       // issue 2
 };
 
@@ -612,6 +627,166 @@ void UiSmokeTest::purchasesPaymentSectionSwitchesModes() {
     for (auto* l : page.findChildren<QLabel*>()) if (l->text().startsWith("Remaining payable")) remaining = l;
     QVERIFY(remaining);
     QVERIFY2(remaining->text().contains("150"), qPrintable("expected remaining 150, got " + remaining->text()));
+}
+
+namespace {
+// A sample receipt used by the PDF tests.
+pos::ReceiptData sampleReceipt() {
+    pos::ReceiptData d;
+    d.storeName = "Invento";
+    d.invoiceNo = "INV-PDFTEST-777";
+    d.dateTime = "2026-09-27 12:00";
+    d.footer = "Thank you for shopping.";
+    d.items = {{"Basmati Rice", 2, 30000}, {"Beauty Soap", 1, 7500}};
+    d.total = 37500; // PKR 375
+    return d;
+}
+// Directory where sample PDFs are written so a human can open them.
+QString receiptOutDir() {
+    QString base = qEnvironmentVariable("TEST_OUTPUT_DIR");
+    if (base.isEmpty()) base = QDir::currentPath() + "/test-output";
+    const QString dir = base + "/receipts";
+    QDir().mkpath(dir);
+    return dir;
+}
+// Real structural parse: valid header, at least one Page object, and an EOF marker.
+void assertValidPdf(const QString& path, const char* label) {
+    QFile f(path);
+    QVERIFY2(f.open(QIODevice::ReadOnly), qPrintable(QString("%1: cannot open %2").arg(label, path)));
+    const QByteArray bytes = f.readAll();
+    QVERIFY2(bytes.startsWith("%PDF-"), qPrintable(QString("%1: not a PDF header").arg(label)));
+    QVERIFY2(bytes.contains("%%EOF"), qPrintable(QString("%1: no EOF marker").arg(label)));
+    const QRegularExpression pageRe("/Type\\s*/Page[^s]");
+    int pages = 0; auto it = pageRe.globalMatch(bytes);
+    while (it.hasNext()) { it.next(); ++pages; }
+    QVERIFY2(pages >= 1, qPrintable(QString("%1: expected >=1 page, found %2").arg(label).arg(pages)));
+}
+// If poppler's pdftotext is available, extract text; otherwise return empty.
+QString pdfText(const QString& path) {
+    QString exe = QStandardPaths::findExecutable("pdftotext");
+    for (const QString& c : {QString("C:/msys64/mingw64/bin/pdftotext.exe"), QString("C:/Program Files/Git/mingw64/bin/pdftotext.exe")})
+        if (exe.isEmpty() && QFile::exists(c)) exe = c;
+    if (exe.isEmpty()) return {};
+    QProcess p;
+    p.start(exe, {"-layout", path, "-"});
+    if (!p.waitForFinished(15000)) return {};
+    return QString::fromUtf8(p.readAllStandardOutput());
+}
+} // namespace
+
+// Fresh install: an empty database + the first-run wizard, which seeds nothing unless
+// the (off-by-default) sample-data box is ticked.
+void UiSmokeTest::firstRunWizardStartsEmpty() {
+    const auto dir = std::filesystem::temp_directory_path() / ("ui-firstrun-" + pos::uuid().toStdString());
+    std::filesystem::create_directories(dir);
+    auto db = std::make_shared<pos::Database>(dir / "business.db");
+    db->migrate();
+    QVERIFY(!pos::SecurityService(db).hasPin()); // fresh -> wizard would show
+
+    FirstRunWizard wizard(db);
+    QCOMPARE(wizard.pageIds().size(), 4); // business, PIN, printer, sample
+    auto* sample = wizard.findChild<QCheckBox*>("fw_loadSample");
+    QVERIFY(sample);
+    QVERIFY2(!sample->isChecked(), "sample data must be OFF by default");
+
+    wizard.findChild<QLineEdit*>("fw_business")->setText("Test Shop");
+    wizard.findChild<QLineEdit*>("fw_pin")->setText("123456");
+    wizard.findChild<QLineEdit*>("fw_pinConfirm")->setText("123456");
+    QString err;
+    QVERIFY2(wizard.applySetup(&err), qPrintable(err));
+
+    QVERIFY(pos::SecurityService(db).hasPin());          // PIN now set
+    QVERIFY(!wizard.recoveryCode().isEmpty());           // recovery code produced
+    // Default finish loads NO sample data.
+    for (const char* t : {"products", "customers", "sales", "suppliers"}) {
+        auto q = db->prepare(QByteArray("SELECT COUNT(*) FROM ").append(t).constData());
+        QVERIFY(q.stepRow());
+        QVERIFY2(q.integer(0) == 0, qPrintable(QString("%1 should be empty after a default first run").arg(t)));
+    }
+}
+
+void UiSmokeTest::receiptSaveAsPdfIsValidWithText() {
+    const auto data = sampleReceipt();
+    const QString path = receiptOutDir() + "/Receipt_" + data.invoiceNo + ".pdf";
+    pos::ReceiptService::renderPdf(data, path);
+    qDebug() << "Save-as-PDF sample:" << QDir::toNativeSeparators(path);
+    assertValidPdf(path, "save-as-pdf");
+    const QString text = pdfText(path);
+    if (text.isEmpty()) { qWarning() << "pdftotext not found — text content not checked (structure OK)"; return; }
+    QVERIFY2(text.contains(data.invoiceNo), qPrintable("PDF text missing invoice number; got:\n" + text));
+    QVERIFY2(text.contains("375"), qPrintable("PDF text missing total; got:\n" + text));
+}
+
+void UiSmokeTest::receiptNormalDriverPdfIsValid() {
+    const auto data = sampleReceipt();
+    const QString path = receiptOutDir() + "/Receipt_normal_" + data.invoiceNo + ".pdf";
+    // The "Normal printer (Windows driver)" path, targeted at a PDF file (same as
+    // selecting Microsoft Print to PDF, but deterministic for the test).
+    {
+        QPrinter printer(QPrinter::HighResolution);
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOutputFileName(path);
+        QPainter painter(&printer);
+        QVERIFY(painter.isActive());
+        const QRectF area(0, 0, printer.width(), printer.height());
+        pos::ReceiptService::paint(painter, area.adjusted(area.width() * 0.06, area.height() * 0.05, -area.width() * 0.06, -area.height() * 0.05), data);
+        painter.end();
+    }
+    qDebug() << "Normal-driver PDF sample:" << QDir::toNativeSeparators(path);
+    assertValidPdf(path, "normal-driver");
+    const QString text = pdfText(path);
+    if (text.isEmpty()) { qWarning() << "pdftotext not found — text content not checked (structure OK)"; return; }
+    QVERIFY2(text.contains(data.invoiceNo), qPrintable("PDF text missing invoice number; got:\n" + text));
+    QVERIFY2(text.contains("375"), qPrintable("PDF text missing total; got:\n" + text));
+}
+
+// Sales POS invoice-discount slider: its maximum equals the cart's total commission
+// (never below cost), the allowed label shows the green-zone end, and the slider
+// clamps to the maximum (can't be dragged past it).
+void UiSmokeTest::salesDiscountSliderRespectsMaxAndZones() {
+    const auto path = std::filesystem::temp_directory_path() / ("ui-slider-" + pos::uuid().toStdString() + ".db");
+    auto db = std::make_shared<pos::Database>(path);
+    db->migrate();
+    pos::InventoryService inv(db);
+    const auto id = inv.createProduct("Priced Book", "piece", 5000, 10000, false); // retail PKR 100
+    inv.receiveStock({id, 20, 5000, "piece", {}, {}, "Seed"});
+    { auto u = db->prepare("UPDATE products SET total_pct_bp=4000, partner_pct_bp=0 WHERE id=?"); u.bind(1, id); u.execute(); } // 40% commission, no partner
+
+    SalesPosPage page(db);
+    QMetaObject::invokeMethod(&page, "load");
+    QTest::qWait(30);
+    QTableWidget* products = nullptr;
+    for (auto* t : page.findChildren<QTableWidget*>()) {
+        auto* c0 = t->horizontalHeaderItem(0);
+        if (c0 && c0->text() == "Product") { products = t; break; }
+    }
+    QVERIFY(products && products->rowCount() >= 1);
+    products->setCurrentCell(0, 0);
+    QPushButton* add = nullptr;
+    for (auto* b : page.findChildren<QPushButton*>()) if (b->text().remove('&') == "Add to cart") add = b;
+    QVERIFY(add);
+    QTest::mouseClick(add, Qt::LeftButton);
+    QTest::qWait(20);
+
+    auto* slider = page.findChild<DiscountSlider*>();
+    QVERIFY(slider);
+    // gross 10000: max commission = 40% = 4000; allowed = (40-0-12)% = 2800.
+    QCOMPARE(slider->maximum(), 4000);
+    slider->setValue(1000000000); // try to exceed the maximum
+    QCOMPARE(slider->value(), slider->maximum()); // clamped, can't go past max
+
+    QLabel* allowed = nullptr;
+    for (auto* l : page.findChildren<QLabel*>()) if (l->text().startsWith("Allowed without PIN")) allowed = l;
+    QVERIFY(allowed);
+    QVERIFY2(allowed->text().contains("28"), qPrintable("allowed should be PKR 28, got " + allowed->text()));
+
+    // "Max" button applies the top of the green zone (allowed) with no PIN.
+    QPushButton* maxBtn = nullptr;
+    for (auto* b : page.findChildren<QPushButton*>()) if (b->text().remove('&') == "Max") maxBtn = b;
+    QVERIFY(maxBtn && maxBtn->isEnabled());
+    QTest::mouseClick(maxBtn, Qt::LeftButton);
+    QTest::qWait(10);
+    QCOMPARE(slider->value(), 2800); // snapped to allowed, still in the green zone
 }
 
 // ISSUE 2: An in-stock inventory row should read clearly as GREEN (green channel

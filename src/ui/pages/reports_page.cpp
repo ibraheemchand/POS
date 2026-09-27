@@ -4,7 +4,16 @@
 #include "core/report_service.h"
 #include "core/commission_service.h"
 #include "core/excel_export_service.h"
+#include "core/receipt_service.h"
+#include "core/app_paths.h"
+#include "ui/receipt_output.h"
 #include <QVBoxLayout>
+#include <QDialog>
+#include <QListWidget>
+#include <QStandardPaths>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QDir>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
@@ -40,6 +49,7 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
     exportPdfBtn_ = new QPushButton("Export PDF", this);
     exportExcelBtn_ = new QPushButton("Export Excel", this);
     printBtn_ = new QPushButton("Print A4", this);
+    reprintBtn_ = new QPushButton("Reprint receipt…", this);
 
     filters->addWidget(new QLabel("From", this));
     filters->addWidget(from_);
@@ -50,6 +60,7 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
     filters->addWidget(exportPdfBtn_);
     filters->addWidget(exportExcelBtn_);
     filters->addWidget(printBtn_);
+    filters->addWidget(reprintBtn_);
     filters->addStretch();
     layout->addLayout(filters);
 
@@ -92,6 +103,7 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
     connect(exportPdfBtn_, &QPushButton::clicked, this, &ReportsPage::exportPdfFile);
     connect(exportExcelBtn_, &QPushButton::clicked, this, &ReportsPage::exportExcelFile);
     connect(printBtn_, &QPushButton::clicked, this, &ReportsPage::printReport);
+    connect(reprintBtn_, &QPushButton::clicked, this, &ReportsPage::reprintReceipt);
 
     // Set tab order
     setTabOrder(from_, to_);
@@ -168,7 +180,7 @@ void ReportsPage::exportPdfFile() {
         printer.setOutputFileName(fileName);
         QPainter painter(&printer);
         painter.setFont(QFont("Arial", 14));
-        painter.drawText(100, 100, "Nexora POS business report");
+        painter.drawText(100, 100, "Invento business report");
         painter.setFont(QFont("Arial", 10));
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;
@@ -204,6 +216,63 @@ void ReportsPage::exportExcelFile() {
     }
 }
 
+void ReportsPage::reprintReceipt() {
+    try {
+        const auto sales = pos::ReportService(database_).recentSalesDetailed(50);
+        if (sales.isEmpty()) { QMessageBox::information(this, "Reprint receipt", "There are no sales to reprint yet."); return; }
+
+        QDialog dialog(this);
+        dialog.setWindowTitle("Reprint receipt");
+        dialog.setMinimumWidth(460);
+        auto* dl = new QVBoxLayout(&dialog);
+        dl->addWidget(new QLabel("Pick a sale, then print it or save it as a PDF:", &dialog));
+        auto* list = new QListWidget(&dialog);
+        for (const auto& s : sales)
+            list->addItem(QString("%1   %2   PKR %3").arg(s.invoiceNo, s.date, pos::formatMoney(s.total)));
+        list->setCurrentRow(0);
+        dl->addWidget(list, 1);
+
+        auto* buttons = new QHBoxLayout;
+        auto* pdfBtn = new QPushButton("Save as PDF", &dialog); pdfBtn->setObjectName("primary");
+        auto* printBtn = new QPushButton("Print", &dialog);
+        auto* closeBtn = new QPushButton("Close", &dialog);
+        buttons->addWidget(pdfBtn); buttons->addWidget(printBtn); buttons->addStretch(); buttons->addWidget(closeBtn);
+        dl->addLayout(buttons);
+
+        const auto selectedId = [&]() -> QString {
+            const int row = list->currentRow();
+            return (row >= 0 && row < sales.size()) ? sales[row].id : QString();
+        };
+
+        connect(pdfBtn, &QPushButton::clicked, &dialog, [&] {
+            const auto id = selectedId(); if (id.isEmpty()) return;
+            try {
+                const auto data = pos::ReceiptService(database_).buildFromSale(id);
+                const auto dir = pos::paths::receiptsDir();
+                const auto path = QString("%1/Receipt_%2.pdf").arg(dir, QString(data.invoiceNo).replace('/', '-'));
+                pos::ReceiptService::renderPdf(data, path);
+                QMessageBox box(QMessageBox::Information, "Receipt saved as PDF", QString("Saved to:\n%1").arg(QDir::toNativeSeparators(path)), QMessageBox::Ok, &dialog);
+                auto* openBtn = box.addButton("Open", QMessageBox::AcceptRole);
+                auto* folderBtn = box.addButton("Open receipts folder", QMessageBox::ActionRole);
+                box.exec();
+                if (box.clickedButton() == openBtn) QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+                else if (box.clickedButton() == folderBtn) QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+            } catch (const std::exception& e) { QMessageBox::critical(&dialog, "Could not save PDF", e.what()); }
+        });
+        connect(printBtn, &QPushButton::clicked, &dialog, [&] {
+            const auto id = selectedId(); if (id.isEmpty()) return;
+            try {
+                const auto status = pos::ui::deliverReceipt(database_, pos::ReceiptService(database_).buildFromSale(id));
+                QMessageBox::information(&dialog, "Receipt sent", status);
+            } catch (const std::exception& e) { QMessageBox::critical(&dialog, "Could not print", e.what()); }
+        });
+        connect(closeBtn, &QPushButton::clicked, &dialog, &QDialog::reject);
+        dialog.exec();
+    } catch (const std::exception& error) {
+        QMessageBox::critical(this, "Could not open reprint", error.what());
+    }
+}
+
 void ReportsPage::printReport() {
     try {
         const auto r = pos::ReportService(database_).summary(from_->date(), to_->date());
@@ -216,7 +285,7 @@ void ReportsPage::printReport() {
         
         QPainter painter(&printer);
         painter.setFont(QFont("Arial", 14));
-        painter.drawText(100, 100, "Nexora POS business report");
+        painter.drawText(100, 100, "Invento business report");
         painter.setFont(QFont("Arial", 10));
         painter.drawText(100, 130, QString("Period: %1 to %2").arg(from_->date().toString(Qt::ISODate), to_->date().toString(Qt::ISODate)));
         int y = 180;

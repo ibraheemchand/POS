@@ -98,6 +98,10 @@ struct SaleRequest {
     QString note;
     QList<SaleLine> lines;
     QList<Tender> tenders;
+    // Set only after a manager PIN confirms an invoice discount beyond the cart's
+    // allowed flexible margin. PosService re-derives and enforces the limits itself.
+    // Kept last so existing aggregate initialisers still compile.
+    bool invoiceDiscountOverrideApproved{false};
 };
 
 struct SaleResult { QString saleId; QString invoiceNo; Money total{}; };

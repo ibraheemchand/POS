@@ -1,4 +1,11 @@
 build/
+build-fix/
+build-ui/
+build-logo/
+build-release/
+dist/
+deploy/
+installer/dist-installer/
 *.db
 *.db-shm
 *.db-wal

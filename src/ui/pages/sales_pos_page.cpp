@@ -1,5 +1,6 @@
 #include "ui/pages/sales_pos_page.h"
 #include "ui/pages/page_helper.h"
+#include "ui/discount_slider.h"
 #include "core/database.h"
 #include "core/pos_service.h"
 #include "core/inventory_service.h"
@@ -12,6 +13,13 @@
 #include "core/commission_service.h"
 #include "core/partner_service.h"
 #include "core/bundle_service.h"
+#include "core/receipt_service.h"
+#include "core/app_paths.h"
+#include "ui/receipt_output.h"
+#include <QStandardPaths>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QDir>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFrame>
@@ -168,12 +176,33 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     rowActions->addWidget(removeLineBtn_);
     rowActions->addStretch();
 
-    discountSpin_ = new QDoubleSpinBox(cartPanel);
-    discountSpin_->setRange(0, 100000000);
-    discountSpin_->setDecimals(2);
-    discountSpin_->setPrefix("Invoice discount (PKR): ");
-    discountSpin_->setAccessibleName("Invoice discount in rupees");
-    
+    // Invoice discount: a slider with a synced number field. Green zone = free,
+    // red zone = needs a manager PIN. Amounts only — no commission internals shown.
+    discountSlider_ = new DiscountSlider(cartPanel);
+    discountSlider_->setAccessibleName("Invoice discount slider");
+    discountAmountSpin_ = new QDoubleSpinBox(cartPanel);
+    discountAmountSpin_->setRange(0, 100000000);
+    discountAmountSpin_->setDecimals(2);
+    discountAmountSpin_->setPrefix("PKR ");
+    discountAmountSpin_->setAccessibleName("Invoice discount in rupees");
+    discountAmountSpin_->setMaximumWidth(150);
+    maxDiscountBtn_ = new QPushButton("Max", cartPanel);
+    maxDiscountBtn_->setToolTip("Apply the largest discount allowed without a manager PIN");
+    maxDiscountBtn_->setAccessibleName("Apply maximum allowed discount");
+    auto* discountRow = new QHBoxLayout;
+    discountRow->addWidget(discountSlider_, 1);
+    discountRow->addWidget(discountAmountSpin_);
+    discountRow->addWidget(maxDiscountBtn_);
+
+    discountInfoLabel_ = new QLabel("PKR 0 (0%)", cartPanel);
+    discountInfoLabel_->setObjectName("sumValue");
+    allowedLabel_ = new QLabel("Allowed without PIN: up to PKR 0", cartPanel);
+    allowedLabel_->setObjectName("muted");
+    auto* discountInfoRow = new QHBoxLayout;
+    discountInfoRow->addWidget(discountInfoLabel_);
+    discountInfoRow->addStretch();
+    discountInfoRow->addWidget(allowedLabel_);
+
 
     auto* summary = new QFrame(cartPanel);
     summary->setObjectName("summaryBox");
@@ -196,17 +225,17 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     subRow->addStretch();
     subRow->addWidget(subtotalValue_);
 
-    auto* discRow = new QHBoxLayout;
-    discRow->addWidget(summaryDiscountLabel);
-    discRow->addStretch();
-    discRow->addWidget(discountValue_);
+    // The invoice discount is shown by discountInfoLabel_ next to the slider, so the
+    // summary's own Discount line is redundant — hidden to keep the panel compact at
+    // 1280x720. discountValue_ stays alive (computeTotal still updates it).
+    summaryDiscountLabel->setVisible(false);
+    discountValue_->setVisible(false);
 
     totalValue_ = new QLabel("PKR 0.00", summary);
     totalValue_->setObjectName("posTotal");
     totalValue_->setAlignment(Qt::AlignRight);
 
     sl->addLayout(subRow);
-    sl->addLayout(discRow);
     sl->addSpacing(2);
     sl->addWidget(totalValue_);
 
@@ -224,6 +253,7 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     savePrintBtn_->setObjectName("primary");
     savePrintBtn_->setMinimumHeight(32);
 
+    savePdfBtn_ = new QPushButton("Save as P&DF", cartPanel);
     saveBtn_ = new QPushButton("Sa&ve", cartPanel);
     holdBtn_ = new QPushButton("&Hold", cartPanel);
     resumeBtn_ = new QPushButton("R&esume", cartPanel);
@@ -233,10 +263,11 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
 
     auto* primaryRow = new QHBoxLayout;
     primaryRow->addWidget(savePrintBtn_, 3);
+    primaryRow->addWidget(savePdfBtn_, 2);
     primaryRow->addWidget(saveBtn_, 2);
-    primaryRow->addWidget(holdBtn_, 2);
 
     auto* secondaryRow = new QHBoxLayout;
+    secondaryRow->addWidget(holdBtn_, 2);
     secondaryRow->addWidget(resumeBtn_, 2);
     secondaryRow->addWidget(clearBtn_, 2);
     secondaryRow->addWidget(cancelBtn_, 2);
@@ -249,7 +280,8 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     cartLayout->addWidget(cartHeading);
     cartLayout->addWidget(cartTable_, 1);      // stretches — the cart is the flexible area
     cartLayout->addLayout(rowActions);
-    cartLayout->addWidget(discountSpin_);      // its prefix already says "Invoice discount (PKR)"
+    cartLayout->addLayout(discountRow);
+    cartLayout->addLayout(discountInfoRow);
     cartLayout->addWidget(summary);
     cartLayout->addWidget(receivedSpin_);      // prefix says "Amount received (PKR)"
     cartLayout->addWidget(dueLabel_);
@@ -330,13 +362,25 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     });
     connect(loadCourseBtn_, &QPushButton::clicked, this, &SalesPosPage::loadCourse);
 
-    connect(discountSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
+    // Dragging the slider: preview the amount live (no PIN yet). The PIN prompt for
+    // the red zone happens on release, so the salesman can drag freely.
+    connect(discountSlider_, &QSlider::valueChanged, this, [this](int paisa) {
+        if (syncingDiscount_) return;
+        invoiceDiscount_ = paisa;
+        if (paisa <= allowed_) invoiceOverrideApproved_ = false;
+        syncDiscountWidgets();
         const auto grand = computeTotal();
-        if (paymentMethodCombo_->currentData().toString() != "credit") {
-            receivedSpin_->setValue(grand / 100.0);
-        }
+        if (paymentMethodCombo_->currentData().toString() != "credit") receivedSpin_->setValue(grand / 100.0);
         refreshDue(grand);
     });
+    connect(discountSlider_, &QSlider::sliderReleased, this, [this] { commitInvoiceDiscount(discountSlider_->value()); });
+    // Typing an amount: commit it (with PIN if in the red zone) when editing ends.
+    connect(discountAmountSpin_, &QDoubleSpinBox::editingFinished, this, [this] {
+        if (syncingDiscount_) return;
+        commitInvoiceDiscount(pos::roundMoney(discountAmountSpin_->value() * 100));
+    });
+    // Apply the largest no-PIN discount (top of the green zone).
+    connect(maxDiscountBtn_, &QPushButton::clicked, this, [this] { commitInvoiceDiscount(allowed_); });
 
     connect(paymentMethodCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int) {
         const auto grand = computeTotal();
@@ -350,15 +394,16 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
         refreshDue(computeTotal());
     });
 
-    connect(saveBtn_, &QPushButton::clicked, this, [this] { completeSale(false); });
-    connect(savePrintBtn_, &QPushButton::clicked, this, [this] { completeSale(true); });
+    connect(saveBtn_, &QPushButton::clicked, this, [this] { completeSale(ReceiptAction::None); });
+    connect(savePrintBtn_, &QPushButton::clicked, this, [this] { completeSale(ReceiptAction::Print); });
+    connect(savePdfBtn_, &QPushButton::clicked, this, [this] { completeSale(ReceiptAction::Pdf); });
     connect(holdBtn_, &QPushButton::clicked, this, &SalesPosPage::holdSale);
     connect(resumeBtn_, &QPushButton::clicked, this, &SalesPosPage::resumeSale);
     connect(clearBtn_, &QPushButton::clicked, this, &SalesPosPage::clearCart);
     connect(cancelBtn_, &QPushButton::clicked, this, [this] {
         if (cartTable_->rowCount() && QMessageBox::question(this, "Cancel sale", "Abandon this sale and return to the dashboard?") != QMessageBox::Yes) return;
         cartTable_->setRowCount(0);
-        discountSpin_->setValue(0);
+        invoiceDiscount_ = 0; invoiceOverrideApproved_ = false; approvedCartSig_.clear();
         refresh();
         emit requestNavigation("Dashboard");
     });
@@ -376,14 +421,19 @@ SalesPosPage::SalesPosPage(std::shared_ptr<pos::Database> database, QWidget* par
     setTabOrder(addToCartBtn_, loadCourseBtn_);
     setTabOrder(loadCourseBtn_, cartTable_);
     setTabOrder(cartTable_, lineDiscountBtn_);
-    setTabOrder(lineDiscountBtn_, discountSpin_);
-    setTabOrder(discountSpin_, receivedSpin_);
+    setTabOrder(lineDiscountBtn_, discountAmountSpin_);
+    setTabOrder(discountAmountSpin_, discountSlider_);
+    setTabOrder(discountSlider_, maxDiscountBtn_);
+    setTabOrder(maxDiscountBtn_, receivedSpin_);
     setTabOrder(receivedSpin_, savePrintBtn_);
-    setTabOrder(savePrintBtn_, saveBtn_);
+    setTabOrder(savePrintBtn_, savePdfBtn_);
+    setTabOrder(savePdfBtn_, saveBtn_);
     setTabOrder(saveBtn_, holdBtn_);
     setTabOrder(holdBtn_, resumeBtn_);
     setTabOrder(resumeBtn_, clearBtn_);
     setTabOrder(clearBtn_, cancelBtn_);
+
+    syncDiscountWidgets(); // initial labels/slider state (empty cart)
 }
 
 void SalesPosPage::reloadCustomerCombo() {
@@ -428,7 +478,7 @@ qint64 SalesPosPage::computeTotal() {
     for (int row = 0; row < cartTable_->rowCount(); ++row) {
         subtotal += cartTable_->item(row, 4)->data(Qt::UserRole).toLongLong();
     }
-    const qint64 disc = pos::roundMoney(discountSpin_->value() * 100);
+    const qint64 disc = invoiceDiscount_;
     const qint64 grand = subtotal - disc;
     subtotalValue_->setText("PKR " + pos::formatMoney(subtotal));
     discountValue_->setText("PKR " + pos::formatMoney(disc));
@@ -452,11 +502,95 @@ void SalesPosPage::refreshDue(qint64 grand) {
 }
 
 void SalesPosPage::refresh() {
+    recomputeDiscountLimits();
     const auto grand = computeTotal();
     if (paymentMethodCombo_->currentData().toString() != "credit") {
         receivedSpin_->setValue(grand / 100.0);
     }
     refreshDue(grand);
+}
+
+QString SalesPosPage::cartSignature() const {
+    QString sig;
+    for (int r = 0; r < cartTable_->rowCount(); ++r) {
+        sig += cartTable_->item(r, 0)->data(Qt::UserRole).toString() + ':'
+             + cartTable_->item(r, 1)->text() + ':'
+             + QString::number(cartTable_->item(r, 2)->data(Qt::UserRole + 2).toLongLong()) + ':'
+             + QString::number(cartTable_->item(r, 3)->data(Qt::UserRole).toLongLong()) + ';';
+    }
+    return sig;
+}
+
+void SalesPosPage::recomputeDiscountLimits() {
+    QList<pos::SaleLine> lines;
+    for (int r = 0; r < cartTable_->rowCount(); ++r) {
+        pos::SaleLine line;
+        line.productId = cartTable_->item(r, 0)->data(Qt::UserRole).toString();
+        line.courseId = cartTable_->item(r, 0)->data(Qt::UserRole + 2).toString();
+        line.quantity = cartTable_->item(r, 1)->text().toLongLong();
+        line.unitPrice = cartTable_->item(r, 2)->data(Qt::UserRole + 2).toLongLong();
+        line.discount = cartTable_->item(r, 3)->data(Qt::UserRole).toLongLong();
+        lines.append(line);
+    }
+    try {
+        const auto limits = pos::CommissionService(database_).cartDiscountLimits(lines);
+        allowed_ = limits.allowed;
+        maxDiscount_ = limits.max;
+    } catch (...) { allowed_ = 0; maxDiscount_ = 0; }
+
+    // An override is only valid for the cart it was approved for.
+    const auto sig = cartSignature();
+    if (invoiceOverrideApproved_ && sig != approvedCartSig_) invoiceOverrideApproved_ = false;
+    if (invoiceDiscount_ > maxDiscount_) invoiceDiscount_ = maxDiscount_;
+    // Cart change pushed the discount into the red zone → ask for the PIN again.
+    if (invoiceDiscount_ > allowed_ && !invoiceOverrideApproved_) {
+        if (pos::authorizeSensitiveAction(this, database_, "apply an invoice discount beyond the allowed margin")) {
+            invoiceOverrideApproved_ = true;
+            approvedCartSig_ = sig;
+        } else {
+            invoiceDiscount_ = allowed_;
+        }
+    }
+    syncDiscountWidgets();
+}
+
+void SalesPosPage::commitInvoiceDiscount(qint64 paisa) {
+    if (paisa < 0) paisa = 0;
+    if (paisa > maxDiscount_) paisa = maxDiscount_;
+    if (paisa > allowed_) {
+        if (pos::authorizeSensitiveAction(this, database_, "apply an invoice discount beyond the allowed margin")) {
+            invoiceOverrideApproved_ = true;
+            approvedCartSig_ = cartSignature();
+        } else {
+            paisa = allowed_;
+            invoiceOverrideApproved_ = false;
+        }
+    } else {
+        invoiceOverrideApproved_ = false;
+    }
+    invoiceDiscount_ = paisa;
+    syncDiscountWidgets();
+    const auto grand = computeTotal();
+    if (paymentMethodCombo_->currentData().toString() != "credit") receivedSpin_->setValue(grand / 100.0);
+    refreshDue(grand);
+}
+
+void SalesPosPage::syncDiscountWidgets() {
+    syncingDiscount_ = true;
+    discountSlider_->setMaximum(maxDiscount_ > 0 ? static_cast<int>(maxDiscount_) : 1);
+    discountSlider_->setEnabled(maxDiscount_ > 0);
+    discountSlider_->setAllowed(allowed_);
+    discountSlider_->setValue(static_cast<int>(invoiceDiscount_));
+    discountAmountSpin_->setMaximum(maxDiscount_ / 100.0);
+    discountAmountSpin_->setValue(invoiceDiscount_ / 100.0);
+    maxDiscountBtn_->setEnabled(allowed_ > 0);
+    syncingDiscount_ = false;
+
+    qint64 subtotal = 0;
+    for (int r = 0; r < cartTable_->rowCount(); ++r) subtotal += cartTable_->item(r, 4)->data(Qt::UserRole).toLongLong();
+    const double pct = subtotal > 0 ? (100.0 * invoiceDiscount_ / subtotal) : 0.0;
+    discountInfoLabel_->setText(QString("PKR %1 (%2%)").arg(pos::formatMoney(invoiceDiscount_)).arg(pct, 0, 'f', 1));
+    allowedLabel_->setText("Allowed without PIN: up to PKR " + pos::formatMoney(allowed_));
 }
 
 void SalesPosPage::addToCart() {
@@ -636,7 +770,7 @@ void SalesPosPage::loadCourse() {
     }
 }
 
-void SalesPosPage::completeSale(bool printReceipt) {
+void SalesPosPage::completeSale(ReceiptAction action) {
     if (!cartTable_->rowCount()) {
         feedbackLabel_->setText("Add at least one product to the cart.");
         return;
@@ -645,7 +779,8 @@ void SalesPosPage::completeSale(bool printReceipt) {
         pos::SaleRequest request;
         request.paymentMethod = paymentMethodCombo_->currentData().toString();
         request.customerId = customerCombo_->currentData().toString();
-        request.invoiceDiscount = pos::roundMoney(discountSpin_->value() * 100);
+        request.invoiceDiscount = invoiceDiscount_;
+        request.invoiceDiscountOverrideApproved = invoiceOverrideApproved_;
 
         qint64 subtotal{};
         for (int row = 0; row < cartTable_->rowCount(); ++row) {
@@ -699,29 +834,21 @@ void SalesPosPage::completeSale(bool printReceipt) {
             return;
         }
 
-        QList<pos::ThermalReceiptItem> receiptItems;
-        for (int row = 0; row < cartTable_->rowCount(); ++row) {
-            receiptItems.append({cartTable_->item(row, 0)->text(), cartTable_->item(row, 1)->text().toLongLong(), cartTable_->item(row, 4)->data(Qt::UserRole).toLongLong()});
-        }
-
         const auto sale = posService_->completeSale(request);
         cartTable_->setRowCount(0);
-        discountSpin_->setValue(0);
+        invoiceDiscount_ = 0; invoiceOverrideApproved_ = false; approvedCartSig_.clear();
         receivedSpin_->setValue(0);
         paymentMethodCombo_->setCurrentIndex(0);
         customerCombo_->setCurrentIndex(0);
         refresh();
         load();
 
-        if (printReceipt) {
+        if (action == ReceiptAction::Pdf) {
+            savePdfForSale(sale.saleId);
+        } else if (action == ReceiptAction::Print) {
             try {
-                const auto path = pos::SettingsService(database_).value("printer.thermal_path");
-                if (path.trimmed().isEmpty()) {
-                    feedbackLabel_->setText(QString("Invoice %1 saved. No printer is configured, so no receipt was printed.").arg(sale.invoiceNo));
-                } else {
-                    pos::ThermalPrintService::writeRaw(path, pos::ThermalPrintService::receiptBytes(pos::SettingsService(database_).value("business.name", "Nexora POS"), sale.invoiceNo, receiptItems, sale.total));
-                    feedbackLabel_->setText(QString("Invoice %1 saved and receipt printed.").arg(sale.invoiceNo));
-                }
+                const auto status = pos::ui::deliverReceipt(database_, pos::ReceiptService(database_).buildFromSale(sale.saleId));
+                feedbackLabel_->setText(QString("Invoice %1 saved. %2").arg(sale.invoiceNo, status));
             } catch (const std::exception& e) {
                 feedbackLabel_->setText(QString("Invoice %1 saved but the receipt could not be printed: %2").arg(sale.invoiceNo, e.what()));
             }
@@ -730,6 +857,25 @@ void SalesPosPage::completeSale(bool printReceipt) {
         }
     } catch (const std::exception& error) {
         QMessageBox::critical(this, "Sale failed", error.what());
+    }
+}
+
+void SalesPosPage::savePdfForSale(const QString& saleId) {
+    try {
+        const auto data = pos::ReceiptService(database_).buildFromSale(saleId);
+        const auto dir = pos::paths::receiptsDir();
+        const auto path = QString("%1/Receipt_%2.pdf").arg(dir, QString(data.invoiceNo).replace('/', '-'));
+        pos::ReceiptService::renderPdf(data, path);
+        QMessageBox box(QMessageBox::Information, "Receipt saved as PDF",
+                        QString("Saved to:\n%1").arg(QDir::toNativeSeparators(path)), QMessageBox::Ok, this);
+        auto* openBtn = box.addButton("Open", QMessageBox::AcceptRole);
+        auto* folderBtn = box.addButton("Open receipts folder", QMessageBox::ActionRole);
+        box.exec();
+        if (box.clickedButton() == openBtn) QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+        else if (box.clickedButton() == folderBtn) QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+        feedbackLabel_->setText(QString("Invoice %1 saved. PDF: %2").arg(data.invoiceNo, QDir::toNativeSeparators(path)));
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, "Could not save PDF", e.what());
     }
 }
 
@@ -747,7 +893,7 @@ void SalesPosPage::holdSale() {
         }
         pos::SuspendedSaleService(database_).save(lines);
         cartTable_->setRowCount(0);
-        discountSpin_->setValue(0);
+        invoiceDiscount_ = 0; invoiceOverrideApproved_ = false; approvedCartSig_.clear();
         refresh();
         feedbackLabel_->setText("Sale held and saved locally. Use Resume to bring it back.");
     } catch (const std::exception& error) {
@@ -793,7 +939,7 @@ void SalesPosPage::clearCart() {
     if (!cartTable_->rowCount()) return;
     if (QMessageBox::question(this, "Clear sale", "Clear the current cart?") == QMessageBox::Yes) {
         cartTable_->setRowCount(0);
-        discountSpin_->setValue(0);
+        invoiceDiscount_ = 0; invoiceOverrideApproved_ = false; approvedCartSig_.clear();
         refresh();
         feedbackLabel_->setText("Cart cleared.");
     }

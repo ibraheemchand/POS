@@ -1,4 +1,4 @@
-# Nexora POS - Comprehensive Feature Test Report
+# Invento - Comprehensive Feature Test Report
 
 **Date:** 2026-09-20  
 **Build:** build-fix (Ninja + MinGW 13.1 + Qt 6.11.1)  
@@ -210,7 +210,7 @@
 
 ### ✅ **STATUS: PRODUCTION-READY (WITH NOTED RECOMMENDATIONS)**
 
-The Nexora POS application is fully functional and passes all automated tests:
+The Invento application is fully functional and passes all automated tests:
 
 - **100% test suite pass rate** (40 test cases)
 - **All 12 operational pages** verified and accessible

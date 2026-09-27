@@ -1,6 +1,8 @@
 #include "core/commission_service.h"
 #include "core/database.h"
 #include "core/settings_service.h"
+#include "core/partner_service.h"
+#include <QHash>
 
 namespace pos {
 namespace {
@@ -48,6 +50,36 @@ CommissionBreakdown CommissionService::computeBreakdown(Money grossLineAmount, q
     breakdown.flexibleCap = cap;
     breakdown.overridden = overridden;
     return breakdown;
+}
+
+CartDiscountLimits CommissionService::cartDiscountLimits(const QList<SaleLine>& lines) const {
+    // Group lines by course (grouped once) or by book, matching how PosService posts
+    // commissions, so the caps line up with the real accounting.
+    struct Group { Money gross{}; qint64 totalBp{}; qint64 partnerBp{}; };
+    QHash<QString, Group> groups;
+    PartnerService partners(db_);
+    Money lineDiscounts = 0;
+    for (const auto& line : lines) {
+        if (line.quantity <= 0 || line.unitPrice < 0) continue;
+        lineDiscounts += line.discount;
+        const bool course = !line.courseId.isEmpty();
+        const QString key = course ? "course:" + line.courseId : "book:" + line.productId;
+        auto& group = groups[key];
+        if (group.gross == 0 && group.totalBp == 0 && group.partnerBp == 0) {
+            const auto cfg = course ? partners.resolveCourseConfig(line.courseId) : partners.resolveBookConfig(line.productId);
+            group.totalBp = cfg.totalBp;
+            group.partnerBp = cfg.partnerBp;
+        }
+        group.gross += line.quantity * line.unitPrice;
+    }
+    Money allowed = 0, maxComm = 0;
+    for (const auto& group : groups) {
+        allowed += flexibleCap(group.gross, group.totalBp, group.partnerBp);
+        maxComm += roundMoney(static_cast<double>(group.gross) * group.totalBp / kBpScale);
+    }
+    allowed -= lineDiscounts;
+    maxComm -= lineDiscounts;
+    return {allowed > 0 ? allowed : 0, maxComm > 0 ? maxComm : 0};
 }
 
 CommissionTotals CommissionService::totals(const QDate& from, const QDate& to) const {

@@ -1,6 +1,6 @@
-# Nexora POS Project
+# Invento Project
 
-Nexora POS is an offline-first Windows wholesale POS built with C++20, Qt 6 Widgets, CMake, and vendored SQLite. The application stores business data in a per-user SQLite database with WAL mode and uses UUID primary keys and integer paisa money values.
+Invento is an offline-first Windows wholesale POS built with C++20, Qt 6 Widgets, CMake, and vendored SQLite. The application stores business data in a per-user SQLite database with WAL mode and uses UUID primary keys and integer paisa money values.
 
 ## Architecture
 
@@ -8,7 +8,7 @@ Nexora POS is an offline-first Windows wholesale POS built with C++20, Qt 6 Widg
 - `src/ui`: Qt Widgets shell, QSS themes, and modular standalone page classes under `src/ui/pages/` (Dashboard, Inventory, Sales POS, Purchases, Customers, Suppliers, Cash Management, Cheques, Reports, Audit Log, Settings, and Backup/Restore).
 - `tests`: QtTest business-logic coverage plus `pos_ui_smoke_tests`, which constructs the operational widget shell and verifies key Inventory/Settings controls without business writes.
 - `third_party/sqlite`: vendored SQLite amalgamation.
-- `scripts/deploy.ps1` stages a clean Windows deployment with `windeployqt`; `installer/NexoraPOS.iss` packages the staged directory.
+- `tools/build-installer.ps1` stages a clean Windows deployment with `windeployqt`; `installer/invento.iss` packages the staged directory.
 - `docs/USER_GUIDE.md` is the operator-facing setup and daily-use guide; `docs/SUPPORT.md` remains the recovery runbook.
 - `wholesale_pos.exe --seed-demo` inserts deterministic demo products, stock, supplier, and customer records once for QA/support environments; `--seed-random=<count> --seed=<seed>` adds deterministic randomized products with integer-paisa prices and stock, and `--data-dir=<path>` isolates a seed database.
 - `POS_ENABLE_SANITIZERS=ON` enables AddressSanitizer/UBSan flags when the selected compiler supplies runtime libraries; the current bundled MinGW runtime does not.
@@ -27,7 +27,7 @@ Dedicated Returns UI is not yet exposed even though `ReturnService` provides ato
 
 ## Design Reference
 
-The Nexora POS UI uses a unified theme structured around the **Stitch Design Token System**, implemented inside `src/ui/main_window.cpp` light and dark QSS stylesheets.
+The Invento UI uses a unified theme structured around the **Stitch Design Token System**, implemented inside `src/ui/main_window.cpp` light and dark QSS stylesheets.
 
 ### 1. Color Palette Tokens
 * **Dark Theme (Default)**

@@ -67,7 +67,40 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
         subtotal+=lineTotal;
     }
     if (request.invoiceDiscount<0 || request.invoiceDiscount>subtotal) throw DatabaseError("invalid invoice discount");
+    // Enforce the whole-cart invoice-discount limits: never past the maximum (would
+    // sell below cost), and not past the allowed margin without a manager override.
+    bool invoiceOverrideUsed=false; Money invoiceAllowed=0;
+    if (request.invoiceDiscount>0) {
+        const auto limits=CommissionService(db_).cartDiscountLimits(request.lines);
+        invoiceAllowed=limits.allowed;
+        if (request.invoiceDiscount>limits.max) throw DatabaseError("invoice discount exceeds the maximum allowed for this cart");
+        if (request.invoiceDiscount>limits.allowed) {
+            if (!request.invoiceDiscountOverrideApproved) throw DatabaseError("invoice discount exceeds the allowed margin; a manager override is required");
+            invoiceOverrideUsed=true;
+        }
+    }
     const Money total=subtotal-request.invoiceDiscount;
+    // Spread the invoice discount across lines in proportion to each line's value, so
+    // partner shares and profit are computed on the discounted amounts. The largest
+    // line absorbs the rounding remainder so the shares sum to the invoice discount
+    // exactly and no line is over-discounted.
+    QList<Money> invoiceShares; invoiceShares.reserve(request.lines.size());
+    for (int i=0;i<request.lines.size();++i) invoiceShares.append(0);
+    if (request.invoiceDiscount>0 && subtotal>0) {
+        int holder=0; Money holderValue=-1;
+        for (int i=0;i<request.lines.size();++i) {
+            const Money lineValue=request.lines[i].quantity*request.lines[i].unitPrice-request.lines[i].discount;
+            if (lineValue>holderValue) { holderValue=lineValue; holder=i; }
+        }
+        Money distributed=0;
+        for (int i=0;i<request.lines.size();++i) {
+            if (i==holder) continue;
+            const Money lineValue=request.lines[i].quantity*request.lines[i].unitPrice-request.lines[i].discount;
+            const Money share=roundMoney(static_cast<double>(request.invoiceDiscount)*lineValue/subtotal);
+            invoiceShares[i]=share; distributed+=share;
+        }
+        invoiceShares[holder]=request.invoiceDiscount-distributed;
+    }
     if(request.paidAmount<0 || request.paidAmount>total) throw DatabaseError("invalid payment amount");
     QList<SaleRequest::Tender> tenders=request.tenders;
     if(request.paymentMethod!="mixed" && request.paidAmount>0 && tenders.isEmpty())tenders.append({request.paymentMethod,request.paidAmount});
@@ -88,22 +121,33 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
     const QString id=uuid(); const QString invoice=QString("INV-%1-%2").arg(QDate::currentDate().toString("yyyyMMdd"), id.left(6).toUpper());
     auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal,discount,total,paid,due,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
     sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
+    if (invoiceOverrideUsed) {
+        auto audit=db_->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");
+        audit.bind(1,uuid()); audit.bind(2,"invoice_discount_override"); audit.bind(3,"sale"); audit.bind(4,id);
+        audit.bind(5,QString("Invoice %1: discount PKR %2 approved by manager PIN (allowed without PIN PKR %3)").arg(invoice, formatMoney(request.invoiceDiscount), formatMoney(invoiceAllowed)));
+        audit.bind(6,utcNow()); audit.execute();
+    }
     CommissionService commission(db_);
     PartnerService partners(db_);
-    for (const auto& line: request.lines) {
+    for (int lineIndex=0; lineIndex<request.lines.size(); ++lineIndex) {
+        const auto& line=request.lines[lineIndex];
         // Snapshot the partner-commission settings onto every allocation of this
         // line. A course-tagged line uses the course's settings; a standalone
         // book uses the book's own. Frozen here so later config edits never
         // change past sales, ledgers or reports.
         const auto commissionConfig = line.courseId.isEmpty() ? partners.resolveBookConfig(line.productId) : partners.resolveCourseConfig(line.courseId);
-        // Enforce the discount cap once per line: (item total% - item partner% -
-        // owner min%) of the gross line. Throws unless a manager override was approved.
+        // Enforce the per-line cap on the LINE discount only (unchanged). The invoice
+        // discount is limited separately at the cart level above.
         const auto lineBreakdown = commission.computeBreakdown(line.quantity*line.unitPrice, commissionConfig.totalBp, commissionConfig.partnerBp, line.discount, line.discountOverrideApproved);
+        // Effective discount = line discount + this line's share of the invoice
+        // discount. Folded into line_total and the commission fragment so partner
+        // shares and profit reflect the discounted base, exactly like line discounts.
+        const Money effectiveDiscount=line.discount+invoiceShares[lineIndex];
         const auto allocations=allocateBatches(line,id,"POS");
-        Money discountRemaining=line.discount;
+        Money discountRemaining=effectiveDiscount;
         for (int index=0; index<allocations.size(); ++index) {
             const auto& allocation=allocations[index];
-            const Money allocationDiscount=index==allocations.size()-1 ? discountRemaining : (line.discount*allocation.quantity)/line.quantity;
+            const Money allocationDiscount=index==allocations.size()-1 ? discountRemaining : (effectiveDiscount*allocation.quantity)/line.quantity;
             discountRemaining-=allocationDiscount;
             const Money allocationTotal=allocation.quantity*line.unitPrice-allocationDiscount;
             const QString itemId=uuid();

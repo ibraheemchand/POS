@@ -21,7 +21,7 @@ Migrations are transactional. If startup fails during a migration, retain the da
 
 ## Demo data and deployment
 
-Use `invento.exe --seed-demo` only in a QA/support data directory. For priced randomized fixtures, use `invento.exe --data-dir=<qa-folder> --seed-random=25 --seed=20260727`; the command is deterministic for a given seed and idempotent for repeated runs. Neither mode runs during normal startup. For a clean Windows package, run `scripts/deploy.ps1` and then build `installer/NexoraPOS.iss` with Inno Setup.
+Use `invento.exe --seed-demo` only in a QA/support data directory. For priced randomized fixtures, use `invento.exe --data-dir=<qa-folder> --seed-random=25 --seed=20260727`; the command is deterministic for a given seed and idempotent for repeated runs. Neither mode runs during normal startup. For a clean Windows package, run `tools/build-installer.ps1` and then build `installer/invento.iss` with Inno Setup.
 
 ## FBR scope
 

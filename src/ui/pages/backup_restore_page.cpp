@@ -2,6 +2,7 @@
 #include "ui/pages/page_helper.h"
 #include "core/database.h"
 #include "core/backup_service.h"
+#include "core/app_paths.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -58,9 +59,9 @@ BackupRestorePage::BackupRestorePage(std::shared_ptr<pos::Database> database, QW
     // Connections
     connect(backupBtn_, &QPushButton::clicked, this, [this] {
         try {
-            const auto selected = QFileDialog::getExistingDirectory(this, "Select backup destination (local or USB drive)", QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+            const auto selected = QFileDialog::getExistingDirectory(this, "Select backup destination (local or USB drive)", pos::paths::appDataDir());
             if (selected.isEmpty()) return;
-            const auto folder = selected + "/nexora-backups";
+            const auto folder = selected + "/invento-backups";
             const auto file = std::filesystem::path(folder.toStdWString()) / (L"backup-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
             
             pos::BackupService service(database_);
@@ -83,11 +84,11 @@ BackupRestorePage::BackupRestorePage(std::shared_ptr<pos::Database> database, QW
         if (QMessageBox::warning(this, "Restore business data", QString("This replaces the current database with:\n%1\n\nA safety backup of the current database will be created first.").arg(QString::fromStdWString(selected.wstring())), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel) != QMessageBox::Yes) return;
         if (!pos::authorizeSensitiveAction(this, database_, "restore business data")) return;
         try {
-            const auto safety = std::filesystem::path(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdWString()) / L"backups" / (L"before-restore-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
+            const auto safety = std::filesystem::path(pos::paths::backupsDir().toStdWString()) / (L"before-restore-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
             pos::BackupService service(database_);
             service.restoreVerifiedBackup(selected, safety);
             load();
-            QMessageBox::information(this, "Restore complete", "The database passed its integrity check. Restart Nexora POS before taking new sales.");
+            QMessageBox::information(this, "Restore complete", "The database passed its integrity check. Restart Invento before taking new sales.");
         } catch (const std::exception& error) {
             QMessageBox::critical(this, "Restore failed", error.what());
         }
@@ -100,10 +101,10 @@ BackupRestorePage::BackupRestorePage(std::shared_ptr<pos::Database> database, QW
         const auto selected = std::filesystem::path(fileName.toStdWString());
         if (QMessageBox::warning(this, "Restore business data", QString("Restore this backup?\n%1\n\nA safety backup is created first.").arg(fileName), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel) != QMessageBox::Yes) return;
         try {
-            const auto safety = std::filesystem::path(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdWString()) / L"backups" / (L"before-restore-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
+            const auto safety = std::filesystem::path(pos::paths::backupsDir().toStdWString()) / (L"before-restore-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-hhmmss").toStdWString() + L".db");
             pos::BackupService(database_).restoreVerifiedBackup(selected, safety);
             load();
-            QMessageBox::information(this, "Restore complete", "The selected backup passed integrity verification. Restart Nexora POS before taking new sales.");
+            QMessageBox::information(this, "Restore complete", "The selected backup passed integrity verification. Restart Invento before taking new sales.");
         } catch (const std::exception& error) {
             QMessageBox::critical(this, "Restore failed", error.what());
         }

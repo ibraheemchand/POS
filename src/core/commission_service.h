@@ -29,6 +29,14 @@ struct CommissionTotals {
     qint64 overrideCount{};
 };
 
+// Whole-cart invoice-discount limits, in rupees (hundredths). The Sales POS slider
+// uses these for its green/red zones without ever exposing commission %, partner or
+// profit figures to the cashier.
+struct CartDiscountLimits {
+    Money allowed{}; // green zone end: sum of per-line flexible caps minus line discounts
+    Money max{};     // red zone end: total commission minus line discounts (never below cost)
+};
+
 struct CommissionLedgerRow {
     QString invoiceNo;
     QString productName;
@@ -53,6 +61,10 @@ public:
 
     // Throws if discount exceeds the cap and overrideApproved is false.
     CommissionBreakdown computeBreakdown(Money grossLineAmount, qint64 totalBp, qint64 partnerBp, Money discountAmount, bool overrideApproved) const;
+
+    // Whole-cart invoice-discount limits (PKR only). Groups lines by course/book so
+    // the caps match how the sale actually posts commissions.
+    CartDiscountLimits cartDiscountLimits(const QList<SaleLine>& lines) const;
 
     CommissionTotals totals(const QDate& from, const QDate& to) const;
     QList<CommissionLedgerRow> ledger(const QDate& from, const QDate& to, int limit) const;

@@ -14,6 +14,10 @@ option(POS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanit
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Sql Gui PrintSupport Svg)
 
+# Single source of truth for the app version -> generated header used by the app.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/generated/core/version.h @ONLY)
+
 # Vendored official SQLite amalgamation. The business layer never relies on Qt's
 # SQLite plugin, keeping builds fully offline after the Qt toolchain is installed.
 add_library(pos_sqlite STATIC third_party/sqlite/sqlite3.c)
@@ -53,8 +57,11 @@ add_library(pos_core
     src/core/bundle_service.cpp
     src/core/partner_service.cpp
     src/core/auth_session.cpp
+    src/core/receipt_service.cpp
+    src/core/app_paths.cpp
+    src/core/data_migration.cpp
 )
-target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(pos_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/generated)
 target_link_libraries(pos_core PUBLIC pos_sqlite Qt6::Core Qt6::Gui)
 if(WIN32)
   target_link_libraries(pos_core PUBLIC winspool) # raw ESC/POS printing via the print spooler
@@ -105,6 +112,12 @@ set(UI_PAGE_SOURCES
     src/ui/pages/page_helper.h
     src/ui/theme.cpp
     src/ui/theme.h
+    src/ui/discount_slider.cpp
+    src/ui/discount_slider.h
+    src/ui/receipt_output.cpp
+    src/ui/receipt_output.h
+    src/ui/first_run_wizard.cpp
+    src/ui/first_run_wizard.h
 )
 
 add_executable(invento WIN32
@@ -115,6 +128,7 @@ add_executable(invento WIN32
     ${UI_PAGE_SOURCES}
 )
 target_link_libraries(invento PRIVATE pos_core Qt6::Widgets Qt6::Sql Qt6::PrintSupport Qt6::Svg)
+# The target is named "invento", so the built executable is invento.exe.
 
 if(WIN32)
   target_sources(invento PRIVATE src/ui/app_icon.rc)
