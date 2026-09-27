@@ -118,6 +118,8 @@ set(UI_PAGE_SOURCES
     src/ui/receipt_output.h
     src/ui/first_run_wizard.cpp
     src/ui/first_run_wizard.h
+    src/ui/quick_tile.cpp
+    src/ui/quick_tile.h
 )
 
 add_executable(invento WIN32

@@ -25,6 +25,7 @@
 #include "core/auth_session.h"
 #include "core/customer_service.h"
 #include "core/data_migration.h"
+#include "core/receipt_service.h"
 #include <QRandomGenerator>
 #include <filesystem>
 #include <QTemporaryDir>
@@ -99,6 +100,8 @@ private slots:
     void databaseIsDurableAgainstPowerLoss();
     void freshDatabaseIsEmptyAndHasNoPin();
     void migrationVerifyDetectsMismatch();
+    void receiptAmountToWordsIsCorrect();
+    void receiptBuildFromSaleFillsTable();
 };
 
 // Shared fixture helpers for the partner-commission suite.
@@ -558,6 +561,39 @@ void PosServiceTest::migrationVerifyDetectsMismatch(){try{
     QVERIFY2(pos::verifyDatabasesMatch(s1,s2,&err),qPrintable("identical copy should verify: "+err)); // byte-identical -> matches
     { auto db=std::make_shared<pos::Database>(p2); pos::InventoryService(db).createProduct("Extra","piece",1,2,false); } // tamper
     QVERIFY2(!pos::verifyDatabasesMatch(s1,s2,&err),"a changed copy must fail verification"); // row counts differ now
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+void PosServiceTest::receiptAmountToWordsIsCorrect(){
+    QCOMPARE(pos::ReceiptService::amountToWords(179092), QString("One thousand seven hundred ninety rupees and ninety-two paisa only"));
+    QCOMPARE(pos::ReceiptService::amountToWords(100), QString("One rupee only"));
+    QCOMPARE(pos::ReceiptService::amountToWords(0), QString("Zero rupees only"));
+    QCOMPARE(pos::ReceiptService::amountToWords(250050), QString("Two thousand five hundred rupees and fifty paisa only"));
+}
+
+void PosServiceTest::receiptBuildFromSaleFillsTable(){try{const auto path=std::filesystem::temp_directory_path()/("receipt-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();openShift(*db);
+    pos::SettingsService(db).setValue("business.name","Mashallah Books");
+    const auto customer=pos::uuid();auto c=db->prepare("INSERT INTO customers(id,name,phone,created_at) VALUES(?,?,?,?)");c.bind(1,customer);c.bind(2,"Ahmed Traders");c.bind(3,"0300-1234567");c.bind(4,pos::utcNow());c.execute();
+    const auto product=pos::uuid();insertProduct(*db,product,20);
+    setProductCommission(*db,product,5000,0); // 50% commission so a 2000 invoice discount is allowed
+    // Credit sale: 2 x 10000 = 20000 gross, invoice discount 2000, net 18000.
+    pos::SaleRequest req{customer,{},"credit",0,2000,{},{{product,{},2,10000,0,"piece"}}};req.paidAmount=0;
+    // Pay partially via a cash tender? keep it credit: paid 0, due 18000. cashReceived shows 0.
+    const auto sale=pos::PosService(db).completeSale(req);
+    pos::ReceiptData d=pos::ReceiptService(db).buildFromSale(sale.saleId);
+    QCOMPARE(d.storeName,QString("Mashallah Books"));
+    QCOMPARE(d.lines.size(),qsizetype(1));
+    QCOMPARE(d.totalQty,qint64(2));
+    QCOMPARE(d.gross,qint64(20000));            // 2 x 10000
+    QCOMPARE(d.invoiceDiscount,qint64(2000));
+    QCOMPARE(d.totalDiscount,qint64(2000));     // no line discount
+    QCOMPARE(d.netTotal,qint64(18000));
+    QVERIFY(d.hasCustomer);
+    QCOMPARE(d.customerName,QString("Ahmed Traders"));
+    QCOMPARE(d.remainingBalance,qint64(18000)); // due added to a fresh customer balance
+    QCOMPARE(d.prevBalance,qint64(0));
+    // Per-line disc = qty*rate - net (the spread invoice share).
+    QCOMPARE(d.lines[0].disc,qint64(2000));
+    QCOMPARE(d.lines[0].net,qint64(18000));
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 QTEST_APPLESS_MAIN(PosServiceTest)

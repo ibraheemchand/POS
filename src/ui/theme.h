@@ -29,4 +29,21 @@ StockBadge stockBadge(Quantity stock, Quantity minimum);
 QColor lowStockAccent();
 QColor outOfStockAccent();
 
+// Per-tile colours for the Main page Quick Access grid. Each page gets its own
+// accent; tints are derived over the theme's panel background so light and dark
+// both stay readable. The page name stays dark/light (theme text), never coloured.
+struct TileStyle {
+    QColor bg;           // soft tinted background
+    QColor bgHover;      // slightly stronger tint
+    QColor bgPressed;    // pressed state
+    QColor border;       // matching border
+    QColor iconChipBg;   // rounded chip behind the icon
+    QColor icon;         // icon colour
+    QColor name;         // page-name text (theme default, not the accent)
+    QColor shortcutBg;   // grey "key" badge background
+    QColor shortcutText; // grey "key" badge text
+    QColor focus;        // keyboard focus ring (the accent)
+};
+TileStyle navTile(const QString& pageName);
+
 } // namespace pos::theme

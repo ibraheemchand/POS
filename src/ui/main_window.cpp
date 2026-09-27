@@ -349,8 +349,12 @@ MainWindow::MainWindow(std::shared_ptr<pos::Database> database, QWidget* parent)
     navigation->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); 
     navigation->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding); 
     navigation->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel); 
-    navigation->setUniformItemSizes(true); 
-    navigation->setCurrentRow(1); 
+    navigation->setUniformItemSizes(true);
+    navigation->setCurrentRow(1);
+    // Always start at the very top so "Main"/"Sales POS" are visible, never scrolled
+    // down. Deferred once more after layout settles (selecting a row can auto-scroll).
+    navigation->scrollToTop();
+    QTimer::singleShot(0, navigation, [navigation]{ navigation->scrollToTop(); });
     sideLayout->addWidget(navigation, 1);
 
     auto* footerFrame = new QFrame(sidebar);

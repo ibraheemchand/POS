@@ -35,6 +35,7 @@
 #include "ui/pages/inventory_page.h"
 #include "ui/pages/sales_pos_page.h"
 #include "ui/discount_slider.h"
+#include "ui/quick_tile.h"
 #include "ui/theme.h"
 #include "core/receipt_service.h"
 #include "core/security_service.h"
@@ -66,6 +67,7 @@ private slots:
     void receiptSaveAsPdfIsValidWithText();           // Save as PDF (QPdfWriter)
     void receiptNormalDriverPdfIsValid();             // Normal printer path -> PDF file
     void firstRunWizardStartsEmpty();                 // fresh install wizard + empty DB
+    void captureMainScreens();                        // Main page light+dark screenshots
     void repro_inventoryInStockColourIsGreen();       // issue 2
 };
 
@@ -323,16 +325,16 @@ void UiSmokeTest::quickAccessButtonsOpenTheCorrectPage() {
     QTest::qWait(40);
     auto* mainPage = window.findChild<MainPage*>();
     QVERIFY(mainPage);
-    const auto buttons = mainPage->findChildren<QPushButton*>("quickCard");
-    QVERIFY(buttons.size() >= 14); // every sidebar page except Main
-    for (auto* btn : buttons) {
-        // Button text is "Name\nShortcut" (+ lock glyph on owner pages).
-        auto name = btn->text().section('\n', 0, 0);
-        name = name.remove(QString::fromUtf8("\xF0\x9F\x94\x92")).trimmed(); // strip lock emoji (surrogate pair)
+    const auto tiles = mainPage->findChildren<QuickTile*>();
+    QVERIFY(tiles.size() >= 14); // every sidebar page except Main
+    for (auto* tile : tiles) {
+        auto* nameLbl = tile->findChild<QLabel*>("tileName");
+        QVERIFY(nameLbl);
+        const auto name = nameLbl->text(); // literal page name, ampersands intact
         window.goToPage("Main");
         QTest::qWait(20);
-        unlockOwner(db); // keep owner session open for owner-page buttons
-        QTest::mouseClick(btn, Qt::LeftButton);
+        unlockOwner(db); // keep owner session open for owner-page tiles
+        QTest::mouseClick(tile, Qt::LeftButton);
         QTest::qWait(40);
         QCOMPARE(currentPageTitle(window), name);
     }
@@ -630,15 +632,37 @@ void UiSmokeTest::purchasesPaymentSectionSwitchesModes() {
 }
 
 namespace {
-// A sample receipt used by the PDF tests.
+// A sample receipt mirroring the client's preview so the PDFs can be compared to it.
 pos::ReceiptData sampleReceipt() {
     pos::ReceiptData d;
-    d.storeName = "Invento";
-    d.invoiceNo = "INV-PDFTEST-777";
-    d.dateTime = "2026-09-27 12:00";
-    d.footer = "Thank you for shopping.";
-    d.items = {{"Basmati Rice", 2, 30000}, {"Beauty Soap", 1, 7500}};
-    d.total = 37500; // PKR 375
+    d.storeName = "Mashallah Books";
+    d.address = "Chowk Shehbaz, Multan";
+    d.phone = "0354-645165165";
+    d.invoiceNo = "INV-20260928-D1CF2D";
+    d.dateTime = "28 Sep 2026, 12:51 AM";
+    d.cashier = "Owner";
+    d.hasCustomer = true;
+    d.customerName = "Ahmed Traders";
+    d.customerPhone = "0300-1234567";
+    d.lines = {
+        {"Quran", 1, 25000, 2039, 22961},
+        {"bio",   1, 50000, 4079, 45921},
+        {"chem",  1, 20000, 1632, 18368},
+        {"phy",   1, 100000, 8158, 91842},
+    };
+    d.totalQty = 4;
+    d.gross = 195000;
+    d.lineDiscount = 0;
+    d.invoiceDiscount = 15908;
+    d.totalDiscount = 15908;
+    d.netTotal = 179092; // PKR 1,790.92
+    d.cashReceived = 100000;
+    d.change = 0;
+    d.amountInWords = pos::ReceiptService::amountToWords(d.netTotal);
+    d.prevBalance = 500000;
+    d.paidNow = 100000;
+    d.remainingBalance = 579092;
+    d.note = "No exchange, no return. No misprint guarantee on PTB books.";
     return d;
 }
 // Directory where sample PDFs are written so a human can open them.
@@ -676,6 +700,29 @@ QString pdfText(const QString& path) {
 
 // Fresh install: an empty database + the first-run wizard, which seeds nothing unless
 // the (off-by-default) sample-data box is ticked.
+void UiSmokeTest::captureMainScreens() {
+    auto db = seededDb("mainshots");
+    MainWindow window(db);
+    window.resize(1366, 768);
+    window.show();
+    QTest::qWait(150);
+    window.goToPage("Main");
+    QTest::qWait(150);
+    const QString dir = QString::fromStdString(std::filesystem::temp_directory_path().string()); // not used
+    QString base = qEnvironmentVariable("TEST_OUTPUT_DIR");
+    if (base.isEmpty()) base = QDir::currentPath() + "/test-output";
+    const QString outDir = base + "/main-shots";
+    QDir().mkpath(outDir);
+    window.grab().save(outDir + "/main_light.png");
+    qDebug() << "Main light:" << QDir::toNativeSeparators(outDir + "/main_light.png");
+    window.switchTheme(); // -> dark
+    QTest::qWait(150);
+    window.goToPage("Main");
+    QTest::qWait(150);
+    window.grab().save(outDir + "/main_dark.png");
+    qDebug() << "Main dark:" << QDir::toNativeSeparators(outDir + "/main_dark.png");
+}
+
 void UiSmokeTest::firstRunWizardStartsEmpty() {
     const auto dir = std::filesystem::temp_directory_path() / ("ui-firstrun-" + pos::uuid().toStdString());
     std::filesystem::create_directories(dir);
@@ -707,19 +754,25 @@ void UiSmokeTest::firstRunWizardStartsEmpty() {
 
 void UiSmokeTest::receiptSaveAsPdfIsValidWithText() {
     const auto data = sampleReceipt();
-    const QString path = receiptOutDir() + "/Receipt_" + data.invoiceNo + ".pdf";
-    pos::ReceiptService::renderPdf(data, path);
-    qDebug() << "Save-as-PDF sample:" << QDir::toNativeSeparators(path);
-    assertValidPdf(path, "save-as-pdf");
-    const QString text = pdfText(path);
+    const QString path80 = receiptOutDir() + "/receipt_80mm.pdf";
+    const QString path58 = receiptOutDir() + "/receipt_58mm.pdf";
+    pos::ReceiptService::renderPdf(data, path80, 80.0);
+    pos::ReceiptService::renderPdf(data, path58, 58.0);
+    qDebug() << "80mm sample:" << QDir::toNativeSeparators(path80);
+    qDebug() << "58mm sample:" << QDir::toNativeSeparators(path58);
+    assertValidPdf(path80, "80mm");
+    assertValidPdf(path58, "58mm");
+    const QString text = pdfText(path80);
     if (text.isEmpty()) { qWarning() << "pdftotext not found — text content not checked (structure OK)"; return; }
     QVERIFY2(text.contains(data.invoiceNo), qPrintable("PDF text missing invoice number; got:\n" + text));
-    QVERIFY2(text.contains("375"), qPrintable("PDF text missing total; got:\n" + text));
+    QVERIFY2(text.contains("1,790.92"), qPrintable("PDF text missing net total; got:\n" + text));
+    QVERIFY2(text.contains("NET TOTAL"), qPrintable("PDF text missing NET TOTAL row; got:\n" + text));
+    QVERIFY2(text.contains("REMAINING BALANCE"), qPrintable("PDF text missing customer-account row; got:\n" + text));
 }
 
 void UiSmokeTest::receiptNormalDriverPdfIsValid() {
     const auto data = sampleReceipt();
-    const QString path = receiptOutDir() + "/Receipt_normal_" + data.invoiceNo + ".pdf";
+    const QString path = receiptOutDir() + "/receipt_normal_driver.pdf";
     // The "Normal printer (Windows driver)" path, targeted at a PDF file (same as
     // selecting Microsoft Print to PDF, but deterministic for the test).
     {
@@ -728,8 +781,8 @@ void UiSmokeTest::receiptNormalDriverPdfIsValid() {
         printer.setOutputFileName(path);
         QPainter painter(&printer);
         QVERIFY(painter.isActive());
-        const QRectF area(0, 0, printer.width(), printer.height());
-        pos::ReceiptService::paint(painter, area.adjusted(area.width() * 0.06, area.height() * 0.05, -area.width() * 0.06, -area.height() * 0.05), data);
+        const double pxPerMm = printer.resolution() / 25.4;
+        pos::ReceiptService::paint(painter, 72.0 * pxPerMm, data, 72.0);
         painter.end();
     }
     qDebug() << "Normal-driver PDF sample:" << QDir::toNativeSeparators(path);
@@ -737,7 +790,7 @@ void UiSmokeTest::receiptNormalDriverPdfIsValid() {
     const QString text = pdfText(path);
     if (text.isEmpty()) { qWarning() << "pdftotext not found — text content not checked (structure OK)"; return; }
     QVERIFY2(text.contains(data.invoiceNo), qPrintable("PDF text missing invoice number; got:\n" + text));
-    QVERIFY2(text.contains("375"), qPrintable("PDF text missing total; got:\n" + text));
+    QVERIFY2(text.contains("1,790.92"), qPrintable("PDF text missing net total; got:\n" + text));
 }
 
 // Sales POS invoice-discount slider: its maximum equals the cart's total commission

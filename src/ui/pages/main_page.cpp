@@ -1,6 +1,8 @@
 #include "ui/pages/main_page.h"
 #include "ui/pages/nav_catalog.h"
 #include "ui/pages/page_helper.h"
+#include "ui/quick_tile.h"
+#include "ui/theme.h"
 #include "core/database.h"
 #include "core/report_service.h"
 #include "core/inventory_service.h"
@@ -16,6 +18,53 @@
 #include <QResizeEvent>
 #include <QTime>
 #include <QDate>
+#include <QDateTime>
+#include <QListWidgetItem>
+#include <QPainter>
+#include <QPixmap>
+#include <QApplication>
+#include <algorithm>
+
+namespace {
+// A tinted monochrome icon (same technique as the Quick Access tiles).
+QPixmap tintedActivityIcon(const QString& path, const QColor& color, int px) {
+    const qreal dpr = qApp->devicePixelRatio();
+    QPixmap base = QIcon(path).pixmap(QSize(px, px), dpr);
+    QPixmap out(base.size());
+    out.setDevicePixelRatio(base.devicePixelRatio());
+    out.fill(Qt::transparent);
+    QPainter p(&out);
+    p.drawPixmap(0, 0, base);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(out.rect(), color);
+    p.end();
+    return out;
+}
+// One recent-activity row: [icon] title · time ............ amount (right-aligned).
+QWidget* makeActivityRow(const QString& iconPath, const QColor& accent,
+                         const QString& title, const QString& when, const QString& amount) {
+    auto* w = new QWidget;
+    auto* h = new QHBoxLayout(w);
+    h->setContentsMargins(2, 1, 4, 1);
+    h->setSpacing(8);
+    auto* icon = new QLabel;
+    icon->setPixmap(tintedActivityIcon(iconPath, accent, 16));
+    icon->setFixedWidth(20);
+    h->addWidget(icon);
+    auto* titleLabel = new QLabel(title);
+    titleLabel->setStyleSheet("font-weight:600;");
+    h->addWidget(titleLabel);
+    auto* whenLabel = new QLabel(when);
+    whenLabel->setObjectName("muted");
+    h->addWidget(whenLabel);
+    h->addStretch();
+    auto* amt = new QLabel(amount);
+    amt->setStyleSheet("font-weight:700; font-family:'JetBrains Mono','Segoe UI',monospace;");
+    amt->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    h->addWidget(amt);
+    return w;
+}
+} // namespace
 
 MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     : QWidget(parent), database_(std::move(database)) {
@@ -98,20 +147,10 @@ MainPage::MainPage(std::shared_ptr<pos::Database> database, QWidget* parent)
     quickGrid_->setVerticalSpacing(8);
     for (const auto& entry : pos::navCatalog()) {
         if (entry.name == "Main") continue; // no self-link; you're already here
-        auto* btn = new QPushButton(quickPanel);
-        btn->setObjectName("quickCard");
-        btn->setIcon(QIcon(entry.iconPath));
-        btn->setIconSize(QSize(22, 22));
-        btn->setCursor(Qt::PointingHandCursor);
-        // Minimum height derives from the font (two text lines + padding) so it
-        // scales with DPI and never clips the name or the shortcut line.
-        btn->setMinimumHeight(fontMetrics().height() * 2 + 16);
-        btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
-        // Name (+ lock for owner pages) on the first line, shortcut on the second.
-        const auto lock = entry.gated ? QString("  \xF0\x9F\x94\x92") : QString();
-        btn->setText(entry.name + lock + "\n" + entry.shortcut);
+        auto* btn = new QuickTile(entry.name, entry.iconPath, entry.shortcut, entry.gated, quickPanel);
+        btn->setMinimumHeight(fontMetrics().height() * 2 + 14);
         const auto target = entry.name;
-        connect(btn, &QPushButton::clicked, this, [this, target] { emit requestNavigation(target); });
+        connect(btn, &QuickTile::clicked, this, [this, target] { emit requestNavigation(target); });
         quickButtons_.append(btn);
     }
     ql->addLayout(quickGrid_);
@@ -198,6 +237,8 @@ void MainPage::relayoutQuickAccess() {
 }
 
 void MainPage::load() {
+    // Re-tint tiles for the current theme (also covers a live theme toggle).
+    for (auto* tile : quickButtons_) tile->applyTheme();
     try {
         const auto today = QDate::currentDate();
         pos::ReportService reportService(database_);
@@ -265,16 +306,26 @@ void MainPage::load() {
             metricCaptions_[5]->setText("Batches expiring within 30 days");
         }
 
-        // Recent Activity
+        // Recent Activity — icon per type, local formatted time, amount right-aligned.
         try {
             recent_->clear();
-            const auto sales = reportService.recentSales(4);
-            for (const auto& item : sales) {
-                recent_->addItem(QString("Sale %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
-            }
-            const auto purchases = reportService.recentPurchases(4);
-            for (const auto& item : purchases) {
-                recent_->addItem(QString("Purchase %1  •  PKR %2  •  %3").arg(item.invoiceNo).arg(pos::formatMoney(item.total)).arg(item.date));
+            struct Row { QString icon; QColor accent; QString title; QString when; QString amount; QString iso; };
+            QList<Row> rows;
+            for (const auto& item : reportService.recentSales(5))
+                rows.append({":/icons/sales.svg", QColor("#16A34A"), "Sale " + item.invoiceNo, item.date,
+                             "PKR " + pos::formatMoney(item.total), item.date});
+            for (const auto& item : reportService.recentPurchases(5))
+                rows.append({":/icons/purchases.svg", QColor("#2563EB"), "Purchase " + item.invoiceNo, item.date,
+                             "PKR " + pos::formatMoney(item.total), item.date});
+            // Newest first across both types.
+            std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) { return a.iso > b.iso; });
+            for (const auto& r : rows) {
+                QDateTime dt = QDateTime::fromString(r.iso, Qt::ISODate);
+                dt.setTimeSpec(Qt::UTC);
+                const QString when = dt.isValid() ? dt.toLocalTime().toString("d MMM yyyy, h:mm AP") : r.when;
+                auto* item = new QListWidgetItem(recent_);
+                item->setSizeHint(QSize(0, 34));
+                recent_->setItemWidget(item, makeActivityRow(r.icon, r.accent, r.title, when, r.amount));
             }
         } catch (...) {}
 

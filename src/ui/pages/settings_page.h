@@ -26,6 +26,7 @@ private:
     QSpinBox* backupHoursSpin_{};
     QLineEdit* thermalPathInput_{};
     QComboBox* printerModeCombo_{};
+    QComboBox* paperSizeCombo_{};
     QLineEdit* extraBackupInput_{};
     QLabel* extraBackupStatus_{};
 

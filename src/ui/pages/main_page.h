@@ -31,6 +31,6 @@ private:
     QList<QFrame*> metricCards_;
     int metricColumns_{0};
     QGridLayout* quickGrid_{};
-    QList<QPushButton*> quickButtons_;
+    QList<class QuickTile*> quickButtons_;
     int quickColumns_{0};
 };

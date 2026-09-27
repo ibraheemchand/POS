@@ -60,6 +60,10 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     printerModeCombo_->addItem("Thermal printer (raw ESC/POS)", "raw");
     printerModeCombo_->addItem("Normal printer (Windows driver)", "normal");
 
+    paperSizeCombo_ = new QComboBox(identityCard);
+    paperSizeCombo_->addItem("80 mm roll (table layout)", "80");
+    paperSizeCombo_->addItem("58 mm roll (compact)", "58");
+
     auto* form = new QGridLayout;
     form->setHorizontalSpacing(14);
     form->setVerticalSpacing(12);
@@ -80,6 +84,8 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
     form->addWidget(backupLabel, 4, 0);     form->addWidget(backupHoursSpin_, 4, 1);
     form->addWidget(thermLabel, 5, 0);      form->addWidget(thermalPathInput_, 5, 1);
     form->addWidget(modeLabel, 6, 0);       form->addWidget(printerModeCombo_, 6, 1);
+    auto* paperLabel2 = new QLabel("Receipt paper", identityCard); paperLabel2->setBuddy(paperSizeCombo_);
+    form->addWidget(paperLabel2, 11, 0);    form->addWidget(paperSizeCombo_, 11, 1);
 
     // Printer picker: pick an installed printer and its name fills the field above.
     // Raw ESC/POS is sent through the Windows spooler, which fixes the old
@@ -220,6 +226,7 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
             }
             service.setValue("printer.thermal_path", path);
             service.setValue("printer.mode", printerModeCombo_->currentData().toString());
+            service.setValue("printer.paper_mm", paperSizeCombo_->currentData().toString());
             service.setValue("backup.extra_dir", extraBackupInput_->text().trimmed());
             QMessageBox::information(this, "Settings saved", "Settings were saved to the local database. Restart the app to apply a changed automatic backup interval.");
         } catch (const std::exception& error) {
@@ -232,11 +239,16 @@ SettingsPage::SettingsPage(std::shared_ptr<pos::Database> database, QWidget* par
             pos::SettingsService s(database_);
             pos::ReceiptData data;
             data.storeName = s.value("business.name", "Invento");
+            data.address = s.value("business.address");
+            data.phone = s.value("business.phone");
             data.invoiceNo = "TEST-1";
-            data.dateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
-            data.footer = s.value("receipt.footer");
-            data.items = {{"Printer test", 1, 100}};
-            data.total = 100;
+            data.dateTime = QDateTime::currentDateTime().toString("d MMM yyyy, h:mm AP");
+            data.cashier = s.value("receipt.cashier", "Owner");
+            data.note = s.value("receipt.footer");
+            data.lines = {{"Printer test item", 1, 10000, 0, 10000}};
+            data.totalQty = 1;
+            data.gross = 10000; data.netTotal = 10000; data.cashReceived = 10000;
+            data.amountInWords = pos::ReceiptService::amountToWords(10000);
             const auto status = pos::ui::deliverReceipt(database_, data);
             QMessageBox::information(this, "Test receipt sent", status);
         } catch (const std::exception& error) {
@@ -294,6 +306,7 @@ void SettingsPage::load() {
         backupHoursSpin_->setValue(service.value("backup.interval_hours", "0").toInt());
         thermalPathInput_->setText(service.value("printer.thermal_path"));
         printerModeCombo_->setCurrentIndex(qMax(0, printerModeCombo_->findData(service.value("printer.mode", "raw"))));
+        paperSizeCombo_->setCurrentIndex(qMax(0, paperSizeCombo_->findData(service.value("printer.paper_mm", "80"))));
         extraBackupInput_->setText(service.value("backup.extra_dir"));
 
         const bool pinConfigured = pos::SecurityService(database_).hasPin();

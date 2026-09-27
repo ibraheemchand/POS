@@ -13,7 +13,7 @@ bool isLikelyNonThermal(const QString& printerName);
 
 // Render the receipt through the Windows print driver (QPrinter/QPainter) to the
 // named printer — for Microsoft Print to PDF, A4/A5 office printers, etc. Throws.
-void printViaDriver(const ReceiptData& data, const QString& printerName);
+void printViaDriver(const ReceiptData& data, const QString& printerName, double paperMm = 80.0);
 
 // Deliver a receipt using the configured mode. Returns a human description of what
 // it did (mode + printer) for feedback. Throws on failure.
