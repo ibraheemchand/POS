@@ -10,3 +10,4 @@ installer/dist-installer/
 *.db-shm
 *.db-wal
 .vs/
+.
