@@ -194,22 +194,23 @@ qreal ReceiptService::paint(QPainter& p, qreal widthPx, const ReceiptData& d, do
 
     // --- Items ---
     if (!compact) {
-        // Columns as fractions of the given 72mm spec, scaled to W.
-        const double fw[6] = {4.0, 20.5, 6.0, 11.0, 10.5, 20.0};
-        double cx[7]; cx[0] = 0; for (int i = 0; i < 6; ++i) cx[i + 1] = cx[i] + W * (fw[i] / 72.0);
-        const Qt::Alignment al[6] = {Qt::AlignHCenter, Qt::AlignLeft, Qt::AlignHCenter,
-                                     Qt::AlignRight, Qt::AlignRight, Qt::AlignRight};
+        // Columns as fractions of the given 72mm spec, scaled to W. No per-line
+        // Disc column: this shop only uses invoice-level discounts (shown in totals).
+        const double fw[5] = {4.0, 27.5, 6.0, 11.0, 23.5};
+        double cx[6]; cx[0] = 0; for (int i = 0; i < 5; ++i) cx[i + 1] = cx[i] + W * (fw[i] / 72.0);
+        const Qt::Alignment al[5] = {Qt::AlignHCenter, Qt::AlignLeft, Qt::AlignHCenter,
+                                     Qt::AlignRight, Qt::AlignRight};
         auto rowHeight = [&](const QString& itemText, const QFont& f) {
             p.setFont(f); QFontMetricsF fm(f);
             QRectF br = fm.boundingRect(QRectF(0, 0, (cx[2] - cx[1]) - 2 * pad, 10000),
                                         Qt::AlignLeft | Qt::TextWordWrap, itemText);
             return std::max(fm.height(), br.height()) + 2 * MM(0.7);
         };
-        auto drawRow = [&](const QString cells[6], const QFont& f, bool fill) {
+        auto drawRow = [&](const QString cells[5], const QFont& f, bool fill) {
             const double h = rowHeight(cells[1], f);
             if (fill) p.fillRect(QRectF(0, y, W, h), grey);
             p.setPen(line);
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 5; ++i) {
                 p.drawRect(QRectF(cx[i], y, cx[i + 1] - cx[i], h));
                 p.setFont(f);
                 p.drawText(QRectF(cx[i] + pad, y, (cx[i + 1] - cx[i]) - 2 * pad, h),
@@ -217,12 +218,12 @@ qreal ReceiptService::paint(QPainter& p, qreal widthPx, const ReceiptData& d, do
             }
             y += h;
         };
-        const QString head[6] = {"#", "Item", "Qty", "Rate", "Disc", "Net"};
+        const QString head[5] = {"#", "Item", "Qty", "Rate", "Net"};
         drawRow(head, fBold, true);
         int n = 1;
         for (const auto& it : d.lines) {
-            const QString row[6] = {QString::number(n++), it.name.trimmed(), QString::number(it.qty),
-                                    formatMoney(it.rate), money2(it.disc), money2(it.net)};
+            const QString row[5] = {QString::number(n++), it.name.trimmed(), QString::number(it.qty),
+                                    formatMoney(it.rate), money2(it.net)};
             drawRow(row, fBody, false);
         }
     } else {
