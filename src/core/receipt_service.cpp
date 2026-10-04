@@ -309,7 +309,7 @@ qreal ReceiptService::paint(QPainter& p, qreal widthPx, const ReceiptData& d, do
     }
     { double yy = y; centered("Thank you for your visit!", fBody, yy); y = yy; }
     { double yy = y; centered("Powered by Invento", fBody, yy); y = yy; }
-    { double yy = y; centered("Made By IbraheemChand", fBody, yy); y = yy + MM(2.0); }
+    { double yy = y; centered("Developed By IbraheemChand", fBody, yy); y = yy + MM(2.0); }
 
     return y;
 }
