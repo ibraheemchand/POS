@@ -94,6 +94,7 @@ struct SaleRequest {
     QString shiftId;
     QString paymentMethod; // cash, credit, cheque, mobile_wallet, mixed
     Money paidAmount{};
+    Money tenderedCash{}; // raw cash handed over (may exceed total); 0 = unknown
     Money invoiceDiscount{};
     QString note;
     QList<SaleLine> lines;

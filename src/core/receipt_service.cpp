@@ -72,7 +72,7 @@ ReceiptData ReceiptService::buildFromSale(const QString& saleId) const {
     d.note = settings.value("receipt.footer");
     d.cashier = settings.value("receipt.cashier", "Owner");
 
-    auto sale = db_->prepare("SELECT invoice_no, created_at, discount, total, paid, due, customer_id FROM sales WHERE id=?");
+    auto sale = db_->prepare("SELECT invoice_no, created_at, discount, total, paid, due, customer_id, tendered FROM sales WHERE id=?");
     sale.bind(1, saleId);
     if (!sale.stepRow()) throw DatabaseError("sale not found");
     d.invoiceNo = sale.text(0);
@@ -84,6 +84,7 @@ ReceiptData ReceiptService::buildFromSale(const QString& saleId) const {
     d.cashReceived = sale.integer(4);
     const Money due = sale.integer(5);
     const QString customerId = sale.text(6);
+    const Money tendered = sale.integer(7); // raw cash handed over; 0 if unknown (old sales)
 
     auto items = db_->prepare(
         "SELECT p.name, si.quantity, si.unit_price, si.line_total FROM sale_items si "
@@ -105,6 +106,7 @@ ReceiptData ReceiptService::buildFromSale(const QString& saleId) const {
     d.totalDiscount = d.gross - d.netTotal;
     d.lineDiscount = d.totalDiscount - d.invoiceDiscount;
     if (d.lineDiscount < 0) d.lineDiscount = 0;
+    if (tendered > d.cashReceived) d.cashReceived = tendered; // show the real cash handed over
     d.change = d.cashReceived > d.netTotal ? d.cashReceived - d.netTotal : 0;
     d.amountInWords = amountToWords(d.netTotal);
 
@@ -258,7 +260,7 @@ qreal ReceiptService::paint(QPainter& p, qreal widthPx, const ReceiptData& d, do
         };
         trow("Total qty", QString::number(d.totalQty), false);
         trow("Gross total", money2(d.gross), false);
-        trow("Line discount", money2(d.lineDiscount), false);
+        if (d.lineDiscount != 0) trow("Line discount", money2(d.lineDiscount), false);
         trow("Invoice discount", money2(d.invoiceDiscount), false);
         trow("Total discount", money2(d.totalDiscount), false);
         trow("NET TOTAL", "PKR " + money2(d.netTotal), true);
@@ -306,7 +308,8 @@ qreal ReceiptService::paint(QPainter& p, qreal widthPx, const ReceiptData& d, do
         y += lh + MM(1.5);
     }
     { double yy = y; centered("Thank you for your visit!", fBody, yy); y = yy; }
-    { double yy = y; centered("Powered by Invento", fBody, yy); y = yy + MM(2.0); }
+    { double yy = y; centered("Powered by Invento", fBody, yy); y = yy; }
+    { double yy = y; centered("Made By IbraheemChand", fBody, yy); y = yy + MM(2.0); }
 
     return y;
 }

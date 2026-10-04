@@ -119,8 +119,8 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
         if(c.integer(1)>0 && c.integer(0)+due>c.integer(1)) throw DatabaseError("customer credit limit exceeded");
     }
     const QString id=uuid(); const QString invoice=QString("INV-%1-%2").arg(QDate::currentDate().toString("yyyyMMdd"), id.left(6).toUpper());
-    auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal,discount,total,paid,due,note,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
-    sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,utcNow()); sale.execute();
+    auto sale=db_->prepare("INSERT INTO sales(id,invoice_no,customer_id,shift_id,status,payment_method,subtotal,discount,total,paid,due,note,tendered,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    sale.bind(1,id); sale.bind(2,invoice); if(request.customerId.isEmpty()) sale.bindNull(3); else sale.bind(3,request.customerId); if(shiftId.isEmpty()) sale.bindNull(4); else sale.bind(4,shiftId); sale.bind(5,"completed"); sale.bind(6,request.paymentMethod); sale.bind(7,subtotal); sale.bind(8,request.invoiceDiscount); sale.bind(9,total); sale.bind(10,request.paidAmount); sale.bind(11,due); sale.bind(12,request.note); sale.bind(13,request.tenderedCash); sale.bind(14,utcNow()); sale.execute();
     if (invoiceOverrideUsed) {
         auto audit=db_->prepare("INSERT INTO audit_log(id,action,entity_type,entity_id,detail,created_at) VALUES(?,?,?,?,?,?)");
         audit.bind(1,uuid()); audit.bind(2,"invoice_discount_override"); audit.bind(3,"sale"); audit.bind(4,id);

@@ -806,7 +806,8 @@ void SalesPosPage::completeSale(ReceiptAction action) {
             return;
         }
 
-        request.paidAmount = request.paymentMethod == "credit" ? 0 : pos::roundMoney(receivedSpin_->value() * 100);
+        request.tenderedCash = request.paymentMethod == "credit" ? 0 : pos::roundMoney(receivedSpin_->value() * 100);
+        request.paidAmount = request.tenderedCash;
         if (request.paidAmount > subtotal - request.invoiceDiscount) {
             request.paidAmount = subtotal - request.invoiceDiscount;
         }
