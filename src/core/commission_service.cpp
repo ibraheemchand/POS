@@ -45,8 +45,9 @@ CommissionBreakdown CommissionService::computeBreakdown(Money grossLineAmount, q
     CommissionBreakdown breakdown;
     breakdown.retailAmount = grossLineAmount;
     breakdown.commissionAmount = roundMoney(static_cast<double>(grossLineAmount) * totalBp / kBpScale);
+    breakdown.partnerAmount = roundMoney(static_cast<double>(grossLineAmount) * partnerBp / kBpScale);
     breakdown.discountAmount = discountAmount;
-    breakdown.ownerAmount = breakdown.commissionAmount - discountAmount;
+    breakdown.ownerAmount = breakdown.commissionAmount - breakdown.partnerAmount - discountAmount;
     breakdown.flexibleCap = cap;
     breakdown.overridden = overridden;
     return breakdown;
@@ -85,19 +86,25 @@ CartDiscountLimits CommissionService::cartDiscountLimits(const QList<SaleLine>& 
 CommissionTotals CommissionService::totals(const QDate& from, const QDate& to) const {
     if (!from.isValid() || !to.isValid() || from > to) throw DatabaseError("invalid report dates");
     CommissionTotals result;
+    const auto fromText = from.toString(Qt::ISODate), toText = to.addDays(1).toString(Qt::ISODate);
     auto query = db_->prepare(
-        "SELECT COALESCE(SUM(retail_amount),0), COALESCE(SUM(commission_amount),0), "
-        "COALESCE(SUM(owner_amount),0), COALESCE(SUM(discount_amount),0), COALESCE(SUM(overridden),0) "
-        "FROM sale_item_commissions c JOIN sales s ON s.id=c.sale_id "
-        "WHERE s.status!='voided' AND c.created_at>=? AND c.created_at<?");
-    query.bind(1, from.toString(Qt::ISODate));
-    query.bind(2, to.addDays(1).toString(Qt::ISODate));
+        "SELECT COALESCE(SUM(sale_value),0), COALESCE(SUM(commission),0), COALESCE(SUM(my_profit),0), COALESCE(SUM(discount),0) "
+        "FROM profit_entries WHERE created_at>=? AND created_at<?");
+    query.bind(1, fromText);
+    query.bind(2, toText);
     query.stepRow();
     result.revenue = query.integer(0);
     result.commissionPool = query.integer(1);
     result.ownerProfit = query.integer(2);
     result.discountsGiven = query.integer(3);
-    result.overrideCount = query.integer(4);
+    // Overrides are a per-line audit flag, kept only on the line-level record.
+    auto overrides = db_->prepare(
+        "SELECT COUNT(DISTINCT c.sale_item_id) FROM sale_item_commissions c JOIN sales s ON s.id=c.sale_id "
+        "WHERE s.status!='voided' AND c.overridden=1 AND c.created_at>=? AND c.created_at<?");
+    overrides.bind(1, fromText);
+    overrides.bind(2, toText);
+    overrides.stepRow();
+    result.overrideCount = overrides.integer(0);
     return result;
 }
 

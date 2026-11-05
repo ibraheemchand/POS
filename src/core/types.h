@@ -94,7 +94,6 @@ struct SaleRequest {
     QString shiftId;
     QString paymentMethod; // cash, credit, cheque, mobile_wallet, mixed
     Money paidAmount{};
-    Money tenderedCash{}; // raw cash handed over (may exceed total); 0 = unknown
     Money invoiceDiscount{};
     QString note;
     QList<SaleLine> lines;
@@ -103,6 +102,9 @@ struct SaleRequest {
     // allowed flexible margin. PosService re-derives and enforces the limits itself.
     // Kept last so existing aggregate initialisers still compile.
     bool invoiceDiscountOverrideApproved{false};
+    // Raw cash handed over (may exceed total); 0 = unknown. Kept after the
+    // positional fields so existing aggregate initialisers still compile.
+    Money tenderedCash{};
 };
 
 struct SaleResult { QString saleId; QString invoiceNo; Money total{}; };

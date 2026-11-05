@@ -105,6 +105,21 @@ The transactional return services are implemented, but the current visible deskt
 5. Open **Analytics** for seven-day sales, purchases, receivables, low-stock metrics, and the daily sales trend.
 6. Open **Audit Log** to filter sensitive actions by action name.
 
+### How commission and profit are calculated
+
+Every course or book has a **Total %** (your commission) and a **Partner %**. For each sale:
+
+| Figure | Formula |
+|---|---|
+| Commission | Price before any discount × Total % |
+| Partner share | Price before any discount × Partner % |
+| Discount | Line discount + that line's share of the invoice discount |
+| **My profit** | Commission − Partner share − Discount |
+
+Discounts are always paid from **your** share; the partner's share is never reduced by a discount. Example: books worth Rs 2,410 at 30% total and 10% partner with a Rs 241 invoice discount give commission Rs 723, partner Rs 241, and profit Rs 723 − 241 − 241 = Rs 241.
+
+The **Reports** page commission summary and the owner's **Profit & Commission** report read the same records, so they always show the same totals. Returns and voids reverse exactly what the sale recorded. Sales made before this rule was introduced keep the figures they were recorded with.
+
 ## 11. Backups and restore
 
 1. Use **Backup now** on the Dashboard or open **Backup & Restore**.

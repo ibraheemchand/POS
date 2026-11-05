@@ -157,10 +157,10 @@ SaleResult PosService::completeSale(const SaleRequest& request) {
             // The per-line cap was already enforced above; the fragment-level call
             // (forced overrideApproved=true) only derives amounts, never re-throws.
             const auto fragment = commission.computeBreakdown(allocation.quantity*line.unitPrice, commissionConfig.totalBp, commissionConfig.partnerBp, allocationDiscount, true);
-            // partner_rate_bp/partner_amount are always 0 now: partner shares
-            // are tracked by the new PartnerService system, not this legacy record.
+            // Line-level audit record. Profit reporting reads profit_entries
+            // (PartnerService); this row uses the same split rule so the two agree.
             auto commissionRow=db_->prepare("INSERT INTO sale_item_commissions(id,sale_item_id,sale_id,product_id,retail_amount,commission_rate_bp,commission_amount,partner_rate_bp,partner_amount,discount_amount,owner_amount,overridden,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            commissionRow.bind(1,uuid()); commissionRow.bind(2,itemId); commissionRow.bind(3,id); commissionRow.bind(4,line.productId); commissionRow.bind(5,fragment.retailAmount); commissionRow.bind(6,commissionConfig.totalBp); commissionRow.bind(7,fragment.commissionAmount); commissionRow.bind(8,static_cast<qint64>(0)); commissionRow.bind(9,static_cast<qint64>(0)); commissionRow.bind(10,fragment.discountAmount); commissionRow.bind(11,fragment.ownerAmount); commissionRow.bind(12,lineBreakdown.overridden?1:0); commissionRow.bind(13,utcNow()); commissionRow.execute();
+            commissionRow.bind(1,uuid()); commissionRow.bind(2,itemId); commissionRow.bind(3,id); commissionRow.bind(4,line.productId); commissionRow.bind(5,fragment.retailAmount); commissionRow.bind(6,commissionConfig.totalBp); commissionRow.bind(7,fragment.commissionAmount); commissionRow.bind(8,commissionConfig.partnerBp); commissionRow.bind(9,fragment.partnerAmount); commissionRow.bind(10,fragment.discountAmount); commissionRow.bind(11,fragment.ownerAmount); commissionRow.bind(12,lineBreakdown.overridden?1:0); commissionRow.bind(13,utcNow()); commissionRow.execute();
         }
     }
     // Post partner-commission and My-Profits entries from the snapshot just

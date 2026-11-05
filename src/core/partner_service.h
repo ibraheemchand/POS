@@ -55,7 +55,8 @@ struct ProfitEntryRow {
     Money saleValue{};
     Money commission{};
     Money partnerAmount{};
-    Money myProfit{};
+    Money discount{};    // discount (line + invoice share) charged to my share
+    Money myProfit{};    // commission - partnerAmount - discount
     bool reversal{};
     QString createdAt;
 };
@@ -68,6 +69,7 @@ struct SourceReportRow {
     Money saleValue{};
     Money commission{};
     Money partnerAmount{};
+    Money discount{};
     Money myProfit{};
 };
 
@@ -83,6 +85,7 @@ struct ProfitSummary {
     Money totalSales{};
     Money totalCommission{};
     Money totalPartner{};
+    Money totalDiscount{};
     Money myProfit{};
     Money totalPaidOut{};
     Money totalOwed{};
@@ -96,9 +99,21 @@ public:
     // transaction so commission is calculated and saved in the background on
     // every sale without the cashier ever authenticating. These read the
     // per-line snapshot columns already written on sale_items. ----
+    //
+    // The split rule (the single source of truth for commission and profit):
+    //   commission = gross × total%        (gross = quantity × unit price, before any discount)
+    //   partner    = gross × partner%      (the partner is never charged for discounts)
+    //   discount   = line discount + the line's share of the invoice discount
+    //   my profit  = commission − partner − discount
+    // This matches the discount cap, which only lets a cashier spend the owner's
+    // flexible margin (total% − partner% − owner minimum%).
     void postSaleCommissions(const QString& saleId);
-    void reverseSaleItem(const QString& saleId, const QString& saleItemId, Money returnedAmount, const QString& reason);
-    void reverseSale(const QString& saleId, const QString& reason); // full cancellation of every line
+    // Reverses units [alreadyReversed, alreadyReversed + quantity) of one sale item.
+    // Amounts are cumulative, so any sequence of partial reversals that ends with
+    // the whole item cancels the original posting exactly, to the paisa.
+    void reverseSaleItem(const QString& saleId, const QString& saleItemId, Quantity alreadyReversed, Quantity quantity, const QString& reason);
+    // Cancels everything on the sale that has not already been returned.
+    void reverseSale(const QString& saleId, const QString& reason);
 
     // Resolve the commission snapshot to stamp onto a sale line at checkout.
     // Ungated: needed on the cashier path. Returns zeros when nothing configured.

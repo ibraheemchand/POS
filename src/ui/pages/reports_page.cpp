@@ -88,7 +88,7 @@ ReportsPage::ReportsPage(std::shared_ptr<pos::Database> database, QWidget* paren
     commissionSummary_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     commissionSummary_->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    const QStringList commissionLabels = {"Revenue (net of discounts)", "Commission pool", "Owner profit", "Discounts given", "Manager overrides used"};
+    const QStringList commissionLabels = {"Commissioned sales (net of discounts)", "Commission pool", "Owner profit (after partner share)", "Discounts given", "Manager overrides used"};
     for (int row = 0; row < commissionLabels.size(); ++row) {
         commissionSummary_->setItem(row, 0, new QTableWidgetItem(commissionLabels[row]));
     }

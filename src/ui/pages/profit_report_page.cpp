@@ -97,10 +97,10 @@ ProfitReportPage::ProfitReportPage(std::shared_ptr<pos::Database> database, QWid
     relayoutCards();
 
     tabs_ = new QTabWidget(this);
-    courseTable_ = makeTable({"Course", "Partner", "Times sold", "Sale value", "Commission", "Partner share", "My profit"});
+    courseTable_ = makeTable({"Course", "Partner", "Times sold", "Sale value", "Commission", "Partner share", "Discount", "My profit"});
     partnerTable_ = makeTable({"Partner", "Share earned", "Paid out", "Balance owed"});
-    bookTable_ = makeTable({"Book", "Partner", "Times sold", "Sale value", "Commission", "Partner share", "My profit"});
-    profitsTable_ = makeTable({"Date", "Invoice", "Source", "Name", "Sale value", "My profit"});
+    bookTable_ = makeTable({"Book", "Partner", "Times sold", "Sale value", "Commission", "Partner share", "Discount", "My profit"});
+    profitsTable_ = makeTable({"Date", "Invoice", "Source", "Name", "Sale value", "Commission", "Partner share", "Discount", "My profit"});
     tabs_->addTab(courseTable_, "Per course");
     tabs_->addTab(partnerTable_, "Per partner");
     tabs_->addTab(bookTable_, "Standalone books");
@@ -171,7 +171,8 @@ void ProfitReportPage::load() {
                 table->setItem(row, 3, new QTableWidgetItem("PKR " + pos::formatMoney(r.saleValue)));
                 table->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatMoney(r.commission)));
                 table->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatMoney(r.partnerAmount)));
-                table->setItem(row, 6, new QTableWidgetItem("PKR " + pos::formatMoney(r.myProfit)));
+                table->setItem(row, 6, new QTableWidgetItem("PKR " + pos::formatMoney(r.discount)));
+                table->setItem(row, 7, new QTableWidgetItem("PKR " + pos::formatMoney(r.myProfit)));
             }
         };
         fillSource(courseTable_, service.courseReport(from, to));
@@ -196,7 +197,10 @@ void ProfitReportPage::load() {
             profitsTable_->setItem(row, 2, new QTableWidgetItem(e.reversal ? e.sourceType + " (reversal)" : e.sourceType));
             profitsTable_->setItem(row, 3, new QTableWidgetItem(e.sourceName));
             profitsTable_->setItem(row, 4, new QTableWidgetItem("PKR " + pos::formatMoney(e.saleValue)));
-            profitsTable_->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatMoney(e.myProfit)));
+            profitsTable_->setItem(row, 5, new QTableWidgetItem("PKR " + pos::formatMoney(e.commission)));
+            profitsTable_->setItem(row, 6, new QTableWidgetItem("PKR " + pos::formatMoney(e.partnerAmount)));
+            profitsTable_->setItem(row, 7, new QTableWidgetItem("PKR " + pos::formatMoney(e.discount)));
+            profitsTable_->setItem(row, 8, new QTableWidgetItem("PKR " + pos::formatMoney(e.myProfit)));
         }
     } catch (const std::exception&) {
         lockedLabel_->show();

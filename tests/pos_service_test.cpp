@@ -90,7 +90,11 @@ private slots:
     void settingsPersistAfterReopeningDatabase();
     void backupRestoreRoundTripRestoresData();
     void dashboardNumbersReflectSalesAndPurchases();
-    void discountIsSharedProportionallyBetweenPartnerAndProfit();
+    void discountComesOutOfOwnerShareNotPartner();
+    void receiptInvoiceDiscountReducesOnlyOwnerProfit();
+    void partialReturnThenVoidReversesCommissionExactly();
+    void reportsPageTotalsMatchProfitReport();
+    void saleRecordedBeforeFixIsReversedByItsOriginalRule();
     void discountCapUsesPerItemAndCourseSettings();
     void discountCapClampsToZeroWhenOwnerMinExceedsMargin();
     void securitySetupRecoveryChangeAndLockout();
@@ -173,7 +177,8 @@ void PosServiceTest::commissionOverrideRequiredBeyondFlexibleCap(){try {const au
     pos::SaleRequest blocked{{},{},"cash",8500,0,{},{{product,{},1,10000,1500,"piece",false}}};QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,sales.completeSale(blocked)); // 1500 > 800 cap
     auto stock=db->prepare("SELECT stock_quantity FROM products WHERE id=?");stock.bind(1,product);QVERIFY(stock.stepRow());QCOMPARE(stock.integer(0),qint64(10));
     pos::SaleRequest approved{{},{},"cash",8500,0,{},{{product,{},1,10000,1500,"piece",true}}};const auto sale=sales.completeSale(approved);
-    auto row=db->prepare("SELECT discount_amount,owner_amount,overridden FROM sale_item_commissions WHERE sale_id=?");row.bind(1,sale.saleId);QVERIFY(row.stepRow());QCOMPARE(row.integer(0),qint64(1500));QCOMPARE(row.integer(1),qint64(1500));QCOMPARE(row.integer(2),qint64(1));}catch(const std::exception& error){QFAIL(error.what());}}
+    auto row=db->prepare("SELECT discount_amount,owner_amount,overridden,partner_amount FROM sale_item_commissions WHERE sale_id=?");row.bind(1,sale.saleId);QVERIFY(row.stepRow());QCOMPARE(row.integer(0),qint64(1500));QCOMPARE(row.integer(1),qint64(500));QCOMPARE(row.integer(2),qint64(1));QCOMPARE(row.integer(3),qint64(1000)); // owner = 3000 commission - 1000 partner - 1500 discount
+}catch(const std::exception& error){QFAIL(error.what());}}
 void PosServiceTest::commissionSettingsRejectSharesExceedingRate(){try {const auto path=std::filesystem::temp_directory_path()/("commission-settings-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();pos::CommissionService service(db);
     QCOMPARE(service.settings().ownerMinShareBp,qint64(1200)); // default 12%
     auto settings=service.settings();settings.ownerMinShareBp=12000;QVERIFY_THROWS_EXCEPTION(pos::DatabaseError,service.setSettings(settings)); // >100%
@@ -231,13 +236,14 @@ void PosServiceTest::invoiceDiscountSpreadProportionallyToLines(){try{const auto
     setProductCommission(*db,a,4000,2000);setProductCommission(*db,b,4000,2000); // 40% total,20% partner each; allowed=80 each=160
     pos::SaleRequest req{{},{},"cash",1900,0,{},{{a,{},1,1000,0,"piece"},{b,{},1,1000,0,"piece"}}};req.invoiceDiscount=100; // <=160 allowed, spread 50/50
     const auto sale=pos::PosService(db).completeSale(req);QVERIFY(!sale.saleId.isEmpty());
-    // Base per line 950 => commission 380, partner 190, profit 190.
-    auto pe=db->prepare("SELECT COALESCE(SUM(sale_value),0),COALESCE(SUM(commission),0),COALESCE(SUM(partner_amount),0),COALESCE(SUM(my_profit),0) FROM profit_entries WHERE sale_id=?");pe.bind(1,sale.saleId);QVERIFY(pe.stepRow());
+    // Each line: gross 1000 => commission 400, partner 200; invoice discount share 50 comes out of my share.
+    auto pe=db->prepare("SELECT COALESCE(SUM(sale_value),0),COALESCE(SUM(commission),0),COALESCE(SUM(partner_amount),0),COALESCE(SUM(my_profit),0),COALESCE(SUM(discount),0) FROM profit_entries WHERE sale_id=?");pe.bind(1,sale.saleId);QVERIFY(pe.stepRow());
     QCOMPARE(pe.integer(0),qint64(1900));  // sale_value == subtotal - invoice discount (shares sum exactly)
-    QCOMPARE(pe.integer(1),qint64(760));   // commission on discounted base
-    QCOMPARE(pe.integer(2),qint64(380));   // partner
-    QCOMPARE(pe.integer(3),qint64(380));   // my profit
-    QCOMPARE(pe.integer(2)+pe.integer(3),pe.integer(1)); // partner + profit == commission
+    QCOMPARE(pe.integer(1),qint64(800));   // commission on the gross (undiscounted) price
+    QCOMPARE(pe.integer(2),qint64(400));   // partner is not charged for the discount
+    QCOMPARE(pe.integer(4),qint64(100));   // the whole invoice discount
+    QCOMPARE(pe.integer(3),qint64(300));   // my profit = 800 - 400 - 100
+    QCOMPARE(pe.integer(2)+pe.integer(3)+pe.integer(4),pe.integer(1)); // partner + discount + profit == commission
     auto lt=db->prepare("SELECT COALESCE(SUM(line_total),0) FROM sale_items WHERE sale_id=?");lt.bind(1,sale.saleId);QVERIFY(lt.stepRow());QCOMPARE(lt.integer(0),qint64(1900)); // line totals net of both discounts
 }catch(const std::exception& error){QFAIL(error.what());}}
 
@@ -392,17 +398,17 @@ void PosServiceTest::dashboardNumbersReflectSalesAndPurchases(){try{const auto p
     QCOMPARE(pos::CustomerService(db).totalReceivables(),qint64(1000));
 }catch(const std::exception& error){QFAIL(error.what());}}
 
-void PosServiceTest::discountIsSharedProportionallyBetweenPartnerAndProfit(){try{const auto path=std::filesystem::temp_directory_path()/("discount-share-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+void PosServiceTest::discountComesOutOfOwnerShareNotPartner(){try{const auto path=std::filesystem::temp_directory_path()/("discount-share-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
     pos::InventoryService inv(db);const auto book=stockedBook(inv,"Math",1000);
     pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});const auto course=pos::BundleService(db).createBundle({"Grade 5","G5","",{{book,1}}});ps.setCourseConfig(course,{3000,1000,partner}); // 30% total, 10% partner
     // Discount 100 on a 1000 line (over the 8% cap -> manager override), net = 900.
     pos::SaleRequest req{{},{},"cash",900,0,{},{{book,{},1,1000,100,"piece",true,course}}};pos::PosService(db).completeSale(req);
     auto e=db->prepare("SELECT sale_value,commission,partner_amount,my_profit FROM profit_entries WHERE source_type='course'");QVERIFY(e.stepRow());
-    QCOMPARE(e.integer(0),qint64(900));   // commission base is the discounted price
-    QCOMPARE(e.integer(1),qint64(270));   // 30% of 900
-    QCOMPARE(e.integer(2),qint64(90));    // partner 10% of 900 (shares the discount)
-    QCOMPARE(e.integer(3),qint64(180));   // my profit = 270 - 90
-    auto bal=db->prepare("SELECT balance FROM partners WHERE id=?");bal.bind(1,partner);QVERIFY(bal.stepRow());QCOMPARE(bal.integer(0),qint64(90));
+    QCOMPARE(e.integer(0),qint64(900));   // the customer paid 900
+    QCOMPARE(e.integer(1),qint64(300));   // 30% of the 1000 gross
+    QCOMPARE(e.integer(2),qint64(100));   // partner 10% of 1000 (never charged for the discount)
+    QCOMPARE(e.integer(3),qint64(100));   // my profit = 300 - 100 - 100 discount
+    auto bal=db->prepare("SELECT balance FROM partners WHERE id=?");bal.bind(1,partner);QVERIFY(bal.stepRow());QCOMPARE(bal.integer(0),qint64(100));
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 void PosServiceTest::discountCapUsesPerItemAndCourseSettings(){try{const auto path=std::filesystem::temp_directory_path()/("percap-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();openShift(*db);
@@ -594,6 +600,85 @@ void PosServiceTest::receiptBuildFromSaleFillsTable(){try{const auto path=std::f
     // Per-line disc = qty*rate - net (the spread invoice share).
     QCOMPARE(d.lines[0].disc,qint64(2000));
     QCOMPARE(d.lines[0].net,qint64(18000));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+// The real receipt from the shop: books 450 + 250 + 850 + 860 = 2,410 with a 10%
+// invoice discount (241). With 30% commission and 10% partner, the partner must
+// keep the full 10% of 2,410 and the whole 241 discount must come out of my share.
+void PosServiceTest::receiptInvoiceDiscountReducesOnlyOwnerProfit(){try{const auto path=std::filesystem::temp_directory_path()/("receipt-split-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});
+    QList<pos::SaleLine> lines;
+    for(const auto price:{qint64(45000),qint64(25000),qint64(85000),qint64(86000)}){const auto book=stockedBook(inv,QString("Book %1").arg(price),price);ps.setBookConfig(book,{3000,1000,partner});lines.append({book,{},1,price,0,"piece"});}
+    pos::SaleRequest req{{},{},"cash",216900,0,{},lines};req.invoiceDiscount=24100;req.invoiceDiscountOverrideApproved=true; // above the 8% flexible margin
+    const auto sale=pos::PosService(db).completeSale(req);
+    auto pe=db->prepare("SELECT SUM(sale_value),SUM(commission),SUM(partner_amount),SUM(discount),SUM(my_profit) FROM profit_entries WHERE sale_id=?");pe.bind(1,sale.saleId);QVERIFY(pe.stepRow());
+    QCOMPARE(pe.integer(0),qint64(216900)); // what the customer paid
+    QCOMPARE(pe.integer(1),qint64(72300));  // 30% of 2,410
+    QCOMPARE(pe.integer(2),qint64(24100));  // 10% of 2,410: unaffected by the discount
+    QCOMPARE(pe.integer(3),qint64(24100));  // the full invoice discount
+    QCOMPARE(pe.integer(4),qint64(24100));  // 723 - 241 - 241
+    auto bal=db->prepare("SELECT balance FROM partners WHERE id=?");bal.bind(1,partner);QVERIFY(bal.stepRow());QCOMPARE(bal.integer(0),qint64(24100));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+// Awkward numbers (odd quantity, fractional percentages, a line discount) so
+// rounding is exercised: return one unit, then void the rest. Every figure must
+// net to exactly zero and the partner must owe/be owed nothing.
+void PosServiceTest::partialReturnThenVoidReversesCommissionExactly(){try{const auto path=std::filesystem::temp_directory_path()/("return-void-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});
+    const auto book=stockedBook(inv,"Odd",33333);ps.setBookConfig(book,{3333,1250,partner}); // 33.33% total, 12.5% partner
+    pos::SaleRequest req{{},{},"cash",99992,0,{},{{book,{},3,33333,7,"piece"}}};
+    const auto sale=pos::PosService(db).completeSale(req);
+    auto item=db->prepare("SELECT id FROM sale_items WHERE sale_id=?");item.bind(1,sale.saleId);QVERIFY(item.stepRow());
+    pos::ReturnService(db).returnSale(sale.saleId,{{item.text(0),1}},"Damaged",false);
+    auto afterReturn=db->prepare("SELECT SUM(commission),SUM(partner_amount),SUM(discount),SUM(my_profit) FROM profit_entries WHERE sale_id=?");afterReturn.bind(1,sale.saleId);QVERIFY(afterReturn.stepRow());
+    QCOMPARE(afterReturn.integer(0),qint64(22220)); // 33330 (= round(99999 x 33.33%)) minus one third of it
+    QCOMPARE(afterReturn.integer(1),qint64(8333));  // 12500 minus round(12500 / 3)
+    QCOMPARE(afterReturn.integer(2),qint64(5));     // 7 minus round(7 / 3)
+    QCOMPARE(afterReturn.integer(0),afterReturn.integer(1)+afterReturn.integer(2)+afterReturn.integer(3));
+    pos::PosService(db).voidSale(sale.saleId,"Cancelled","Manager");
+    auto net=db->prepare("SELECT SUM(sale_value),SUM(commission),SUM(partner_amount),SUM(discount),SUM(my_profit) FROM profit_entries WHERE sale_id=?");net.bind(1,sale.saleId);QVERIFY(net.stepRow());
+    for(int c=0;c<5;++c)QCOMPARE(net.integer(c),qint64(0));
+    auto bal=db->prepare("SELECT balance FROM partners WHERE id=?");bal.bind(1,partner);QVERIFY(bal.stepRow());QCOMPARE(bal.integer(0),qint64(0));
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+// The Reports page (CommissionService::totals) and the owner's Profit &
+// Commission report (PartnerService::summary) must never disagree again.
+void PosServiceTest::reportsPageTotalsMatchProfitReport(){try{const auto path=std::filesystem::temp_directory_path()/("reports-agree-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});
+    const auto a=stockedBook(inv,"A",1000),b=stockedBook(inv,"B",2500);ps.setBookConfig(a,{3000,1000,partner});ps.setBookConfig(b,{2500,0,{}});
+    pos::SaleRequest req{{},{},"cash",4250,0,{},{{a,{},2,1000,50,"piece"},{b,{},1,2500,0,"piece"}}};req.invoiceDiscount=200;req.invoiceDiscountOverrideApproved=true;
+    const auto sale=pos::PosService(db).completeSale(req);
+    auto item=db->prepare("SELECT id FROM sale_items WHERE sale_id=? AND product_id=?");item.bind(1,sale.saleId);item.bind(2,a);QVERIFY(item.stepRow());
+    pos::ReturnService(db).returnSale(sale.saleId,{{item.text(0),1}},"Wrong book",false);
+    const auto today=QDateTime::currentDateTimeUtc().date();
+    const auto reports=pos::CommissionService(db).totals(today,today);const auto profit=ps.summary(today,today);
+    QCOMPARE(reports.revenue,profit.totalSales);
+    QCOMPARE(reports.commissionPool,profit.totalCommission);
+    QCOMPARE(reports.ownerProfit,profit.myProfit);
+    QCOMPARE(reports.discountsGiven,profit.totalDiscount);
+    QCOMPARE(profit.totalCommission,profit.totalPartner+profit.totalDiscount+profit.myProfit);
+}catch(const std::exception& error){QFAIL(error.what());}}
+
+
+// A discounted sale posted by the old rule (commission and partner share on the
+// discounted amount, no discount column) and returned after the upgrade must be
+// reversed by that same old rule, so the partner is never debited more than he
+// was credited.
+void PosServiceTest::saleRecordedBeforeFixIsReversedByItsOriginalRule(){try{const auto path=std::filesystem::temp_directory_path()/("legacy-reverse-"+pos::uuid().toStdString()+".db");auto db=std::make_shared<pos::Database>(path);db->migrate();unlockOwner(db);openShift(*db);
+    pos::InventoryService inv(db);pos::PartnerService ps(db);const auto partner=ps.createPartner({{},"Partner",{},{},0,false});
+    const auto book=stockedBook(inv,"Old",1000);ps.setBookConfig(book,{3000,1000,partner});
+    pos::SaleRequest req{{},{},"cash",1800,0,{},{{book,{},2,1000,200,"piece",true}}};
+    const auto sale=pos::PosService(db).completeSale(req);
+    // Rewrite the posting exactly as the old code stored it: base 1800 -> commission 540, partner 180.
+    auto legacy=db->prepare("UPDATE profit_entries SET commission=540,partner_amount=180,discount=0,my_profit=360 WHERE sale_id=?");legacy.bind(1,sale.saleId);legacy.execute();
+    auto ledger=db->prepare("UPDATE partner_ledger SET credit=180,running_balance=180 WHERE partner_id=?");ledger.bind(1,partner);ledger.execute();
+    auto balance=db->prepare("UPDATE partners SET balance=180 WHERE id=?");balance.bind(1,partner);balance.execute();
+    auto item=db->prepare("SELECT id FROM sale_items WHERE sale_id=?");item.bind(1,sale.saleId);QVERIFY(item.stepRow());
+    pos::ReturnService(db).returnSale(sale.saleId,{{item.text(0),1}},"Damaged",false);
+    pos::PosService(db).voidSale(sale.saleId,"Cancelled","Manager");
+    auto net=db->prepare("SELECT SUM(sale_value),SUM(commission),SUM(partner_amount),SUM(discount),SUM(my_profit) FROM profit_entries WHERE sale_id=?");net.bind(1,sale.saleId);QVERIFY(net.stepRow());
+    for(int c=0;c<5;++c)QCOMPARE(net.integer(c),qint64(0));
+    auto bal=db->prepare("SELECT balance FROM partners WHERE id=?");bal.bind(1,partner);QVERIFY(bal.stepRow());QCOMPARE(bal.integer(0),qint64(0));
 }catch(const std::exception& error){QFAIL(error.what());}}
 
 QTEST_APPLESS_MAIN(PosServiceTest)

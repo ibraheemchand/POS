@@ -15,14 +15,17 @@ struct CommissionSettings {
 struct CommissionBreakdown {
     Money retailAmount{};       // gross line amount, before discount
     Money commissionAmount{};   // gross * totalBp
+    Money partnerAmount{};      // gross * partnerBp (never reduced by discounts)
     Money discountAmount{};
-    Money ownerAmount{};        // commission - discount
+    Money ownerAmount{};        // commission - partner - discount (same rule as PartnerService)
     Money flexibleCap{};
     bool overridden{};
 };
 
+// Read from profit_entries, the same ledger the Profit & Commission report uses,
+// so both screens always show identical figures (net of returns and voids).
 struct CommissionTotals {
-    Money revenue{};
+    Money revenue{};            // commissioned sales actually charged (after discounts)
     Money commissionPool{};
     Money ownerProfit{};
     Money discountsGiven{};
